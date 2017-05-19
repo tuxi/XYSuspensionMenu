@@ -2,8 +2,8 @@
 //  SuspensionView.h
 //  SuspensionView
 //
-//  Created by xiaoyuan on 17/2/25.
-//  Copyright © 2017年 com.test.demo. All rights reserved.
+//  Created by Ossey on 17/2/25.
+//  Copyright © 2017年 Ossey All rights reserved.
 //
 
 
