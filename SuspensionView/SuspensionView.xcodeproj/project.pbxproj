@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1865CC231E6472AB00F0E96E /* message_keyboard@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1865CC221E6472AB00F0E96E /* message_keyboard@3x.png */; };
-		1865CC381E6479AF00F0E96E /* SuspensionControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 1865CC371E6479AF00F0E96E /* SuspensionControl.m */; };
 		18A504D41E61DE4000EE96E8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D31E61DE4000EE96E8 /* main.m */; };
 		18A504D71E61DE4000EE96E8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D61E61DE4000EE96E8 /* AppDelegate.m */; };
 		18A504DA1E61DE4000EE96E8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D91E61DE4000EE96E8 /* ViewController.m */; };
 		18A504DD1E61DE4000EE96E8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18A504DB1E61DE4000EE96E8 /* Main.storyboard */; };
 		18A504DF1E61DE4000EE96E8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18A504DE1E61DE4000EE96E8 /* Assets.xcassets */; };
 		18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18A504E01E61DE4000EE96E8 /* LaunchScreen.storyboard */; };
+		18BE09291ECF7BB400A64543 /* SuspensionControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 18BE09281ECF7BB400A64543 /* SuspensionControl.m */; };
+		18BE092B1ECF7C1200A64543 /* partner_boobuz.png in Resources */ = {isa = PBXBuildFile; fileRef = 18BE092A1ECF7C1200A64543 /* partner_boobuz.png */; };
 		F3374B081E629FBF00F8F10D /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = F3374AEC1E629FBF00F8F10D /* LICENSE */; };
 		F3374B091E629FBF00F8F10D /* MASCompositeConstraint.m in Sources */ = {isa = PBXBuildFile; fileRef = F3374AEF1E629FBF00F8F10D /* MASCompositeConstraint.m */; };
 		F3374B0A1E629FBF00F8F10D /* MASConstraint.m in Sources */ = {isa = PBXBuildFile; fileRef = F3374AF21E629FBF00F8F10D /* MASConstraint.m */; };
@@ -30,9 +30,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1865CC221E6472AB00F0E96E /* message_keyboard@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "message_keyboard@3x.png"; sourceTree = "<group>"; };
-		1865CC361E6479AF00F0E96E /* SuspensionControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionControl.h; sourceTree = "<group>"; };
-		1865CC371E6479AF00F0E96E /* SuspensionControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionControl.m; sourceTree = "<group>"; };
 		18A504CF1E61DE4000EE96E8 /* SuspensionView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuspensionView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18A504D31E61DE4000EE96E8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18A504D51E61DE4000EE96E8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -43,6 +40,9 @@
 		18A504DE1E61DE4000EE96E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		18A504E11E61DE4000EE96E8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		18A504E31E61DE4000EE96E8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		18BE09271ECF7BB400A64543 /* SuspensionControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionControl.h; sourceTree = "<group>"; };
+		18BE09281ECF7BB400A64543 /* SuspensionControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionControl.m; sourceTree = "<group>"; };
+		18BE092A1ECF7C1200A64543 /* partner_boobuz.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = partner_boobuz.png; sourceTree = "<group>"; };
 		F3374AEC1E629FBF00F8F10D /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		F3374AEE1E629FBF00F8F10D /* MASCompositeConstraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MASCompositeConstraint.h; sourceTree = "<group>"; };
 		F3374AEF1E629FBF00F8F10D /* MASCompositeConstraint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MASCompositeConstraint.m; sourceTree = "<group>"; };
@@ -102,13 +102,13 @@
 		18A504D11E61DE4000EE96E8 /* SuspensionView */ = {
 			isa = PBXGroup;
 			children = (
+				18BE09271ECF7BB400A64543 /* SuspensionControl.h */,
+				18BE09281ECF7BB400A64543 /* SuspensionControl.m */,
 				18A504D51E61DE4000EE96E8 /* AppDelegate.h */,
 				18A504D61E61DE4000EE96E8 /* AppDelegate.m */,
 				18A504D81E61DE4000EE96E8 /* ViewController.h */,
 				18A504D91E61DE4000EE96E8 /* ViewController.m */,
-				1865CC361E6479AF00F0E96E /* SuspensionControl.h */,
-				1865CC371E6479AF00F0E96E /* SuspensionControl.m */,
-				1865CC221E6472AB00F0E96E /* message_keyboard@3x.png */,
+				18BE092A1ECF7C1200A64543 /* partner_boobuz.png */,
 				F3374AEB1E629FBF00F8F10D /* Masonry */,
 				18A504DB1E61DE4000EE96E8 /* Main.storyboard */,
 				18A504DE1E61DE4000EE96E8 /* Assets.xcassets */,
@@ -200,7 +200,7 @@
 				TargetAttributes = {
 					18A504CE1E61DE4000EE96E8 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = NKW67GFDHM;
+						DevelopmentTeam = H3Q63DY2LV;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -229,10 +229,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */,
+				18BE092B1ECF7C1200A64543 /* partner_boobuz.png in Resources */,
 				18A504DF1E61DE4000EE96E8 /* Assets.xcassets in Resources */,
 				F3374B081E629FBF00F8F10D /* LICENSE in Resources */,
 				18A504DD1E61DE4000EE96E8 /* Main.storyboard in Resources */,
-				1865CC231E6472AB00F0E96E /* message_keyboard@3x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,7 +251,7 @@
 				F3374B0F1E629FBF00F8F10D /* NSArray+MASAdditions.m in Sources */,
 				F3374B0E1E629FBF00F8F10D /* MASViewConstraint.m in Sources */,
 				F3374B0D1E629FBF00F8F10D /* MASViewAttribute.m in Sources */,
-				1865CC381E6479AF00F0E96E /* SuspensionControl.m in Sources */,
+				18BE09291ECF7BB400A64543 /* SuspensionControl.m in Sources */,
 				F3374B111E629FBF00F8F10D /* View+MASAdditions.m in Sources */,
 				18A504D71E61DE4000EE96E8 /* AppDelegate.m in Sources */,
 				18A504D41E61DE4000EE96E8 /* main.m in Sources */,
@@ -375,11 +375,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = NKW67GFDHM;
+				DEVELOPMENT_TEAM = H3Q63DY2LV;
 				INFOPLIST_FILE = SuspensionView/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sey.SuspensionView;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sey.SuspensionViewW;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -388,11 +388,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = NKW67GFDHM;
+				DEVELOPMENT_TEAM = H3Q63DY2LV;
 				INFOPLIST_FILE = SuspensionView/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sey.SuspensionView;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sey.SuspensionViewW;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
