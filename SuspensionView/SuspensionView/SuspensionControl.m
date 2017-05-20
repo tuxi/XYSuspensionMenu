@@ -9,6 +9,8 @@
 #import "SuspensionControl.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <objc/message.h>
+#import "UIImage+Blur.h"
+
 
 #define kSCREENT_HEIGHT [UIScreen mainScreen].bounds.size.height
 #define kSCREENT_WIDTH [UIScreen mainScreen].bounds.size.width
@@ -532,6 +534,7 @@ static const CGFloat menuBarBaseTag = 100;
 @property (nonatomic, copy) NSString *currentKey;
 @property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, weak) SuspensionView *centerButton;
+@property (nonatomic, weak) UIImageView *backgroundImView;
 
 @end
 
@@ -759,6 +762,18 @@ static const CGFloat menuBarBaseTag = 100;
     return _centerButton;
 }
 
+- (UIImageView *)backgroundImView {
+    if (_backgroundImView == nil) {
+        UIImageView *imageView = [UIImageView new];
+        _backgroundImView = imageView;
+        imageView.userInteractionEnabled = YES;
+        imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [self addSubview:imageView];
+        imageView.frame = self.bounds;
+    }
+    return _backgroundImView;
+}
+
 - (void)setup {
     
     _menuBarButtons = [NSMutableArray array];
@@ -778,7 +793,9 @@ static const CGFloat menuBarBaseTag = 100;
     _isInProcessing = NO;
     _isShow  = NO;
     _isClosed = YES;
-    self.backgroundColor = [UIColor yellowColor];
+
+    UIImage *backgroundImage = [UIImage imageFromColor:[UIColor colorWithWhite:0.3 alpha:0.6]];
+    self.backgroundImView.image = [backgroundImage imageBluredwithBlurNumber:0.8 WithRadius:3 tintColor:nil saturationDeltaFactor:9 maskImage:nil];
     self.autoresizingMask = UIViewAutoresizingNone;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
@@ -832,9 +849,12 @@ static const CGFloat menuBarBaseTag = 100;
 #pragma mark - Private Methods
 
 - (void)_updateMenuViewCenter {
+
     UIWindow *suspensionWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
+    
     CGPoint newCenter = [suspensionWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
     [SuspensionControl windowForKey:self.currentKey].center = newCenter;
+    self.backgroundImView.frame = self.bounds;
 }
 
 /// 设置按钮的 位置

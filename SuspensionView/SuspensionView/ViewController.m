@@ -36,7 +36,7 @@
     
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:1];
     int i = 0;
-    while (i <= 3) {
+    while (i <= 5) {
         UIImage *im = [UIImage imageNamed:@"partner_boobuz"];
         [a addObject:im];
         i++;
