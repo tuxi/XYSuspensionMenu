@@ -120,6 +120,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 
 @property (nonatomic, copy) NSString *key;
 
+- (NSString *)keyWithIdentifier:(NSString *)indetifier;
+
 @end
 
 @interface UIWindow (SuspensionWindow)

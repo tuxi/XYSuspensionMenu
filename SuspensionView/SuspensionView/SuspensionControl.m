@@ -106,7 +106,7 @@
 @implementation SuspensionView
 
 - (NSString *)currentKey {
-    return _isOnce ? [SuspensionControl shareInstance].key : self.key;
+    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : self.key;
 }
 
 
@@ -267,7 +267,7 @@
     _isMoving = YES;
 }
 
-/// 处理目标位置
+/// 处理最终停靠边缘的位置
 - (void)checkTargetPosition:(CGPoint)panPoint {
     CGFloat touchWidth = self.frame.size.width;
     CGFloat touchHeight = self.frame.size.height;
@@ -314,7 +314,7 @@
     
 }
 
-// 自动移动到目标位置，此方法在手指松开后会自动移动到目标位置
+// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
 - (void)autoMoveToTargetPosition:(CGPoint)point {
     
     [UIView animateWithDuration:0.2 delay:0.1 usingSpringWithDamping:self.usingSpringWithDamping initialSpringVelocity:self.initialSpringVelocity options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionAllowUserInteraction animations:^{
@@ -364,7 +364,6 @@
 
 @interface SuspensionControl ()
 
-/// 存放window的字典
 @property (nonatomic, strong) NSMutableDictionary<NSString *, UIWindow *> *windows;
 
 @end
@@ -521,7 +520,7 @@ static const CGFloat menuBarBaseTag = 100;
     CGFloat _minBounceOfTriangleHypotenuse; // 当第一次显示完成后的三角斜边
     CGFloat _maxBounceOfTriangleHypotenuse; // 当显示时要展开的三角斜边
     CGFloat _maxTriangleHypotenuse;         // 最大三角斜边，当第一次刚出现时三角斜边
-    CGRect _memuBarButtonOriginFrame; // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用
+    CGRect _memuBarButtonOriginFrame; // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用,重叠
     
     NSMutableArray<UIButton *> *_menuBarButtons;
     
@@ -737,12 +736,10 @@ static const CGFloat menuBarBaseTag = 100;
         CGRectMake((CGRectGetWidth(self.frame) - centerBarButton_size) * 0.5,
                    (CGRectGetHeight(self.frame) - centerBarButton_size) * 0.5,
                    centerBarButton_size, centerBarButton_size);
-            
-            
-            CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
-            
-          SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showOnce:NO frame:centerRec];
         
+        CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
+        
+        SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showOnce:YES frame:centerRec];
         
         centerButton.moveToLean = NO;
         
@@ -753,8 +750,6 @@ static const CGFloat menuBarBaseTag = 100;
         __weak typeof(self) weakSelf = self;
         centerButton.locationChange = ^(CGPoint currentPoint) {
             [SuspensionControl windowForKey:self.currentKey].center = currentPoint;
-//            weakSelf.center = currentPoint;
-            
             [weakSelf dismiss];
         };
         
@@ -989,7 +984,7 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 - (NSString *)currentKey {
-    return _isOnce ? [SuspensionControl shareInstance].key : self.key;
+    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : self.key;
 }
 
 @end
@@ -1080,6 +1075,10 @@ static const CGFloat menuBarBaseTag = 100;
         self.key = (key = [self md5:self.description]);
     }
     return key;
+}
+
+- (NSString *)keyWithIdentifier:(NSString *)identifier {
+    return [self.key stringByAppendingString:identifier];
 }
 
 //md5加密
