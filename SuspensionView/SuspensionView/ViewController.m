@@ -43,7 +43,7 @@
     }
     
     
-    [menuView setMenuBarImages:a];
+    [menuView setMenuBarImages:a titles:@[@"1"]];
     [menuView setCenterBarBackgroundImage:[UIImage imageNamed:@"message_keyboard"]];
     __block __weak typeof(menuView) weakMenuView = menuView;
     menuView.menuBarClickBlock = ^(NSInteger index) {

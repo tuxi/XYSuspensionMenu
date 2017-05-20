@@ -44,6 +44,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 - (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state;
 - (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state;
 - (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state;
+
 @end
 
 @interface SuspensionControl : NSObject
@@ -82,9 +83,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 @property (nonatomic, assign, getter=isMoveToLean) BOOL moveToLean;
 
 - (void)clickCallback:(void (^)())callback;
-- (void)moveFinishCallBack:(void (^)())callback;
-- (void)moveCallBack:(void (^)())callBcak;
-- (void)beginMoveCallBack:(void (^)())callBcak;
 - (void)defaultAnimation;
 
 - (void)dismiss:(void (^ _Nullable)(void))block;
@@ -97,10 +95,12 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 
 @interface SuspensionMenuView : UIView
 
-/// 根据menuBarImages创建对应menuBar，最多只能有6个
-@property (nonatomic, strong) NSArray<UIImage *> *menuBarImages;
+
 @property (nonatomic, strong) UIImage *centerBarBackgroundImage;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
+
+/// 最多只能6个menu bar 按钮
+- (void)setMenuBarImages:(NSArray<UIImage *> * _Nullable)menuBarImages titles:(NSArray<NSString *> * _Nullable)titles;
 
 /// 恢复默认状态
 - (void)recoverToNormalStatus;

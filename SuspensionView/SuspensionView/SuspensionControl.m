@@ -526,15 +526,18 @@ static const CGFloat menuBarBaseTag = 100;
     
     NSMutableArray<UIButton *> *_menuBarButtons;
     
-    BOOL _isInProcessing;
-    BOOL _isShow;
-    BOOL _isClosed;
+    BOOL _isInProcessing; // 是否正在执行显示或消失
+    BOOL _isShow;         // 是否已经显示
+    BOOL _isDismiss;       // 是否已经消失
 }
 
 @property (nonatomic, copy) NSString *currentKey;
 @property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, weak) SuspensionView *centerButton;
 @property (nonatomic, weak) UIImageView *backgroundImView;
+/// 根据menuBarImages创建对应menuBar，最多只能有6个
+@property (nonatomic, strong) NSArray<UIImage *> *menuBarImages;
+@property (nonatomic, strong) NSArray<NSString *> *titles;
 
 @end
 
@@ -551,33 +554,40 @@ static const CGFloat menuBarBaseTag = 100;
     return self;
 }
 
-- (void)setMenuBarImages:(NSArray<UIImage *> *)menuBarImages {
+- (void)setMenuBarImages:(NSArray<UIImage *> *)menuBarImages titles:(NSArray<NSString *> *)titles {
     _menuBarImages = menuBarImages;
+    _titles = titles;
     
-    if (!menuBarImages || !menuBarImages.count) {
+    if (!menuBarImages.count && !titles.count) {
         return;
     }
     
-    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:6];
-    if (_menuBarButtons.count) {
-        if (_menuBarImages.count > 6) {
+    NSMutableArray *tempImages = [NSMutableArray arrayWithCapacity:6];
+    NSMutableArray *tempTitles = [NSMutableArray arrayWithCapacity:6];
+    if (_menuBarButtons.count && titles.count <= _menuBarImages.count) {
+        if (_menuBarImages.count > 6 || titles.count > 6) {
             [_menuBarImages enumerateObjectsUsingBlock:^(UIImage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if (idx > 6) {
                     *stop = YES;
                 }
-                [temp addObject:obj];
+                [tempImages addObject:obj];
+                if (titles.count && idx <= titles.count) {
+                    [tempTitles addObject:titles[idx]];
+                }
             }];
         }
         [_menuBarButtons makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [_menuBarButtons removeAllObjects];
     }
     
-    if (!temp.count) {
-        temp = [menuBarImages mutableCopy];
+    if (!tempImages.count) {
+        tempImages = [menuBarImages mutableCopy];
+    }
+    if (!tempTitles.count) {
+        tempTitles = [titles mutableCopy];
     }
     
-    [self createMenuBarButton:temp];
-    
+    [self createMenuBarButton:tempImages titles:tempTitles];
 }
 
 - (void)setCenterBarBackgroundImage:(UIImage *)centerBarBackgroundImage {
@@ -635,19 +645,22 @@ static const CGFloat menuBarBaseTag = 100;
                                  [btn setAlpha:1.0];
                              }
                          }
-
+                         
                          // 显示
-                         [self setAlpha:1.f];
+                         [self setAlpha:1.0];
                          [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_minBounceOfTriangleHypotenuse];
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:.1f
-                                               delay:0.f
+                         [UIView animateWithDuration:0.1
+                                               delay:0.0
                                              options:UIViewAnimationOptionCurveEaseInOut
                                           animations:^{
                                               [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
                                           }
-                                          completion:nil];
+                                          completion:^(BOOL finished) {
+                                              _isDismiss = NO;
+                                              _isShow = YES;
+                                          }];
                      }];
 }
 
@@ -668,7 +681,7 @@ static const CGFloat menuBarBaseTag = 100;
                         options:UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
                          
-                         [self setAlpha:1.f];
+                         [self setAlpha:1.0];
                          
                          for (UIButton *btn in self.subviews) {
                              if ([btn isKindOfClass:NSClassFromString(@"_MenuBarHypotenuseButton")]) {
@@ -681,15 +694,15 @@ static const CGFloat menuBarBaseTag = 100;
                          [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxBounceOfTriangleHypotenuse];
                      }
                      completion:^(BOOL finished) {
-                         [UIView animateWithDuration:.1f
-                                               delay:0.f
-                                             options:(UIViewAnimationOptions)UIViewAnimationCurveEaseInOut
+                         [UIView animateWithDuration:0.1
+                                               delay:0.0
+                                             options:(UIViewAnimationOptions)UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                                           animations:^{
                                               [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
                                           }
                                           completion:^(BOOL finished) {
                                               _isShow = YES;
-                                              _isClosed = NO;
+                                              _isDismiss = NO;
                                               _isInProcessing = NO;
                                           }];
                      }];
@@ -699,7 +712,7 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void)dismiss {
     
-    if (_isClosed)
+    if (_isDismiss)
         return;
     
     _isInProcessing = YES;
@@ -722,8 +735,8 @@ static const CGFloat menuBarBaseTag = 100;
                      }
      
                      completion:^(BOOL finished) {
-                         _isClosed       = YES;
-                         _isShow      = NO;
+                         _isDismiss = YES;
+                         _isShow  = NO;
                          _isInProcessing = NO;
                          UIWindow *window = [SuspensionControl windowForKey:self.currentKey];
                          [window setHidden:YES];
@@ -764,7 +777,7 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (UIImageView *)backgroundImView {
     if (_backgroundImView == nil) {
-        UIImageView *imageView = [UIImageView new];
+        UIImageView *imageView = [NSClassFromString(@"_MenuViewBackgroundImageView") new];
         _backgroundImView = imageView;
         imageView.userInteractionEnabled = YES;
         imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -777,7 +790,6 @@ static const CGFloat menuBarBaseTag = 100;
 - (void)setup {
     
     _menuBarButtons = [NSMutableArray array];
-    
     
     // 设置三角斜边
     _defaultTriangleHypotenuse = (menuView_wh - barButton_wh) * 0.5;
@@ -792,7 +804,7 @@ static const CGFloat menuBarBaseTag = 100;
     
     _isInProcessing = NO;
     _isShow  = NO;
-    _isClosed = YES;
+    _isDismiss = YES;
 
     UIImage *backgroundImage = [UIImage imageFromColor:[UIColor colorWithWhite:0.3 alpha:0.6]];
     self.backgroundImView.image = [backgroundImage imageBluredwithBlurNumber:0.8 WithRadius:3 tintColor:nil saturationDeltaFactor:9 maskImage:nil];
@@ -802,20 +814,30 @@ static const CGFloat menuBarBaseTag = 100;
     
 }
 // 创建斜边的bar button
-- (void)createMenuBarButton:(NSArray<UIImage *> *)menuBarImages {
+- (void)createMenuBarButton:(NSArray *)menuBarImages titles:(NSArray *)titles {
     
-    NSInteger idx = 0;
-    for (UIImage *image in menuBarImages) {
-        UIButton * button = [[NSClassFromString(@"_MenuBarHypotenuseButton") alloc] initWithFrame:_memuBarButtonOriginFrame];
+    NSArray *temp = menuBarImages.count > titles.count ? menuBarImages : titles;
+    
+    [temp enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        UIButton * button = [NSClassFromString(@"_MenuBarHypotenuseButton") buttonWithType:UIButtonTypeCustom];
         [button setOpaque:NO];
-            [button setTag:menuBarBaseTag+idx+1];
+        [button setTag:menuBarBaseTag+idx+1];
+        if (menuBarImages.count && idx < menuBarImages.count) {
+            UIImage *image = menuBarImages[idx];
             [button setImage:image forState:UIControlStateNormal];
+        }
+        if (titles.count && idx < titles.count) {
+            [button setTitle:titles[idx] forState:UIControlStateNormal];
+        }
         [button addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [button setAlpha:0.0];
         [self addSubview:button];
+        [button setFrame:_memuBarButtonOriginFrame];
         [_menuBarButtons addObject:button];
-        idx++;
-    }
+        
+    }];
+
 }
 
 
@@ -823,7 +845,7 @@ static const CGFloat menuBarBaseTag = 100;
 
 // 中心 button 点击事件
 - (void)centerBarButtonClick:(UIButton *)btn {
-    _isClosed ? [self show] : [self dismiss];
+    _isDismiss ? [self show] : [self dismiss];
 }
 
 // 斜边的 button 点击事件 button tag 如下图:
@@ -850,6 +872,7 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void)_updateMenuViewCenter {
 
+//    CGPoint centerPoint = CGPointMake((kSCREENT_WIDTH-menuView_wh)*0.5, (kSCREENT_HEIGHT-menuView_wh)*0.5)
     UIWindow *suspensionWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
     
     CGPoint newCenter = [suspensionWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
@@ -865,19 +888,11 @@ static const CGFloat menuBarBaseTag = 100;
     }
     
     UIButton * button = (UIButton *)[self viewWithTag:buttonTag];
-    [button setFrame:CGRectMake(origin.x, origin.y, centerBarButton_size, centerBarButton_size)];
-    button = nil;
+    if (button) {
+        [button setFrame:CGRectMake(origin.x, origin.y, centerBarButton_size, centerBarButton_size)];
+        button = nil;
+    }
 }
-
-
-
-//
-//- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-//{
-//    // Return YES for supported orientations
-//    return (interfaceOrientation == UIInterfaceOrientationPortrait);
-//}
-
 
 
 - (void)updateMenuBarButtonLayoutWithTriangleHypotenuse:(CGFloat)triangleHypotenuse {
@@ -886,8 +901,8 @@ static const CGFloat menuBarBaseTag = 100;
     //
     //      /|      a: triangleA = c * cos(x)
     //   c / | b    b: triangleB = c * sin(x)
-    //    /)x|      c: triangleHypotenuse
-    //   -----      x: degree
+    //    /)x|      c: triangleHypotenuse // 三角斜边
+    //   -----      x: degree   // 度数
     //     a
     //
     CGFloat centerBallMenuHalfSize = menuView_wh * 0.5;
@@ -912,7 +927,7 @@ static const CGFloat menuBarBaseTag = 100;
     
     if (_menuBarImages.count == 2) {
         
-        CGFloat degree    = M_PI / 4.0f; // = 45 * M_PI / 180
+        CGFloat degree    = M_PI / 4.0f; // = 45 * M_PI / 180 角度
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
         CGFloat negativeValue = centerBallMenuHalfSize - triangleB - buttonRadius;
         CGFloat positiveValue = centerBallMenuHalfSize + triangleB - buttonRadius;
@@ -1059,9 +1074,13 @@ static const CGFloat menuBarBaseTag = 100;
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
     suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
     [suspensionWindow makeKeyAndVisible];
-    
+
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
     UIViewController *vc = [[NSClassFromString(@"SuspensionMenuController") alloc] performSelector:@selector(initWithMenuView:) withObject:self];
+#pragma clang diagnostic pop
+    
     suspensionWindow.rootViewController = vc;
     // 不设置此属性，window在选择时，会出现四周黑屏现象
     [suspensionWindow.layer setMasksToBounds:YES];
@@ -1116,11 +1135,7 @@ static const CGFloat menuBarBaseTag = 100;
             result[14], result[15]];
 }
 
-
-
 @end
-
-
 
 /// 斜边使用的按钮
 @interface _MenuBarHypotenuseButton : UIButton
@@ -1131,6 +1146,11 @@ static const CGFloat menuBarBaseTag = 100;
 @interface _MenuBarCenterButton : SuspensionWindow
 @end
 @implementation _MenuBarCenterButton
+@end
+
+@interface _MenuViewBackgroundImageView : UIImageView
+@end
+@implementation _MenuViewBackgroundImageView
 @end
 
 @implementation UIWindow (SuspensionWindow)
