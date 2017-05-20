@@ -102,8 +102,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 /// 最多只能6个menu bar 按钮
 - (void)setMenuBarImages:(NSArray<UIImage *> * _Nullable)menuBarImages titles:(NSArray<NSString *> * _Nullable)titles;
 
-/// 恢复默认状态
-- (void)recoverToNormalStatus;
 - (void)dismiss;
 - (void)show;
 

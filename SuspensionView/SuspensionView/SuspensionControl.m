@@ -522,13 +522,14 @@ static const CGFloat menuBarBaseTag = 100;
     CGFloat _minBounceOfTriangleHypotenuse; // 当第一次显示完成后的三角斜边
     CGFloat _maxBounceOfTriangleHypotenuse; // 当显示时要展开的三角斜边
     CGFloat _maxTriangleHypotenuse;         // 最大三角斜边，当第一次刚出现时三角斜边
-    CGRect _memuBarButtonOriginFrame; // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用,重叠
+    CGRect _memuBarButtonOriginFrame;       // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用,重叠
     
     NSMutableArray<UIButton *> *_menuBarButtons;
     
     BOOL _isInProcessing; // 是否正在执行显示或消失
     BOOL _isShow;         // 是否已经显示
-    BOOL _isDismiss;       // 是否已经消失
+    BOOL _isDismiss;      // 是否已经消失
+    BOOL _isFiristShow;   // 是否第一次显示
 }
 
 @property (nonatomic, copy) NSString *currentKey;
@@ -626,48 +627,15 @@ static const CGFloat menuBarBaseTag = 100;
                      }];
 }
 
-// 恢复默认状态
-- (void)recoverToNormalStatus {
-    
-    [self _updateMenuViewCenter];
-    UIWindow *window = [SuspensionControl windowForKey:self.currentKey];
-    [window setHidden:NO];
-    
-    [self centerButton];
-    
-    [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
-    [UIView animateWithDuration:.3f
-                          delay:0.f
-                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-                         for (UIButton *btn in self.subviews) {
-                             if ([btn isKindOfClass:NSClassFromString(@"_MenuBarHypotenuseButton")]) {
-                                 [btn setAlpha:1.0];
-                             }
-                         }
-                         
-                         // 显示
-                         [self setAlpha:1.0];
-                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_minBounceOfTriangleHypotenuse];
-                     }
-                     completion:^(BOOL finished) {
-                         [UIView animateWithDuration:0.1
-                                               delay:0.0
-                                             options:UIViewAnimationOptionCurveEaseInOut
-                                          animations:^{
-                                              [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
-                                          }
-                                          completion:^(BOOL finished) {
-                                              _isDismiss = NO;
-                                              _isShow = YES;
-                                          }];
-                     }];
-}
-
 
 - (void)show {
     if (_isShow) return;
     
+    if (_isFiristShow) {
+        [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
+    }
+    
+    [self centerButton];
     [self _updateMenuViewCenter];
     UIWindow *window = [SuspensionControl windowForKey:self.currentKey];
     [window setHidden:NO];
@@ -676,9 +644,9 @@ static const CGFloat menuBarBaseTag = 100;
     
     [[UIApplication sharedApplication].delegate.window bringSubviewToFront:self];
     
-    [UIView animateWithDuration:.3f
-                          delay:0.f
-                        options:UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
                          
                          [self setAlpha:1.0];
@@ -689,14 +657,19 @@ static const CGFloat menuBarBaseTag = 100;
                              }
                          }
                         
-                         
                          // 更新menu bar 的 布局
-                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxBounceOfTriangleHypotenuse];
+                         CGFloat triangleHypotenuse = 0.0;
+                         if (_isFiristShow) {
+                             triangleHypotenuse = _minBounceOfTriangleHypotenuse;
+                         } else {
+                             triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
+                         }
+                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse];
                      }
                      completion:^(BOOL finished) {
                          [UIView animateWithDuration:0.1
                                                delay:0.0
-                                             options:(UIViewAnimationOptions)UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                                             options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                                           animations:^{
                                               [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
                                           }
@@ -704,6 +677,7 @@ static const CGFloat menuBarBaseTag = 100;
                                               _isShow = YES;
                                               _isDismiss = NO;
                                               _isInProcessing = NO;
+                                              _isFiristShow = NO;
                                           }];
                      }];
 }
@@ -805,6 +779,7 @@ static const CGFloat menuBarBaseTag = 100;
     _isInProcessing = NO;
     _isShow  = NO;
     _isDismiss = YES;
+    _isFiristShow = YES;
 
     UIImage *backgroundImage = [UIImage imageFromColor:[UIColor colorWithWhite:0.3 alpha:0.6]];
     self.backgroundImView.image = [backgroundImage imageBluredwithBlurNumber:0.8 WithRadius:3 tintColor:nil saturationDeltaFactor:9 maskImage:nil];
@@ -1198,9 +1173,9 @@ static const CGFloat menuBarBaseTag = 100;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    [self.menuView performSelector:@selector(recoverToNormalStatus)
+    [self.menuView performSelector:@selector(show)
                         withObject:nil
-                        afterDelay:.3f];
+                        afterDelay:0.3];
 }
 
 
