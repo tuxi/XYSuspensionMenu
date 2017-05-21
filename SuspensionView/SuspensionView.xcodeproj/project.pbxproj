@@ -10,6 +10,7 @@
 		182774751ECFD53F00A72E00 /* UIImage+ImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 182774741ECFD53F00A72E00 /* UIImage+ImageEffects.m */; };
 		182774781ECFD54900A72E00 /* UIImage+Blur.m in Sources */ = {isa = PBXBuildFile; fileRef = 182774771ECFD54900A72E00 /* UIImage+Blur.m */; };
 		18710FA11ED18DC300B4340D /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18710FA01ED18DC300B4340D /* FirstViewController.m */; };
+		18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */ = {isa = PBXBuildFile; fileRef = 18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */; };
 		18A504D41E61DE4000EE96E8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D31E61DE4000EE96E8 /* main.m */; };
 		18A504D71E61DE4000EE96E8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D61E61DE4000EE96E8 /* AppDelegate.m */; };
 		18A504DA1E61DE4000EE96E8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D91E61DE4000EE96E8 /* ViewController.m */; };
@@ -39,6 +40,7 @@
 		182774771ECFD54900A72E00 /* UIImage+Blur.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Blur.m"; sourceTree = "<group>"; };
 		18710F9F1ED18DC300B4340D /* FirstViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirstViewController.h; sourceTree = "<group>"; };
 		18710FA01ED18DC300B4340D /* FirstViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FirstViewController.m; sourceTree = "<group>"; };
+		18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2017-05-21 17_28_52.gif"; sourceTree = "<group>"; };
 		18A504CF1E61DE4000EE96E8 /* SuspensionView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuspensionView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18A504D31E61DE4000EE96E8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18A504D51E61DE4000EE96E8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				18710F9F1ED18DC300B4340D /* FirstViewController.h */,
 				18710FA01ED18DC300B4340D /* FirstViewController.m */,
 				18BE092A1ECF7C1200A64543 /* partner_boobuz.png */,
+				18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */,
 				182774701ECFD4CF00A72E00 /* Lib */,
 				18A504DB1E61DE4000EE96E8 /* Main.storyboard */,
 				18A504DE1E61DE4000EE96E8 /* Assets.xcassets */,
@@ -270,6 +273,7 @@
 			files = (
 				18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */,
 				18BE092B1ECF7C1200A64543 /* partner_boobuz.png in Resources */,
+				18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */,
 				18A504DF1E61DE4000EE96E8 /* Assets.xcassets in Resources */,
 				F3374B081E629FBF00F8F10D /* LICENSE in Resources */,
 				18A504DD1E61DE4000EE96E8 /* Main.storyboard in Resources */,
