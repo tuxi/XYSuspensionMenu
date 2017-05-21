@@ -134,8 +134,6 @@
 - (void)setup {
 
     self.autoLeanEdge = YES;
-//    self.verticalLeanMargin = 20.0;
-//    self.horizontalLeanMargin = 0.0;
     self.leanEdgeInsets = UIEdgeInsetsMake(20, 0, 0, 0);
     self.invalidHidden = NO;
     self.isMoving = NO;
@@ -639,7 +637,9 @@ static const CGFloat menuBarBaseTag = 100;
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
     }
     
-    [self.centerButton moveToScreentCenter];
+    if (_whenShowMoveToScreenCenter) {
+        [self.centerButton moveToScreentCenter];
+    }
     
     [self centerButton];
     [self _updateMenuViewCenter];
@@ -786,6 +786,7 @@ static const CGFloat menuBarBaseTag = 100;
     _isShow  = NO;
     _isDismiss = YES;
     _isFiristShow = YES;
+    _whenShowMoveToScreenCenter = YES;
 
     UIImage *backgroundImage = [UIImage imageFromColor:[UIColor colorWithWhite:0.3 alpha:0.6]];
     self.backgroundImView.image = [backgroundImage imageBluredwithBlurNumber:0.8 WithRadius:3 tintColor:nil saturationDeltaFactor:9 maskImage:nil];

@@ -98,6 +98,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @property (nonatomic, strong) UIImage *centerBarBackgroundImage;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
+@property (nonatomic, assign, getter=isWhenShowMoveToScreenCenter) BOOL whenShowMoveToScreenCenter;
 
 /// 最多只能6个menu bar 按钮
 - (void)setMenuBarImages:(NSArray<UIImage *> * _Nullable)menuBarImages titles:(NSArray<NSString *> * _Nullable)titles;
