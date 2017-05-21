@@ -152,6 +152,7 @@
     
     [self addTarget:self action:@selector(btnClick:) forControlEvents:UIControlEventTouchUpInside];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 }
 
 #pragma mark - Public
@@ -246,7 +247,8 @@
         if (!self.isAutoLeanEdge) {
             return;
         }
-        [self _checkTargetPosition:panPoint];
+        CGPoint newTargetPoint = [self _checkTargetPosition:panPoint];
+        [self autoLeanToTargetPosition:newTargetPoint];
     }
     
     if (self.locationChange) {
@@ -272,11 +274,12 @@
     
     CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
     
-    [self _checkTargetPosition:currentPoint];
+    CGPoint newTargetPoint = [self _checkTargetPosition:currentPoint];
+    [self autoLeanToTargetPosition:newTargetPoint];
 }
 
 /// 根据传入的位置检查处理最终依靠到边缘的位置
-- (void)_checkTargetPosition:(CGPoint)panPoint {
+- (CGPoint)_checkTargetPosition:(CGPoint)panPoint {
     CGFloat touchWidth = self.frame.size.width;
     CGFloat touchHeight = self.frame.size.height;
     CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
@@ -318,8 +321,7 @@
     }
     // 记录当前的center
     self.previousCenter = newTargetPoint;
-    [self autoLeanToTargetPosition:newTargetPoint];
-    
+    return newTargetPoint;
 }
 
 - (void)leanToPreviousLeanPosition {
@@ -359,6 +361,15 @@
     }];
 }
 
+- (void)orientationDidChange:(NSNotification *)note {
+    if (self.isAutoLeanEdge) {
+        /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
+        CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
+        
+        [self _checkTargetPosition:currentPoint];
+    }
+}
+
 #pragma mark - Actions
 - (void)btnClick:(UIButton *)btn {
     if (self.clickCallBack) {
@@ -372,6 +383,7 @@
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     NSLog(@"%s", __func__);
 }
 
@@ -581,19 +593,6 @@ static const CGFloat menuBarBaseTag = 100;
         idx++;
     }
 }
-
-
-//- (void)setCenterItemBackgroundImage:(UIImage *)centerItemBackgroundImage {
-//    _centerItemBackgroundImage = centerItemBackgroundImage;
-//    
-//    if (!centerItemBackgroundImage) {
-//        return;
-//    }
-//    [self.centerButton setBackgroundImage:self.centerItemBackgroundImage
-//                            forState:UIControlStateNormal];
-//}
-
-
 
 //// Push View Controller
 - (void)pushViewController:(UIViewController *)viewController {
