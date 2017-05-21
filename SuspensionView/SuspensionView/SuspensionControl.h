@@ -18,7 +18,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
     SuspensionViewLeanEdgeTypeEachSide         /// 自动依靠到屏幕四边
 };
 
-@class SuspensionView, SuspensionMenuView;
+@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton;
 
 @protocol SuspensionWindowProtocol <NSObject>
 
@@ -31,7 +31,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 + (void)releaseAll;
 
 - (void)dismiss:(void (^ _Nullable)(void))block;
-
 
 @end
 
@@ -85,9 +84,14 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)clickCallback:(void (^)())callback;
 - (void)defaultAnimation;
 /// 移动移动到屏幕中心位置
-- (void)moveToScreentCenter;
+- (void)leanToScreentCenter;
+/// 移动到上次依靠的位置
+- (void)leanToPreviousLeanPosition;
+/// 根据当前SuspensionView所处中心点检查处理最终依靠到边缘的位置
+- (void)checkTargetPosition;
 
 - (void)dismiss:(void (^ _Nullable)(void))block;
+
 @end
 
 @interface SuspensionWindow : SuspensionView <SuspensionWindowProtocol>
@@ -96,22 +100,32 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface SuspensionMenuView : UIView
 
-@property (nonatomic, strong) UIImage *centerBarBackgroundImage;
+//@property (nonatomic, strong) UIImage *centerItemBackgroundImage;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
-@property (nonatomic, assign, getter=isWhenShowMoveToScreenCenter) BOOL whenShowMoveToScreenCenter;
+/// 当显示SuspensionMenuView的时候，依靠到屏幕中心位置
+@property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
+/// 当初始化SuspensionMenuView的时候，显示SuspensionMenuView
+@property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
+/// 根据menuBarImages创建对应menuBar，最多只能有6个
+@property (nonatomic, strong, nullable) NSArray<MenuBarHypotenuseButton *> *menuBarItems;
+@property (nonatomic, weak, readonly) SuspensionView *centerButton;
+@property (nonatomic, weak, readonly) UIImageView *backgroundImView;
 
-/// 最多只能6个menu bar 按钮
-- (void)setMenuBarImages:(NSArray<UIImage *> * _Nullable)menuBarImages titles:(NSArray<NSString *> * _Nullable)titles;
-
-- (void)dismiss;
 - (void)show;
+- (void)dismiss;
 
-//// Push View Controller
 - (void)pushViewController:(UIViewController *)viewController;
 
 @end
 
 @interface SuspensionMenuWindow : SuspensionMenuView <SuspensionWindowProtocol>
+
++ (instancetype)showOnce:(BOOL)isOnce menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems;
+
+@end
+
+/// 斜边使用的按钮
+@interface MenuBarHypotenuseButton : UIButton
 
 @end
 

@@ -19,32 +19,22 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-   
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-
-    
-    static const CGFloat menuView_wh = 280.0;
     self.view.backgroundColor = [UIColor whiteColor];
     
-    CGRect centerMenuFrame =
-    CGRectMake((self.view.frame.size.width - menuView_wh) * 0.5, (self.view.frame.size.height - menuView_wh) * 0.5, menuView_wh, menuView_wh);
-    
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showOnce:YES frame:centerMenuFrame];
-    
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:1];
+    NSMutableArray *a = [NSMutableArray arrayWithCapacity:3];
     int i = 0;
+    
     while (i <= 5) {
-        UIImage *im = [UIImage imageNamed:@"partner_boobuz"];
-        [a addObject:im];
+        
+        MenuBarHypotenuseButton *btn = [MenuBarHypotenuseButton new];
+        [btn setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+        [a addObject:btn];
         i++;
     }
+    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showOnce:YES menuBarItems:a];
+
+    [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"] forState:UIControlStateNormal];
     
-    
-    [menuView setMenuBarImages:a titles:@[@"1"]];
-    [menuView setCenterBarBackgroundImage:[UIImage imageNamed:@"message_keyboard"]];
     __block __weak typeof(menuView) weakMenuView = menuView;
     menuView.menuBarClickBlock = ^(NSInteger index) {
         
@@ -53,10 +43,17 @@
             UIViewController *vc = [UIViewController new];
             vc.view.backgroundColor = [UIColor whiteColor];
             [weakMenuView pushViewController:vc];
-            weakMenuView = nil;
         }
     };
 
+   
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+    
+    
 }
 
 
