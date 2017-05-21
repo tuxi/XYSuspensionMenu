@@ -7,6 +7,9 @@
 //
 
 #import "AppDelegate.h"
+#import "SuspensionControl.h"
+
+NSNotificationName const UIApplicationKeyWindowTouchesBeganNotification = @"UIApplicationKeyWindowTouchesBeganNotification";
 
 @interface AppDelegate ()
 
@@ -17,6 +20,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
     return YES;
 }
 
@@ -49,3 +53,4 @@
 
 
 @end
+

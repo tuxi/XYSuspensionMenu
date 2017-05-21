@@ -13,9 +13,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// 悬浮控件自动移动到屏幕边缘的类型
-typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
-    SuspensionViewLeanTypeHorizontal = 1,  /// 自动依靠到屏幕左右边缘
-    SuspensionViewLeanTypeEachSide         /// 自动依靠到屏幕四边
+typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
+    SuspensionViewLeanEdgeTypeHorizontal = 1,  /// 自动依靠到屏幕左右边缘
+    SuspensionViewLeanEdgeTypeEachSide         /// 自动依靠到屏幕四边
 };
 
 @class SuspensionView, SuspensionMenuView;
@@ -49,7 +49,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 
 @interface SuspensionControl : NSObject
 
-+ (instancetype)shareInstance;
+@property (nonatomic, strong, class, readonly) SuspensionControl *shareInstance;
 
 + (UIWindow *)windowForKey:(NSString *)key;
 + (void)setWindow:(UIWindow *)window forKey:(NSString *)key;
@@ -63,11 +63,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 @interface SuspensionView : UIButton
 
 /// 悬浮控件支持停靠屏幕哪些边缘，默认为上下左右
-@property (nonatomic, assign) SuspensionViewLeanType leanType;
-/// 依靠屏幕顶部和底部边缘的间距, 默认为20
-@property (nonatomic, assign) CGFloat verticalLeanMargin;
-/// 依靠屏幕左侧和右侧边缘的间距, 默认为0
-@property (nonatomic, assign) CGFloat horizontalLeanMargin;
+@property (nonatomic, assign) SuspensionViewLeanEdgeType leanEdgeType;
+/// 依靠屏幕边缘的间距, 默认上为20，下左右为0
+@property (nonatomic, assign) UIEdgeInsets leanEdgeInsets;
 @property (nonatomic, assign) BOOL invalidHidden;
 @property (nonatomic, assign) BOOL isMoving;
 /// 范围的为0.0f到1.0f，数值越小「弹簧」的振动效果越明显
@@ -79,11 +77,15 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 
 @property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
 
-/// 是否移动到边缘
-@property (nonatomic, assign, getter=isMoveToLean) BOOL moveToLean;
+@property (nonatomic, copy) void (^ _Nullable leanFinishCallBack)(CGPoint centerPoint);
+
+/// 默认为YES，会在移动完成后，自动依靠到边缘
+@property (nonatomic, assign, getter=isAutoLeanEdge) BOOL autoLeanEdge;
 
 - (void)clickCallback:(void (^)())callback;
 - (void)defaultAnimation;
+/// 移动移动到屏幕中心位置
+- (void)moveToScreentCenter;
 
 - (void)dismiss:(void (^ _Nullable)(void))block;
 @end
@@ -92,9 +94,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanType) {
 
 @end
 
-
 @interface SuspensionMenuView : UIView
-
 
 @property (nonatomic, strong) UIImage *centerBarBackgroundImage;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);

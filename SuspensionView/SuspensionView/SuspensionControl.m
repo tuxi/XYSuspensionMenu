@@ -16,6 +16,7 @@
 #define kSCREENT_WIDTH [UIScreen mainScreen].bounds.size.width
 
 @interface UIResponder ()
+
 @property (nonatomic) SuspensionView *suspensionView;
 
 @end
@@ -24,7 +25,10 @@
 
 - (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame {
     BOOL result = [self isKindOfClass:[UIViewController class]] || [self isKindOfClass:[UIView class]];
-    NSAssert(result, @"当前类应为UIViewController或UIView或他们的子类");
+    if (!result) {
+        NSAssert(result, @"当前类应为UIViewController或UIView或他们的子类");
+        return nil;
+    }
     if (!self.suspensionView && !self.suspensionView.superview) {
         SuspensionView *sv = [[SuspensionView alloc] initWithFrame:frame];
         sv.clipsToBounds = YES;
@@ -88,13 +92,10 @@
     objc_setAssociatedObject(self, @selector(suspensionView), suspensionView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-
 @end
-
 
 @interface SuspensionView ()
 
-@property (nonatomic, copy) void (^moveFinishCallBack)();
 @property (nonatomic, copy) void (^movingCallBack)();
 @property (nonatomic, copy) void (^clickCallBack)();
 @property (nonatomic, copy) void (^beginMoveCallBack)();
@@ -132,15 +133,15 @@
 
 - (void)setup {
 
-    self.moveToLean = YES;
-    self.verticalLeanMargin = 20.0;
-    self.horizontalLeanMargin = 0.0;
+    self.autoLeanEdge = YES;
+//    self.verticalLeanMargin = 20.0;
+//    self.horizontalLeanMargin = 0.0;
+    self.leanEdgeInsets = UIEdgeInsetsMake(20, 0, 0, 0);
     self.invalidHidden = NO;
     self.isMoving = NO;
     self.usingSpringWithDamping = 0.8;
     self.initialSpringVelocity = 3.0;
 }
-
 
 
 - (void)addActions {
@@ -168,7 +169,7 @@
         self.alpha = 0.6;
     }];
     UIColor *oColor = self.backgroundColor;
-    [self moveFinishCallBack:^{
+    [self leanFinishCallBack:^(CGPoint centerPoint){
         [UIView animateWithDuration:1.0 delay:0.0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionAllowUserInteraction animations:^{
             self.alpha = 1.0;
             self.backgroundColor = [UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0];
@@ -195,8 +196,8 @@
     
 }
 
-- (void)moveFinishCallBack:(void (^)())callback {
-    self.moveFinishCallBack = callback;
+- (void)leanFinishCallBack:(void (^)(CGPoint centerPoint))callback {
+    self.leanFinishCallBack = callback;
 }
 
 - (void)moveCallBack:(void (^)())callBcak {
@@ -224,7 +225,7 @@
         block();
     }
     self.clickCallBack = nil;
-    self.moveFinishCallBack = nil;
+    self.leanFinishCallBack = nil;
     [self removeFromSuperview];
     
 }
@@ -244,7 +245,7 @@
     }else if(p.state == UIGestureRecognizerStateEnded
              || p.state == UIGestureRecognizerStateCancelled) {
         
-        if (!self.isMoveToLean) {
+        if (!self.isAutoLeanEdge) {
             return;
         }
         [self checkTargetPosition:panPoint];
@@ -282,44 +283,51 @@
     CGFloat bottom = fabs(screenHeight - top);
     
     CGFloat minSpace = 0;
-    if (self.leanType == SuspensionViewLeanTypeHorizontal) {
+    if (self.leanEdgeType == SuspensionViewLeanEdgeTypeHorizontal) {
         minSpace = MIN(left, right);
-    }else{
+    }else if (self.leanEdgeType == SuspensionViewLeanEdgeTypeEachSide) {
         minSpace = MIN(MIN(MIN(top, left), bottom), right);
     }
     CGPoint newTargetPoint = CGPointZero;
     CGFloat targetY = 0;
-    
 
-    if (panPoint.y < self.verticalLeanMargin + touchHeight / 2.0 + self.verticalLeanMargin) {
-        targetY = self.verticalLeanMargin + touchHeight / 2.0 + self.verticalLeanMargin;
-    }else if (panPoint.y > (screenHeight - touchHeight / 2.0 - self.verticalLeanMargin)) {
-        targetY = screenHeight - touchHeight / 2.0 - self.verticalLeanMargin;
+    if (panPoint.y < self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top) {
+        targetY = self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top;
+    }else if (panPoint.y > (screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom)) {
+        targetY = screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom;
     }else{
         targetY = panPoint.y;
     }
     
     if (minSpace == left) {
-        newTargetPoint = CGPointMake(touchWidth / 2 + self.horizontalLeanMargin, targetY);
+        newTargetPoint = CGPointMake(touchWidth / 2 + self.leanEdgeInsets.left, targetY);
     }
     if (minSpace == right) {
-        newTargetPoint = CGPointMake(screenWidth - touchWidth / 2 - self.horizontalLeanMargin, targetY);
+        newTargetPoint = CGPointMake(screenWidth - touchWidth / 2 - self.leanEdgeInsets.right, targetY);
     }
     if (minSpace == top) {
-        newTargetPoint = CGPointMake(panPoint.x, touchHeight / 2 + self.verticalLeanMargin);
+        newTargetPoint = CGPointMake(panPoint.x, touchHeight / 2 + self.leanEdgeInsets.top);
     }
     if (minSpace == bottom) {
-        newTargetPoint = CGPointMake(panPoint.x, screenHeight - touchHeight / 2 - self.verticalLeanMargin);
+        newTargetPoint = CGPointMake(panPoint.x, screenHeight - touchHeight / 2 - self.leanEdgeInsets.bottom);
     }
     
-    [self autoMoveToTargetPosition:newTargetPoint];
+    [self autoLeanToTargetPosition:newTargetPoint];
     
 }
 
-// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
-- (void)autoMoveToTargetPosition:(CGPoint)point {
+/// 移动移动到屏幕中心位置
+- (void)moveToScreentCenter {
+
+    CGPoint screenCenter = CGPointMake((kSCREENT_WIDTH - [SuspensionControl windowForKey:self.key].bounds.size.width)*0.5, (kSCREENT_HEIGHT - [SuspensionControl windowForKey:self.key].bounds.size.height)*0.5);
     
-    [UIView animateWithDuration:0.2 delay:0.1 usingSpringWithDamping:self.usingSpringWithDamping initialSpringVelocity:self.initialSpringVelocity options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionAllowUserInteraction animations:^{
+    [self autoLeanToTargetPosition:screenCenter];
+}
+
+/// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
+- (void)autoLeanToTargetPosition:(CGPoint)point {
+    
+    [UIView animateWithDuration:0.3 delay:0.1 usingSpringWithDamping:self.usingSpringWithDamping initialSpringVelocity:self.initialSpringVelocity options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionAllowUserInteraction animations:^{
         UIWindow *w = [SuspensionControl windowForKey:self.currentKey];
         if (w) {
             w.center = point;
@@ -334,8 +342,8 @@
         if (finished) {
             // 记录当前的center
             self.previousCenter = point;
-            if (self.moveFinishCallBack) {
-                self.moveFinishCallBack();
+            if (self.leanFinishCallBack) {
+                self.leanFinishCallBack(point);
             }
             _isMoving = NO;
         }
@@ -349,14 +357,10 @@
     }
 }
 
-
-
 #pragma mark - setter \ getter
-- (SuspensionViewLeanType)leanType {
-    return _leanType ?: SuspensionViewLeanTypeEachSide;
+- (SuspensionViewLeanEdgeType)leanEdgeType {
+    return _leanEdgeType ?: SuspensionViewLeanEdgeTypeEachSide;
 }
-
-
 
 - (void)dealloc {
     NSLog(@"%s", __func__);
@@ -372,6 +376,7 @@
 
 @implementation SuspensionControl
 
+@dynamic shareInstance;
 
 + (UIWindow *)windowForKey:(NSString *)key {
     return [[SuspensionControl shareInstance].windows objectForKey:key];
@@ -450,7 +455,7 @@
 + (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame {
     
     SuspensionWindow *s = [[self alloc] initWithFrame:frame];
-    s.leanType = SuspensionViewLeanTypeEachSide;
+    s.leanEdgeType = SuspensionViewLeanEdgeTypeEachSide;
     s.isOnce = isOnce;
     [s _moveToSuperview];
     
@@ -463,7 +468,7 @@
         block();
     }
     self.clickCallBack = nil;
-    self.moveFinishCallBack = nil;
+    self.leanFinishCallBack = nil;
     [SuspensionControl removeWindowForKey:self.currentKey];
     [self removeFromSuperview];
     
@@ -508,7 +513,6 @@
     
 }
 
-
 @end
 
 static const CGFloat menuView_wh = 280.0;
@@ -517,7 +521,7 @@ static const CGFloat centerBarButton_size = barButton_wh;
 static const CGFloat menuBarBaseTag = 100;
 
 @interface SuspensionMenuView () {
-    @private
+@private
     CGFloat _defaultTriangleHypotenuse;     // 默认关闭时的三角斜边
     CGFloat _minBounceOfTriangleHypotenuse; // 当第一次显示完成后的三角斜边
     CGFloat _maxBounceOfTriangleHypotenuse; // 当显示时要展开的三角斜边
@@ -635,6 +639,8 @@ static const CGFloat menuBarBaseTag = 100;
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
     }
     
+    [self.centerButton moveToScreentCenter];
+    
     [self centerButton];
     [self _updateMenuViewCenter];
     UIWindow *window = [SuspensionControl windowForKey:self.currentKey];
@@ -731,7 +737,7 @@ static const CGFloat menuBarBaseTag = 100;
         
         SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showOnce:YES frame:centerRec];
         
-        centerButton.moveToLean = NO;
+        centerButton.autoLeanEdge = YES;
         
         [centerButton setBackgroundImage:self.centerBarBackgroundImage forState:UIControlStateNormal];
         
@@ -739,7 +745,7 @@ static const CGFloat menuBarBaseTag = 100;
         
         __weak typeof(self) weakSelf = self;
         centerButton.locationChange = ^(CGPoint currentPoint) {
-            [SuspensionControl windowForKey:self.currentKey].center = currentPoint;
+            weakSelf.center = currentPoint;
             [weakSelf dismiss];
         };
         
@@ -847,11 +853,10 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void)_updateMenuViewCenter {
 
-//    CGPoint centerPoint = CGPointMake((kSCREENT_WIDTH-menuView_wh)*0.5, (kSCREENT_HEIGHT-menuView_wh)*0.5)
     UIWindow *suspensionWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
     
     CGPoint newCenter = [suspensionWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
-    [SuspensionControl windowForKey:self.currentKey].center = newCenter;
+    self.center = newCenter;
     self.backgroundImView.frame = self.bounds;
 }
 
@@ -1046,7 +1051,7 @@ static const CGFloat menuBarBaseTag = 100;
     
     UIWindow *currentKeyWindow = [UIApplication sharedApplication].keyWindow;
     
-    UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
+    UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
     [suspensionWindow makeKeyAndVisible];
 
@@ -1061,7 +1066,8 @@ static const CGFloat menuBarBaseTag = 100;
     [suspensionWindow.layer setMasksToBounds:YES];
     
     [SuspensionControl setWindow:suspensionWindow forKey:self.currentKey];
-    self.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+//    self.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    self.frame = CGRectMake((kSCREENT_WIDTH - self.frame.size.width) * 0.5, (kSCREENT_HEIGHT - self.frame.size.height) * 0.5, self.frame.size.width, self.frame.size.height);
     self.clipsToBounds = YES;
     
     [vc.view addSubview:self];
