@@ -7,7 +7,6 @@
 //
 
 #import "ViewController.h"
-#import "SuspensionControl.h"
 
 
 @interface ViewController ()
@@ -20,32 +19,6 @@
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    NSMutableArray *a = [NSMutableArray arrayWithCapacity:3];
-    int i = 0;
-    
-    while (i <= 5) {
-        
-        MenuBarHypotenuseButton *btn = [MenuBarHypotenuseButton new];
-        [btn setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-        [a addObject:btn];
-        i++;
-    }
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showOnce:YES menuBarItems:a];
-
-    [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"] forState:UIControlStateNormal];
-    
-    __block __weak typeof(menuView) weakMenuView = menuView;
-    menuView.menuBarClickBlock = ^(NSInteger index) {
-        
-        if (index < 3) {
-            
-            UIViewController *vc = [UIViewController new];
-            vc.view.backgroundColor = [UIColor whiteColor];
-            [weakMenuView pushViewController:vc];
-        }
-    };
-
    
 }
 

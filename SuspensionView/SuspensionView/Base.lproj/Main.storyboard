@@ -27,10 +27,10 @@
             </objects>
             <point key="canvasLocation" x="-199.19999999999999" y="111.99400299850076"/>
         </scene>
-        <!--View Controller-->
+        <!--First View Controller-->
         <scene sceneID="UXP-dZ-3dV">
             <objects>
-                <viewController id="QSU-aj-fCE" sceneMemberID="viewController">
+                <viewController id="QSU-aj-fCE" customClass="FirstViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ibU-Fj-6CT"/>
                         <viewControllerLayoutGuide type="bottom" id="QG5-pb-ekS"/>
