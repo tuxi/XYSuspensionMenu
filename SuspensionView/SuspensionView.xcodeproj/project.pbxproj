@@ -19,6 +19,7 @@
 		18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18A504E01E61DE4000EE96E8 /* LaunchScreen.storyboard */; };
 		18BE09291ECF7BB400A64543 /* SuspensionControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 18BE09281ECF7BB400A64543 /* SuspensionControl.m */; };
 		18BE092B1ECF7C1200A64543 /* partner_boobuz.png in Resources */ = {isa = PBXBuildFile; fileRef = 18BE092A1ECF7C1200A64543 /* partner_boobuz.png */; };
+		18D433BE1ED33BF200DC3734 /* mm.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 18D433BD1ED33BF200DC3734 /* mm.jpg */; };
 		F3374B081E629FBF00F8F10D /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = F3374AEC1E629FBF00F8F10D /* LICENSE */; };
 		F3374B091E629FBF00F8F10D /* MASCompositeConstraint.m in Sources */ = {isa = PBXBuildFile; fileRef = F3374AEF1E629FBF00F8F10D /* MASCompositeConstraint.m */; };
 		F3374B0A1E629FBF00F8F10D /* MASConstraint.m in Sources */ = {isa = PBXBuildFile; fileRef = F3374AF21E629FBF00F8F10D /* MASConstraint.m */; };
@@ -54,6 +55,7 @@
 		18BE09271ECF7BB400A64543 /* SuspensionControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionControl.h; sourceTree = "<group>"; };
 		18BE09281ECF7BB400A64543 /* SuspensionControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionControl.m; sourceTree = "<group>"; };
 		18BE092A1ECF7C1200A64543 /* partner_boobuz.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = partner_boobuz.png; sourceTree = "<group>"; };
+		18D433BD1ED33BF200DC3734 /* mm.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = mm.jpg; sourceTree = "<group>"; };
 		F3374AEC1E629FBF00F8F10D /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		F3374AEE1E629FBF00F8F10D /* MASCompositeConstraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MASCompositeConstraint.h; sourceTree = "<group>"; };
 		F3374AEF1E629FBF00F8F10D /* MASCompositeConstraint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MASCompositeConstraint.m; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 				18A504D91E61DE4000EE96E8 /* ViewController.m */,
 				18710F9F1ED18DC300B4340D /* FirstViewController.h */,
 				18710FA01ED18DC300B4340D /* FirstViewController.m */,
+				18D433BD1ED33BF200DC3734 /* mm.jpg */,
 				18BE092A1ECF7C1200A64543 /* partner_boobuz.png */,
 				18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */,
 				182774701ECFD4CF00A72E00 /* Lib */,
@@ -274,6 +277,7 @@
 				18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */,
 				18BE092B1ECF7C1200A64543 /* partner_boobuz.png in Resources */,
 				18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */,
+				18D433BE1ED33BF200DC3734 /* mm.jpg in Resources */,
 				18A504DF1E61DE4000EE96E8 /* Assets.xcassets in Resources */,
 				F3374B081E629FBF00F8F10D /* LICENSE in Resources */,
 				18A504DD1E61DE4000EE96E8 /* Main.storyboard in Resources */,

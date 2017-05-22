@@ -29,7 +29,9 @@
         [a addObject:btn];
         i++;
     }
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showOnce:YES menuBarItems:a];
+    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showOnce:YES shouldShow:YES menuBarItems:a];
+    UIImage *image = [UIImage imageNamed:@"mm.jpg"];
+    menuView.backgroundImageView.image = image;
     
     [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"] forState:UIControlStateNormal];
     

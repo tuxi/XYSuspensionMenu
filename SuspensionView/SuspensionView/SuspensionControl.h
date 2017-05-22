@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state;
 - (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state;
 - (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state;
-
+- (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius;
 @end
 
 @interface SuspensionControl : NSObject
@@ -100,16 +100,13 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface SuspensionMenuView : UIView
 
-//@property (nonatomic, strong) UIImage *centerItemBackgroundImage;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
 /// 当显示SuspensionMenuView的时候，依靠到屏幕中心位置
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
-/// 当初始化SuspensionMenuView的时候，显示SuspensionMenuView
-@property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
 /// 根据menuBarImages创建对应menuBar，最多只能有6个
 @property (nonatomic, strong, nullable) NSArray<MenuBarHypotenuseButton *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
-@property (nonatomic, weak, readonly) UIImageView *backgroundImView;
+@property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 
 - (void)show;
 - (void)dismiss;
@@ -119,12 +116,17 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @end
 
 @interface SuspensionMenuWindow : SuspensionMenuView <SuspensionWindowProtocol>
+/// 当初始化SuspensionMenuView的时候，显示SuspensionMenuView
+@property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
 
-+ (instancetype)showOnce:(BOOL)isOnce menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems;
+/// 初始化SuspensionMenuWindow
+/// @param isOnce     是否是全局唯一的
+/// @param shouldShow 根据此参数确定在初始化完成后，是否立即显示
+/// @return SuspensionMenuWindow
++ (instancetype)showOnce:(BOOL)isOnce shouldShow:(BOOL)shouldShow menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems;
 
 @end
 
-/// 斜边使用的按钮
 @interface MenuBarHypotenuseButton : UIButton
 
 @end

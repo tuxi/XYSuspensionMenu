@@ -9,7 +9,6 @@
 #import "SuspensionControl.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <objc/message.h>
-#import "UIImage+Blur.h"
 
 
 #define kSCREENT_HEIGHT [UIScreen mainScreen].bounds.size.height
@@ -77,11 +76,19 @@
 }
 - (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state {
     if ([name isEqualToString:@"partner_expedia"]) {
-//        [self setHiddenSuspension:YES];
-//        self.suspensionView.invalidHidden = YES;
-//        name = @"scallcentergroup2.png";
+        //        [self setHiddenSuspension:YES];
+        //        self.suspensionView.invalidHidden = YES;
+        //        name = @"scallcentergroup2.png";
     }
     [self setSuspensionImage:[UIImage imageNamed:name] forState:state];
+}
+
+- (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius {
+    [self.suspensionView setBackgroundColor:color];
+    if (cornerRadius) {
+        self.suspensionView.layer.cornerRadius = cornerRadius;
+        self.suspensionView.layer.masksToBounds = YES;
+    }
 }
 
 - (SuspensionView *)suspensionView {
@@ -131,7 +138,7 @@
 }
 
 - (void)setup {
-
+    
     self.autoLeanEdge = YES;
     self.leanEdgeInsets = UIEdgeInsetsMake(20, 0, 0, 0);
     self.invalidHidden = NO;
@@ -231,7 +238,7 @@
 
 #pragma mark - Private
 - (void)_locationChange:(UIPanGestureRecognizer *)p {
-
+    
     CGPoint panPoint = [p locationInView:[UIApplication sharedApplication].delegate.window];
     
     if(p.state == UIGestureRecognizerStateBegan) {
@@ -298,7 +305,7 @@
     }
     CGPoint newTargetPoint = CGPointZero;
     CGFloat targetY = 0;
-
+    
     if (panPoint.y < self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top) {
         targetY = self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top;
     }else if (panPoint.y > (screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom)) {
@@ -331,7 +338,7 @@
 
 /// 移动移动到屏幕中心位置
 - (void)leanToScreentCenter {
-
+    
     CGPoint screenCenter = CGPointMake((kSCREENT_WIDTH - [SuspensionControl windowForKey:self.key].bounds.size.width)*0.5, (kSCREENT_HEIGHT - [SuspensionControl windowForKey:self.key].bounds.size.height)*0.5);
     
     [self autoLeanToTargetPosition:screenCenter];
@@ -559,7 +566,8 @@ static const CGFloat menuBarBaseTag = 100;
 @property (nonatomic, copy) NSString *currentKey;
 @property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, weak) SuspensionView *centerButton;
-@property (nonatomic, weak) UIImageView *backgroundImView;
+@property (nonatomic, weak) UIImageView *backgroundImageView;
+@property (nonatomic, weak) UIVisualEffectView *visualEffectView;
 
 @end
 
@@ -572,6 +580,15 @@ static const CGFloat menuBarBaseTag = 100;
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
+    if (self) {
+        [self setup];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
     if (self) {
         [self setup];
     }
@@ -608,15 +625,14 @@ static const CGFloat menuBarBaseTag = 100;
                                  [btn setAlpha:0.0];
                              }
                          }
+                         [self.centerButton leanToPreviousLeanPosition];
                          
-                        
                      } completion:^(BOOL finished) {
                          [[self topViewController].navigationController pushViewController:viewController animated:YES];
                          UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
                          CGRect menuFrame =  menuWindow.frame;
                          menuFrame.size = CGSizeZero;
                          menuWindow.frame = menuFrame;
-                         [self.centerButton checkTargetPosition];
                          _isDismiss = YES;
                          _isShow = NO;
                      }];
@@ -637,13 +653,13 @@ static const CGFloat menuBarBaseTag = 100;
     UIWindow *window = [SuspensionControl windowForKey:self.currentKey];
     
     [self centerButton];
-    [self _updateMenuViewCenter];
+    [self _updateMenuViewCenterWithIsShow:YES];
     
     _isInProcessing = YES;
     
     [[UIApplication sharedApplication].delegate.window bringSubviewToFront:self];
     
-    [UIView animateWithDuration:0.3
+    [UIView animateWithDuration:0.4
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
@@ -656,7 +672,7 @@ static const CGFloat menuBarBaseTag = 100;
                                  [btn setAlpha:1.0];
                              }
                          }
-                        
+                         
                          // 更新menu bar 的 布局
                          CGFloat triangleHypotenuse = 0.0;
                          if (_isFiristShow) {
@@ -723,7 +739,7 @@ static const CGFloat menuBarBaseTag = 100;
                          _isShow  = NO;
                          _isInProcessing = NO;
                          UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
-//                         [window setHidden:YES];
+                         //                         [window setHidden:YES];
                          
                          [UIView animateWithDuration:0.3 animations:^{
                              [menuWindow setAlpha:0.0];
@@ -774,16 +790,37 @@ static const CGFloat menuBarBaseTag = 100;
     return _centerButton;
 }
 
-- (UIImageView *)backgroundImView {
-    if (_backgroundImView == nil) {
+
+
+- (UIImageView *)backgroundImageView {
+    if (_backgroundImageView == nil) {
         UIImageView *imageView = [NSClassFromString(@"_MenuViewBackgroundImageView") new];
-        _backgroundImView = imageView;
+        _backgroundImageView = imageView;
         imageView.userInteractionEnabled = YES;
         imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self addSubview:imageView];
+        [self insertSubview:imageView atIndex:0];
         imageView.frame = self.bounds;
+        [self visualEffectView];
     }
-    return _backgroundImView;
+    return _backgroundImageView;
+}
+
+- (UIVisualEffectView *)visualEffectView {
+    if (_visualEffectView == nil) {
+        UIBlurEffect *blurEffrct =[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+        UIVisualEffectView *visualEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffrct];
+        visualEffectView.frame = self.bounds;
+        visualEffectView.alpha = 1.0;
+        [self addSubview:visualEffectView];
+        _visualEffectView = visualEffectView;
+    }
+    if (_backgroundImageView) {
+        [self insertSubview:_visualEffectView aboveSubview:_backgroundImageView];
+    } else {
+        [self insertSubview:_visualEffectView atIndex:0];
+    }
+    return _visualEffectView;
 }
 
 - (void)setup {
@@ -804,11 +841,12 @@ static const CGFloat menuBarBaseTag = 100;
     _isFiristShow = YES;
     _isFiristDismiss = YES;
     _shouldLeanToScreenCenterWhenShow = YES;
-    _shouldShowWhenViewWillAppear = YES;
-
-    UIImage *backgroundImage = [UIImage imageFromColor:[UIColor colorWithWhite:0.3 alpha:0.6]];
-    self.backgroundImView.image = [backgroundImage imageBluredwithBlurNumber:0.8 WithRadius:3 tintColor:nil saturationDeltaFactor:9 maskImage:nil];
+    
     self.autoresizingMask = UIViewAutoresizingNone;
+    self.layer.cornerRadius = 12.8;
+    [self.layer setMasksToBounds:YES];
+    [self setClipsToBounds:YES];
+    [self visualEffectView];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     
@@ -832,33 +870,45 @@ static const CGFloat menuBarBaseTag = 100;
 //
 - (void)menuBarButtonClick:(id)sender {
     if (_menuBarClickBlock) {
-        _menuBarClickBlock([sender tag] - menuBarBaseTag);
+        _menuBarClickBlock([(UIButton *)sender tag] - menuBarBaseTag - 1);
     }
 }
 
 - (void)orientationDidChange:(NSNotification *)note {
     
-    [self _updateMenuViewCenter];
+    [self _updateMenuViewCenterWithIsShow:_isShow];
 }
 
 
-#pragma mark - Private Methods
+#pragma mark - Private methods
 
-- (void)_updateMenuViewCenter {
-
-    UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
-    menuWindow.frame = [UIScreen mainScreen].bounds;
-    
-    UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
-    CGRect centerFrame =  centerWindow.frame;
-    centerFrame.size = CGSizeMake(centerBarButton_wh, centerBarButton_wh);
-    centerWindow.frame = centerFrame;
-    
-    UIWindow *suspensionWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
-    
-    CGPoint newCenter = [suspensionWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
-    self.center = newCenter;
-    self.backgroundImView.frame = self.bounds;
+- (void)_updateMenuViewCenterWithIsShow:(BOOL)isShow {
+    if (isShow) {
+        UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
+        menuWindow.frame = [UIScreen mainScreen].bounds;
+        
+        UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
+        CGRect centerFrame =  centerWindow.frame;
+        centerFrame.size = CGSizeMake(centerBarButton_wh, centerBarButton_wh);
+        centerWindow.frame = centerFrame;
+        
+        UIWindow *suspensionWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
+        
+        CGPoint newCenter = [suspensionWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
+        self.center = newCenter;
+        if (_backgroundImageView) {
+            self.backgroundImageView.frame = self.bounds;
+            if (_visualEffectView) {
+                [self insertSubview:_visualEffectView aboveSubview:_backgroundImageView];
+            }
+        }
+        if (_visualEffectView) {
+            self.visualEffectView.frame = self.bounds;
+            if (!_backgroundImageView) {
+                [self insertSubview:_visualEffectView atIndex:0];
+            }
+        }
+    }
 }
 
 /// 设置按钮的 位置
@@ -991,7 +1041,7 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 - (UIViewController *)topViewController {
-
+    
     UINavigationController * navigationController = (UINavigationController *)[UIApplication sharedApplication].delegate.window.rootViewController;
     if ([navigationController isKindOfClass:[UINavigationController class]]) {
         UIViewController * currentViewController = [navigationController topViewController];
@@ -1009,10 +1059,15 @@ static const CGFloat menuBarBaseTag = 100;
 
 @implementation SuspensionMenuWindow
 
-+ (instancetype)showOnce:(BOOL)isOnce menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems {
++ (instancetype)showOnce:(BOOL)isOnce shouldShow:(BOOL)shouldShow menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems {
     CGRect centerMenuFrame = CGRectMake(0, 0, menuView_wh, menuView_wh);
     SuspensionMenuWindow *menuView = [self showOnce:isOnce frame:centerMenuFrame];
     menuView.menuBarItems = menuBarItems;
+    menuView.shouldShowWhenViewWillAppear = shouldShow;
+    [menuView _moveToSuperview];
+    if (!shouldShow) {
+        [menuView.centerButton checkTargetPosition];
+    }
     return menuView;
 }
 
@@ -1021,9 +1076,9 @@ static const CGFloat menuBarBaseTag = 100;
     SuspensionMenuWindow *menuView = [[self alloc] initWithFrame:frame];
     [menuView setAlpha:1.0];
     menuView.isOnce = isOnce;
-    [menuView _moveToSuperview];
     return menuView;
 }
+
 
 - (void)dismiss:(void (^)(void))block {
     
@@ -1055,10 +1110,15 @@ static const CGFloat menuBarBaseTag = 100;
     
     UIWindow *currentKeyWindow = [UIApplication sharedApplication].keyWindow;
     
-    UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    CGRect menuWindowBounds = [UIScreen mainScreen].bounds;
+    if (!_shouldShowWhenViewWillAppear) {
+        menuWindowBounds = CGRectZero;
+    }
+    
+    UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:menuWindowBounds];
     suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
     [suspensionWindow makeKeyAndVisible];
-
+    
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
@@ -1079,7 +1139,6 @@ static const CGFloat menuBarBaseTag = 100;
     
     // 保持原先的keyWindow，避免一些不必要的问题
     [currentKeyWindow makeKeyWindow];
-    
 }
 
 @end
@@ -1102,7 +1161,6 @@ static const CGFloat menuBarBaseTag = 100;
     return [self.key stringByAppendingString:identifier];
 }
 
-//md5加密
 - (NSString *)md5:(NSString *)str {
     const char * cStr = [str UTF8String];
     unsigned char result[16];
@@ -1120,9 +1178,27 @@ static const CGFloat menuBarBaseTag = 100;
 @end
 
 @implementation MenuBarHypotenuseButton
-
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setup];
+    }
+    return self;
+}
+- (instancetype)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setup];
+    }
+    return self;
+}
+- (void)setup {
+    [self.titleLabel setFont:[UIFont systemFontOfSize:12 weight:1.0]];
+}
 @end
-/// 中心使用的按钮
+
 @interface _MenuBarCenterButton : SuspensionWindow
 @end
 @implementation _MenuBarCenterButton
@@ -1154,15 +1230,15 @@ static const CGFloat menuBarBaseTag = 100;
 
 @interface SuspensionMenuController : UIViewController
 
-- (instancetype)initWithMenuView:(SuspensionMenuView *)menuView;
+- (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
 
-@property (nonatomic, weak) SuspensionMenuView *menuView;
+@property (nonatomic, weak) SuspensionMenuWindow *menuView;
 
 @end
 
 @implementation SuspensionMenuController
 
-- (instancetype)initWithMenuView:(SuspensionMenuView *)menuView {
+- (instancetype)initWithMenuView:(SuspensionMenuWindow *)menuView {
     if (self = [super init]) {
         _menuView = menuView;
     }
@@ -1186,8 +1262,8 @@ static const CGFloat menuBarBaseTag = 100;
 
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    [self.menuView dismiss];
     
+    [self.menuView dismiss];
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
