@@ -18,7 +18,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
     SuspensionViewLeanEdgeTypeEachSide         /// 自动依靠到屏幕四边
 };
 
-@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton;
+@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
 @protocol SuspensionWindowProtocol <NSObject>
 
@@ -87,6 +87,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)leanToScreentCenter;
 /// 移动到上次依靠的位置
 - (void)leanToPreviousLeanPosition;
+//- (void)leanToPosition:(CGPoint)point;
 /// 根据当前SuspensionView所处中心点检查处理最终依靠到边缘的位置
 - (void)checkTargetPosition;
 
@@ -104,9 +105,11 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 /// 当显示SuspensionMenuView的时候，依靠到屏幕中心位置
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
 /// 根据menuBarImages创建对应menuBar，最多只能有6个
-@property (nonatomic, strong, nullable) NSArray<MenuBarHypotenuseButton *> *menuBarItems;
+@property (nonatomic, strong, nullable) NSArray<MenuBarHypotenuseItem *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
+@property (nonatomic, copy) void (^ _Nullable showCompletion)();
+@property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
 
 - (void)show;
 - (void)dismiss;
@@ -116,15 +119,15 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @end
 
 @interface SuspensionMenuWindow : SuspensionMenuView <SuspensionWindowProtocol>
-/// 当初始化SuspensionMenuView的时候，显示SuspensionMenuView
+
 @property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
 
-/// 初始化SuspensionMenuWindow
-/// @param isOnce     是否是全局唯一的
-/// @param shouldShow 根据此参数确定在初始化完成后，是否立即显示
-/// @return SuspensionMenuWindow
-+ (instancetype)showOnce:(BOOL)isOnce shouldShow:(BOOL)shouldShow menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems;
++ (instancetype)showWithMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems menuSize:(CGSize)menuSize itemSize:(CGSize)itemSize;
 
+@end
+
+@interface MenuBarHypotenuseItem : NSObject
+@property (nonatomic, strong, readonly) MenuBarHypotenuseButton *hypotenuseButton;
 @end
 
 @interface MenuBarHypotenuseButton : UIButton

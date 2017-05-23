@@ -336,6 +336,11 @@
     [self autoLeanToTargetPosition:self.previousCenter];
 }
 
+//- (void)leanToPosition:(CGPoint)point{
+//    CGPoint newPoint = [self convertPoint:point toView:[UIApplication sharedApplication].delegate.window];
+//    [self autoLeanToTargetPosition:newPoint];
+//}
+
 /// 移动移动到屏幕中心位置
 - (void)leanToScreentCenter {
     
@@ -373,7 +378,7 @@
         /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
         
-        [self _checkTargetPosition:currentPoint];
+        [self performSelector:@selector(_checkTargetPosition:) withObject:[NSValue valueWithCGPoint:currentPoint] afterDelay:0.0];
     }
 }
 
@@ -520,7 +525,12 @@
     UIWindow *currentKeyWindow = [UIApplication sharedApplication].keyWindow;
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
+    
+#ifdef DEBUG
+    suspensionWindow.windowLevel = CGFLOAT_MAX+10;
+#else
     suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
+#endif
     [suspensionWindow makeKeyAndVisible];
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
     UIViewController *vc = [UIViewController new];
@@ -543,9 +553,9 @@
 
 @end
 
-static const CGFloat menuView_wh = 280.0;
-static const CGFloat barButton_wh = 64.0;
-static const CGFloat centerBarButton_wh = barButton_wh;
+//static const CGFloat menuView_wh = 280.0;
+//static const CGFloat barButton_wh = 64.0;
+//static const CGFloat centerBarButton_wh = barButton_wh;
 static const CGFloat menuBarBaseTag = 100;
 
 @interface SuspensionMenuView () {
@@ -556,11 +566,14 @@ static const CGFloat menuBarBaseTag = 100;
     CGFloat _maxTriangleHypotenuse;         // 最大三角斜边，当第一次刚出现时三角斜边
     CGRect _memuBarButtonOriginFrame;       // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用,重叠
     
-    BOOL _isInProcessing;  // 是否正在执行显示或消失
-    BOOL _isShow;          // 是否已经显示
-    BOOL _isDismiss;       // 是否已经消失
-    BOOL _isFiristShow;    // 是否第一次显示
-    BOOL _isFiristDismiss; // 是否第一次消失
+    BOOL _isInProcessing;    // 是否正在执行显示或消失
+    BOOL _isShow;            // 是否已经显示
+    BOOL _isDismiss;         // 是否已经消失
+    BOOL _isFiristShow;      // 是否第一次显示
+    BOOL _isFiristDismiss;   // 是否第一次消失
+    CGSize _itemSize;
+    CGSize _menuWindowSize;
+    CGSize _centerWindowSize;
 }
 
 @property (nonatomic, copy) NSString *currentKey;
@@ -577,14 +590,20 @@ static const CGFloat menuBarBaseTag = 100;
 
 #pragma mark - Public Methods
 
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        [self setup];
+- (void)setMenuSize:(CGSize)menuSize itemSize:(CGSize)itemSize {
+    if (menuSize.width == 0 || menuSize.height == 0) {
+        menuSize = CGSizeMake(280.0, 280.0);
     }
-    return self;
+    if (itemSize.width == 0 || itemSize.height == 0) {
+        itemSize = CGSizeMake(64.0, 64.0);
+    }
+    _menuWindowSize = menuSize;
+    _itemSize = itemSize;
+    _centerWindowSize = itemSize;
+
+    [self setup];
 }
+
 
 - (instancetype)initWithCoder:(NSCoder *)coder
 {
@@ -595,18 +614,18 @@ static const CGFloat menuBarBaseTag = 100;
     return self;
 }
 
-- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems {
+- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems {
     
     _menuBarItems = menuBarItems;
     
     NSInteger idx = 0;
-    for (MenuBarHypotenuseButton *button in menuBarItems) {
-        [button setOpaque:NO];
-        [button setTag:menuBarBaseTag+idx+1];
-        [button addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-        [button setAlpha:0.0];
-        [self addSubview:button];
-        [button setFrame:_memuBarButtonOriginFrame];
+    for (MenuBarHypotenuseItem *item in menuBarItems) {
+        [item.hypotenuseButton setOpaque:NO];
+        [item.hypotenuseButton setTag:menuBarBaseTag+idx+1];
+        [item.hypotenuseButton addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+        [item.hypotenuseButton setAlpha:0.0];
+        [self addSubview:item.hypotenuseButton];
+        [item.hypotenuseButton setFrame:_memuBarButtonOriginFrame];
         idx++;
     }
 }
@@ -650,21 +669,19 @@ static const CGFloat menuBarBaseTag = 100;
         [self.centerButton leanToScreentCenter];
     }
     
-    UIWindow *window = [SuspensionControl windowForKey:self.currentKey];
+    UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
     
     [self centerButton];
     [self _updateMenuViewCenterWithIsShow:YES];
     
     _isInProcessing = YES;
     
-    [[UIApplication sharedApplication].delegate.window bringSubviewToFront:self];
-    
     [UIView animateWithDuration:0.4
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
                          
-                         [window setAlpha:1.0];
+                         [menuWindow setAlpha:1.0];
                          [self setAlpha:1.0];
                          
                          for (UIButton *btn in self.subviews) {
@@ -683,6 +700,12 @@ static const CGFloat menuBarBaseTag = 100;
                          [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse];
                      }
                      completion:^(BOOL finished) {
+                         // 此处动画结束时,menuWindow的bounds为CGRectZero了,原因是动画时间相错
+                         //                         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
+                         //                         if (menuWindow.frame.size.width == 0 || menuWindow.frame.size.height == 0) {
+                         //                             NSLog(@"为0了");
+                         //                             [self _updateMenuViewCenterWithIsShow:YES];
+                         //                         }
                          [UIView animateWithDuration:0.1
                                                delay:0.0
                                              options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
@@ -694,6 +717,10 @@ static const CGFloat menuBarBaseTag = 100;
                                               _isDismiss = NO;
                                               _isInProcessing = NO;
                                               _isFiristShow = NO;
+                                              if (self.showCompletion) {
+                                                  self.showCompletion();
+                                              }
+                                              
                                           }];
                      }];
 }
@@ -735,24 +762,24 @@ static const CGFloat menuBarBaseTag = 100;
                          }
                          
                      } completion:^(BOOL finished) {
-                         _isDismiss = YES;
-                         _isShow  = NO;
-                         _isInProcessing = NO;
                          UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
-                         //                         [window setHidden:YES];
                          
-                         [UIView animateWithDuration:0.3 animations:^{
+                         [UIView animateWithDuration:0.1 animations:^{
                              [menuWindow setAlpha:0.0];
                              // 让其frame为zero，为了防止其隐藏后所在的位置无法响应事件
-                         }completion:^(BOOL finished) {
-                             if (finished) {
-                                 CGRect menuFrame =  menuWindow.frame;
-                                 menuFrame.size = CGSizeZero;
-                                 menuWindow.frame = menuFrame;
+                         } completion:^(BOOL finished) {
+                             CGRect menuFrame =  menuWindow.frame;
+                             menuFrame.size = CGSizeZero;
+                             menuWindow.frame = menuFrame;
+                             if (self.dismissCompletion) {
+                                 self.dismissCompletion();
                              }
+                             _isDismiss = YES;
+                             _isShow  = NO;
+                             _isInProcessing = NO;
+                             _isFiristDismiss = NO;
                          } ];
                          
-                         _isFiristDismiss = NO;
                      }];
 }
 
@@ -762,7 +789,7 @@ static const CGFloat menuBarBaseTag = 100;
 - (SuspensionView *)centerButton {
     if (_centerButton == nil) {
         // 创建中心按钮
-        CGRect centerButtonFrame = CGRectMake((CGRectGetWidth(self.frame) - centerBarButton_wh) * 0.5, (CGRectGetHeight(self.frame) - centerBarButton_wh) * 0.5, centerBarButton_wh, centerBarButton_wh);
+        CGRect centerButtonFrame = CGRectMake((CGRectGetWidth(self.frame) - _centerWindowSize.width) * 0.5, (CGRectGetHeight(self.frame) - _centerWindowSize.height) * 0.5, _centerWindowSize.width, _centerWindowSize.height);
         
         CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
         
@@ -789,7 +816,6 @@ static const CGFloat menuBarBaseTag = 100;
     }
     return _centerButton;
 }
-
 
 
 - (UIImageView *)backgroundImageView {
@@ -826,14 +852,14 @@ static const CGFloat menuBarBaseTag = 100;
 - (void)setup {
     
     // 设置三角斜边
-    _defaultTriangleHypotenuse = (menuView_wh - barButton_wh) * 0.5;
+    _defaultTriangleHypotenuse = (_menuWindowSize.width - _itemSize.width) * 0.5;
     _minBounceOfTriangleHypotenuse = _defaultTriangleHypotenuse - 12.0;
     _maxBounceOfTriangleHypotenuse = _defaultTriangleHypotenuse + 12.0;
     _maxTriangleHypotenuse = kSCREENT_HEIGHT * 0.5;
     
     // 计算menu 上 按钮的 原始 frame 当dismiss 时 回到原始位置
-    CGFloat originX = (menuView_wh - centerBarButton_wh) * 0.5;
-    _memuBarButtonOriginFrame = CGRectMake(originX, originX, centerBarButton_wh, centerBarButton_wh);
+    CGFloat originX = (_menuWindowSize.width - _centerWindowSize.width) * 0.5;
+    _memuBarButtonOriginFrame = CGRectMake(originX, originX, _centerWindowSize.width, _centerWindowSize.height);
     
     _isInProcessing = NO;
     _isShow  = NO;
@@ -849,6 +875,30 @@ static const CGFloat menuBarBaseTag = 100;
     [self visualEffectView];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    
+}
+
+- (void)keyboardWillShow:(NSNotification *)notif {
+    if (_isShow == YES) {
+        return;
+    }
+    
+    //    CGRect rect = [[notif.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    //    CGFloat y = rect.origin.y;
+    //    CGFloat keyBoardHeight  = rect.size.height;
+    //    [UIView beginAnimations:nil context:nil];
+    //    CGFloat animationTime   = [[notif.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] floatValue];
+    //    [UIView setAnimationDuration:animationTime];
+    //
+    //
+    //    CGPoint centerBtnPoint = [self.centerButton convertPoint:self.centerButton.frame.origin toView:[UIApplication sharedApplication].delegate.window];
+    //    CGFloat centerBtnMaxY = centerBtnPoint.y+self.centerButton.frame.size.height;
+    //        if (centerBtnMaxY > y) {
+    //            [self.centerButton leanToPosition:CGPointMake(0, y)];
+    //        }
+    //
+    //    [UIView commitAnimations];
     
 }
 
@@ -886,16 +936,16 @@ static const CGFloat menuBarBaseTag = 100;
     if (isShow) {
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.currentKey];
         menuWindow.frame = [UIScreen mainScreen].bounds;
-        
+        NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
+        menuWindow.rootViewController.view.frame =  menuWindow.bounds;
         UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
         CGRect centerFrame =  centerWindow.frame;
-        centerFrame.size = CGSizeMake(centerBarButton_wh, centerBarButton_wh);
+        centerFrame.size = CGSizeMake(_centerWindowSize.width, _centerWindowSize.height);
         centerWindow.frame = centerFrame;
         
-        UIWindow *suspensionWindow = [SuspensionControl windowForKey:self.centerButton.currentKey];
-        
-        CGPoint newCenter = [suspensionWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
+        CGPoint newCenter = [centerWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
         self.center = newCenter;
+        
         if (_backgroundImageView) {
             self.backgroundImageView.frame = self.bounds;
             if (_visualEffectView) {
@@ -920,7 +970,7 @@ static const CGFloat menuBarBaseTag = 100;
     
     UIButton * button = (UIButton *)[self viewWithTag:buttonTag];
     if (button) {
-        [button setFrame:CGRectMake(origin.x, origin.y, centerBarButton_wh, centerBarButton_wh)];
+        [button setFrame:CGRectMake(origin.x, origin.y, self.centerButton.frame.size.width, self.centerButton.frame.size.height)];
         button = nil;
     }
 }
@@ -932,12 +982,14 @@ static const CGFloat menuBarBaseTag = 100;
     //
     //      /|      a: triangleA = c * cos(x)
     //   c / | b    b: triangleB = c * sin(x)
-    //    /)x|      c: triangleHypotenuse // 三角斜边
-    //   -----      x: degree   // 度数
+    //    /)x|      c: triangleHypotenuse  三角斜边
+    //   -----      x: degree    度数
     //     a
     //
-    CGFloat centerBallMenuHalfSize = menuView_wh * 0.5;
-    CGFloat buttonRadius           = centerBarButton_wh * 0.5;
+    // menuView的半径
+    CGFloat menuWindowRadius = _menuWindowSize.width * 0.5;
+    // centerButton的半径
+    CGFloat centerWindowRadius = _centerWindowSize.width * 0.5;
     if (! triangleHypotenuse) {
         // 距离中心
         triangleHypotenuse = _defaultTriangleHypotenuse;
@@ -951,16 +1003,16 @@ static const CGFloat menuBarBaseTag = 100;
     //
     if (_menuBarItems.count == 1) {
         
-        [self _setButtonWithTag:1 origin:CGPointMake(centerBallMenuHalfSize - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleHypotenuse - buttonRadius)];
+        [self _setButtonWithTag:1 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
     }
     
     if (_menuBarItems.count == 2) {
         
         CGFloat degree    = M_PI / 4.0f; // = 45 * M_PI / 180 角度
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
-        CGFloat negativeValue = centerBallMenuHalfSize - triangleB - buttonRadius;
-        CGFloat positiveValue = centerBallMenuHalfSize + triangleB - buttonRadius;
+        CGFloat negativeValue = menuWindowRadius - triangleB - centerWindowRadius;
+        CGFloat positiveValue = menuWindowRadius + triangleB - centerWindowRadius;
         [self _setButtonWithTag:1 origin:CGPointMake(negativeValue, negativeValue)];
         [self _setButtonWithTag:2 origin:CGPointMake(positiveValue, negativeValue)];
         
@@ -974,18 +1026,18 @@ static const CGFloat menuBarBaseTag = 100;
         CGFloat degree    = M_PI / 3.0f; // = 60 * M_PI / 180
         CGFloat triangleA = triangleHypotenuse * cosf(degree);
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButtonWithTag:1 origin:CGPointMake(centerBallMenuHalfSize - triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleA - buttonRadius)];
-        [self _setButtonWithTag:2 origin:CGPointMake(centerBallMenuHalfSize + triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleA - buttonRadius)];
-        [self _setButtonWithTag:3 origin:CGPointMake(centerBallMenuHalfSize - buttonRadius,
-                                                     centerBallMenuHalfSize + triangleHypotenuse - buttonRadius)];
+        [self _setButtonWithTag:1 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:2 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:3 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
     }
     if (_menuBarItems.count == 4) {
         CGFloat degree    = M_PI / 4.0f; // = 45 * M_PI / 180
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
-        CGFloat negativeValue = centerBallMenuHalfSize - triangleB - buttonRadius;
-        CGFloat positiveValue = centerBallMenuHalfSize + triangleB - buttonRadius;
+        CGFloat negativeValue = menuWindowRadius - triangleB - centerWindowRadius;
+        CGFloat positiveValue = menuWindowRadius + triangleB - centerWindowRadius;
         [self _setButtonWithTag:1 origin:CGPointMake(negativeValue, negativeValue)];
         [self _setButtonWithTag:2 origin:CGPointMake(positiveValue, negativeValue)];
         [self _setButtonWithTag:3 origin:CGPointMake(negativeValue, positiveValue)];
@@ -993,41 +1045,41 @@ static const CGFloat menuBarBaseTag = 100;
     }
     
     if (_menuBarItems.count == 5) {
-        CGFloat degree    = M_PI / 20.5; // = 72 * M_PI / 180
+        CGFloat degree      = 2 * M_PI / _menuBarItems.count ; //= M_PI / 3.0;// = M_PI / 20.5; // = 72 * M_PI / 180
         CGFloat triangleA = triangleHypotenuse * cosf(degree);
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButtonWithTag:1 origin:CGPointMake(centerBallMenuHalfSize - triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleA - buttonRadius)];
-        [self _setButtonWithTag:2 origin:CGPointMake(centerBallMenuHalfSize - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleHypotenuse - buttonRadius)];
-        [self _setButtonWithTag:3 origin:CGPointMake(centerBallMenuHalfSize + triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleA - buttonRadius)];
+        [self _setButtonWithTag:1 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:2 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+        [self _setButtonWithTag:3 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
         
         degree    = M_PI / 5.0f;  // = 36 * M_PI / 180
         triangleA = triangleHypotenuse * cosf(degree);
         triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButtonWithTag:4 origin:CGPointMake(centerBallMenuHalfSize - triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize + triangleA - buttonRadius)];
-        [self _setButtonWithTag:5 origin:CGPointMake(centerBallMenuHalfSize + triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize + triangleA - buttonRadius)];
+        [self _setButtonWithTag:4 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:5 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
     }
     
     if (_menuBarItems.count == 6) {
         CGFloat degree    = M_PI / 3.0f; // = 60 * M_PI / 180
         CGFloat triangleA = triangleHypotenuse * cosf(degree); // 斜边的余弦值
         CGFloat triangleB = triangleHypotenuse * sinf(degree); // 斜边正弦值
-        [self _setButtonWithTag:1 origin:CGPointMake(centerBallMenuHalfSize - triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleA - buttonRadius)];
-        [self _setButtonWithTag:2 origin:CGPointMake(centerBallMenuHalfSize - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleHypotenuse - buttonRadius)];
-        [self _setButtonWithTag:3 origin:CGPointMake(centerBallMenuHalfSize + triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize - triangleA - buttonRadius)];
-        [self _setButtonWithTag:4 origin:CGPointMake(centerBallMenuHalfSize - triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize + triangleA - buttonRadius)];
-        [self _setButtonWithTag:5 origin:CGPointMake(centerBallMenuHalfSize - buttonRadius,
-                                                     centerBallMenuHalfSize + triangleHypotenuse - buttonRadius)];
-        [self _setButtonWithTag:6 origin:CGPointMake(centerBallMenuHalfSize + triangleB - buttonRadius,
-                                                     centerBallMenuHalfSize + triangleA - buttonRadius)];
+        [self _setButtonWithTag:1 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:2 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+        [self _setButtonWithTag:3 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:4 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:5 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
+        [self _setButtonWithTag:6 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
     }
     
 }
@@ -1038,6 +1090,8 @@ static const CGFloat menuBarBaseTag = 100;
         [_menuBarItems makeObjectsPerformSelector:@selector(removeFromSuperview)];
         _menuBarItems = nil;
     }
+    self.showCompletion = nil;
+    self.dismissCompletion = nil;
 }
 
 - (UIViewController *)topViewController {
@@ -1059,16 +1113,35 @@ static const CGFloat menuBarBaseTag = 100;
 
 @implementation SuspensionMenuWindow
 
-+ (instancetype)showOnce:(BOOL)isOnce shouldShow:(BOOL)shouldShow menuBarItems:(NSArray<MenuBarHypotenuseButton *> *)menuBarItems {
-    CGRect centerMenuFrame = CGRectMake(0, 0, menuView_wh, menuView_wh);
++ (instancetype)showWithMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems menuSize:(CGSize)menuSize itemSize:(CGSize)itemSize{
+    
+    SuspensionMenuWindow *windwow = [self showOnce:YES shouldShow:NO menuBarItems:menuBarItems];
+    
+    [windwow setMenuSize:menuSize itemSize:itemSize];
+    
+    return windwow;
+}
+
+/// 初始化SuspensionMenuWindow
+/// @param isOnce     是否是全局唯一的
+/// @param shouldShow 根据此参数确定在初始化完成后，是否立即显示
+/// @return SuspensionMenuWindow
++ (instancetype)showOnce:(BOOL)isOnce shouldShow:(BOOL)shouldShow menuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems {
+    CGRect centerMenuFrame = CGRectMake(0, 0, 320.0, 320.0);
     SuspensionMenuWindow *menuView = [self showOnce:isOnce frame:centerMenuFrame];
     menuView.menuBarItems = menuBarItems;
     menuView.shouldShowWhenViewWillAppear = shouldShow;
-    [menuView _moveToSuperview];
-    if (!shouldShow) {
-        [menuView.centerButton checkTargetPosition];
-    }
+    
     return menuView;
+}
+
+- (void)setMenuSize:(CGSize)menuSize itemSize:(CGSize)itemSize {
+    [super setMenuSize:menuSize itemSize:itemSize];
+    [self _moveToSuperview];
+    
+    if (!self.shouldShowWhenViewWillAppear) {
+        [self.centerButton checkTargetPosition];
+    }
 }
 
 + (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame {
@@ -1116,7 +1189,11 @@ static const CGFloat menuBarBaseTag = 100;
     }
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:menuWindowBounds];
+#ifdef DEBUG
+    suspensionWindow.windowLevel = CGFLOAT_MAX;
+#else
     suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
+#endif
     [suspensionWindow makeKeyAndVisible];
     
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
@@ -1177,6 +1254,27 @@ static const CGFloat menuBarBaseTag = 100;
 
 @end
 
+@interface MenuBarHypotenuseItem ()
+@property (nonatomic, strong) MenuBarHypotenuseButton *hypotenuseButton;
+@end
+@implementation MenuBarHypotenuseItem
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.hypotenuseButton = [MenuBarHypotenuseButton new];
+        
+    }
+    return self;
+}
+
+- (void)dealloc {
+    [self.hypotenuseButton removeFromSuperview];
+    self.hypotenuseButton = nil;
+}
+
+@end
+
 @implementation MenuBarHypotenuseButton
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -1196,6 +1294,8 @@ static const CGFloat menuBarBaseTag = 100;
 }
 - (void)setup {
     [self.titleLabel setFont:[UIFont systemFontOfSize:12 weight:1.0]];
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.titleLabel.textAlignment = NSTextAlignmentCenter;
 }
 @end
 

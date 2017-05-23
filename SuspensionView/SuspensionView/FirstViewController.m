@@ -24,15 +24,14 @@
     
     while (i <= 5) {
         
-        MenuBarHypotenuseButton *btn = [MenuBarHypotenuseButton new];
-        [btn setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-        [a addObject:btn];
+        MenuBarHypotenuseItem *item = [MenuBarHypotenuseItem new];
+        [item.hypotenuseButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+        [a addObject:item];
         i++;
     }
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showOnce:YES shouldShow:YES menuBarItems:a];
+    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showWithMenuBarItems:a menuSize:CGSizeMake(320, 320) itemSize:CGSizeMake(64.0, 64.0)];
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
-    
     [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"] forState:UIControlStateNormal];
     
     __block __weak typeof(menuView) weakMenuView = menuView;
