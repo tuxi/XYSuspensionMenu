@@ -553,9 +553,6 @@
 
 @end
 
-//static const CGFloat menuView_wh = 280.0;
-//static const CGFloat barButton_wh = 64.0;
-//static const CGFloat centerBarButton_wh = barButton_wh;
 static const CGFloat menuBarBaseTag = 100;
 
 @interface SuspensionMenuView () {
@@ -590,7 +587,26 @@ static const CGFloat menuBarBaseTag = 100;
 
 #pragma mark - Public Methods
 
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self setup];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
+    if (self) {
+        [self setup];
+    }
+    return self;
+}
+
 - (void)setMenuSize:(CGSize)menuSize itemSize:(CGSize)itemSize {
+    // 设置默认值
     if (menuSize.width == 0 || menuSize.height == 0) {
         menuSize = CGSizeMake(280.0, 280.0);
     }
@@ -601,18 +617,9 @@ static const CGFloat menuBarBaseTag = 100;
     _itemSize = itemSize;
     _centerWindowSize = itemSize;
 
-    [self setup];
+    [self setupLayout];
 }
 
-
-- (instancetype)initWithCoder:(NSCoder *)coder
-{
-    self = [super initWithCoder:coder];
-    if (self) {
-        [self setup];
-    }
-    return self;
-}
 
 - (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems {
     
@@ -851,16 +858,6 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void)setup {
     
-    // 设置三角斜边
-    _defaultTriangleHypotenuse = (_menuWindowSize.width - _itemSize.width) * 0.5;
-    _minBounceOfTriangleHypotenuse = _defaultTriangleHypotenuse - 12.0;
-    _maxBounceOfTriangleHypotenuse = _defaultTriangleHypotenuse + 12.0;
-    _maxTriangleHypotenuse = kSCREENT_HEIGHT * 0.5;
-    
-    // 计算menu 上 按钮的 原始 frame 当dismiss 时 回到原始位置
-    CGFloat originX = (_menuWindowSize.width - _centerWindowSize.width) * 0.5;
-    _memuBarButtonOriginFrame = CGRectMake(originX, originX, _centerWindowSize.width, _centerWindowSize.height);
-    
     _isInProcessing = NO;
     _isShow  = NO;
     _isDismiss = YES;
@@ -877,6 +874,19 @@ static const CGFloat menuBarBaseTag = 100;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     
+}
+
+- (void)setupLayout {
+    
+    // 设置三角斜边
+    _defaultTriangleHypotenuse = (_menuWindowSize.width - _itemSize.width) * 0.5;
+    _minBounceOfTriangleHypotenuse = _defaultTriangleHypotenuse - 12.0;
+    _maxBounceOfTriangleHypotenuse = _defaultTriangleHypotenuse + 12.0;
+    _maxTriangleHypotenuse = kSCREENT_HEIGHT * 0.5;
+    
+    // 计算menu 上 按钮的 原始 frame 当dismiss 时 回到原始位置
+    CGFloat originX = (_menuWindowSize.width - _centerWindowSize.width) * 0.5;
+    _memuBarButtonOriginFrame = CGRectMake(originX, originX, _centerWindowSize.width, _centerWindowSize.height);
 }
 
 - (void)keyboardWillShow:(NSNotification *)notif {
