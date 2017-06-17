@@ -359,10 +359,10 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     return self.suspensionView.isHidden;
 }
 - (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state {
-    [self.suspensionView setTitle:title];
+    [self.suspensionView setTitle:title forState:UIControlStateNormal];
 }
 - (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state {
-    [self.suspensionView setImage:image];
+    [self.suspensionView setImage:image forState:UIControlStateNormal];
 }
 - (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state {
     [self setSuspensionImage:[UIImage imageNamed:name] forState:state];

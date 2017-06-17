@@ -37,9 +37,10 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 
 - (instancetype)initWithFrame:(CGRect)frame;
 + (instancetype)buttonWithType:(OSButtonType)buttonType;
-- (void)setTitle:(NSString *)title;
-- (void)setSubtitle:(NSString *)subtitle;
-- (void)setImage:(UIImage *)image;
+- (void)setTitle:(NSString *)title forState:(UIControlState)state;
+- (void)setSubtitle:(NSString *)subtitle forState:(UIControlState)state;
+- (void)setImage:(UIImage *)image forState:(UIControlState)state;
+- (void)setTitleColor:(nullable UIColor *)color forState:(UIControlState)state;
 
 @end
 

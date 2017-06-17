@@ -21,13 +21,18 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    UIImageView *imageView = [UIImageView new];
+    imageView.frame = CGRectMake(0, 80, 64, 64);
+    imageView.image = [UIImage imageNamed:@"partner_boobuz"];
+    [self.view addSubview:imageView];
+    
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:3];
     int i = 0;
     
     while (i <= 5) {
         
         MenuBarHypotenuseItem *item = [MenuBarHypotenuseItem new];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:@"dropbox-icon"]];
+        [item.hypotenuseButton setImage:[UIImage imageNamed:@"dropbox-icon"] forState:UIControlStateNormal];
         [a addObject:item];
         i++;
     }
@@ -39,7 +44,7 @@
     
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
-    [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"]];
+    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     
     __block __weak typeof(menuView) weakMenuView = menuView;
     menuView.menuBarClickBlock = ^(NSInteger index) {

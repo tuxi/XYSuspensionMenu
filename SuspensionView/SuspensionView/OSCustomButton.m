@@ -154,7 +154,12 @@ imageView = _imageView;
 
 #pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Public ~~~~~~~~~~~~~~~~~~~~~~~
 
-- (void)setTitle:(NSString *)title {
+- (void)setTitleColor:(nullable UIColor *)color forState:(UIControlState)state {
+    _titleContentView.textLabel.textColor = color;
+}
+
+
+- (void)setTitle:(NSString *)title forState:(UIControlState)state {
     if (_title == title) {
         return;
     }
@@ -163,7 +168,7 @@ imageView = _imageView;
     self.titleLabel.text = title;
     [self.titleLabel sizeToFit];
 }
-- (void)setSubtitle:(NSString *)subtitle {
+- (void)setSubtitle:(NSString *)subtitle forState:(UIControlState)state {
     if (_subtitle == subtitle) {
         return;
     }
@@ -172,7 +177,7 @@ imageView = _imageView;
     self.detailLabel.text = subtitle;
     [self.detailLabel sizeToFit];
 }
-- (void)setImage:(UIImage *)image {
+- (void)setImage:(UIImage *)image forState:(UIControlState)state {
     if (_image == image) {
         return;
     }
