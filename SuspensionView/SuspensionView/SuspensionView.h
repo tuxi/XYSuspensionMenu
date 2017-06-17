@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// 悬浮控件自动移动到屏幕边缘的类型
 typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
     SuspensionViewLeanEdgeTypeHorizontal = 1,  /// 自动依靠到屏幕左右边缘
     SuspensionViewLeanEdgeTypeEachSide         /// 自动依靠到屏幕四边
@@ -39,9 +38,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @property (nonatomic, assign) BOOL isOnce;
 
-/// 悬浮控件支持停靠屏幕哪些边缘，默认为上下左右
 @property (nonatomic, assign) SuspensionViewLeanEdgeType leanEdgeType;
-/// 依靠屏幕边缘的间距, 默认上为20，下左右为0
 @property (nonatomic, assign) UIEdgeInsets leanEdgeInsets;
 @property (nonatomic, assign) BOOL invalidHidden;
 @property (nonatomic, assign, readonly) BOOL isMoving;
@@ -52,9 +49,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 @property (nonatomic, copy, nullable) void (^locationChange)(CGPoint currentPoint);
 @property (nonatomic, copy, nullable) void (^ leanFinishCallBack)(CGPoint centerPoint);
-/// 默认为YES，会在移动完成后，自动依靠到边缘
 @property (nonatomic, assign, getter=isAutoLeanEdge) BOOL autoLeanEdge;
 @property (nonatomic, copy, nullable) void (^clickCallBack)();
+@property (nonatomic, assign) BOOL shouldLeanToPreviousPositionWhenAppStart;
 
 - (void)moveToScreentCenter;
 - (void)moveToPreviousLeanPosition;

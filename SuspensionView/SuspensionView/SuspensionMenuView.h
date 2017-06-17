@@ -17,19 +17,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SuspensionWindow : SuspensionView 
 
++ (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame;
+- (void)removeFromSuperview;
++ (void)releaseAll;
+
 @end
 
 @interface SuspensionMenuView : UIView
 
+@property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
 /// 当显示SuspensionMenuView的时候，依靠到屏幕中心位置
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
 /// 根据menuBarImages创建对应menuBar，最多只能有6个
-@property (nonatomic, strong, nullable) NSArray<MenuBarHypotenuseItem *> *menuBarItems;
+@property (nonatomic, strong, readonly) NSArray<MenuBarHypotenuseItem *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, copy) void (^ _Nullable showCompletion)();
 @property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
+
+- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems itemSize:(CGSize)itemSize;
 
 - (void)show;
 - (void)dismiss;
@@ -42,11 +49,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
 
-+ (instancetype)showWithMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems menuSize:(CGSize)menuSize itemSize:(CGSize)itemSize;
-
 - (instancetype)initWithFrame:(CGRect)frame;
-
-//- (void)addAction:(MenuBarHypotenuseItem *)hypotenuseItem;
+- (void)removeFromSuperview;
++ (void)releaseAll;
 
 @end
 
@@ -54,11 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) MenuBarHypotenuseButton *hypotenuseButton;
 @end
 
-@interface MenuBarHypotenuseButton : UIButton
+@interface MenuBarHypotenuseButton : OSCustomButton
 
 @end
-
-
 
 @interface UIWindow (SuspensionWindow)
 

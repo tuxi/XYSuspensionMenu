@@ -10,10 +10,17 @@
 #import "SuspensionControl.h"
 #import <objc/runtime.h>
 
+@interface SuspensionMenuController : UIViewController
+
+- (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
+
+@property (nonatomic, weak) SuspensionMenuWindow *menuView;
+
+@end
+
 @implementation SuspensionWindow
 
 #pragma mark - public methods
-
 
 + (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame {
     
@@ -25,16 +32,11 @@
     return s;
 }
 
-- (void)dismiss:(void (^)(void))block {
-    
-    if (block) {
-        block();
-    }
+- (void)removeFromSuperview {
     self.clickCallBack = nil;
     self.leanFinishCallBack = nil;
     [SuspensionControl removeWindowForKey:self.key];
-    [self removeFromSuperview];
-    
+    [super removeFromSuperview];
 }
 
 + (void)releaseAll {
@@ -86,7 +88,7 @@
 static const CGFloat menuBarBaseTag = 100;
 
 @interface SuspensionMenuView () {
-@private
+@protected
     CGFloat _defaultTriangleHypotenuse;     // 默认关闭时的三角斜边
     CGFloat _minBounceOfTriangleHypotenuse; // 当第一次显示完成后的三角斜边
     CGFloat _maxBounceOfTriangleHypotenuse; // 当显示时要展开的三角斜边
@@ -103,10 +105,10 @@ static const CGFloat menuBarBaseTag = 100;
     CGSize _centerWindowSize;
 }
 
-@property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, weak) SuspensionView *centerButton;
 @property (nonatomic, weak) UIImageView *backgroundImageView;
 @property (nonatomic, weak) UIVisualEffectView *visualEffectView;
+@property (nonatomic, assign) CGSize itemSize;
 
 @end
 
@@ -120,7 +122,7 @@ static const CGFloat menuBarBaseTag = 100;
 {
     self = [super initWithFrame:frame];
     if (self) {
-        [self setup];
+        [self _setup];
     }
     return self;
 }
@@ -129,14 +131,20 @@ static const CGFloat menuBarBaseTag = 100;
 {
     self = [super initWithCoder:coder];
     if (self) {
-        [self setup];
+        [self _setup];
     }
     return self;
 }
 
-- (void)setMenuSize:(CGSize)menuSize itemSize:(CGSize)itemSize {
+- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems itemSize:(CGSize)itemSize {
+    self.menuBarItems = menuBarItems;
+    [self setItemSize:itemSize];
+}
+
+- (void)setItemSize:(CGSize)itemSize {
     // 设置默认值
-    if (menuSize.width == 0 || menuSize.height == 0) {
+    CGSize menuSize = self.frame.size;
+    if (self.frame.size.width == 0 || self.frame.size.height == 0) {
         menuSize = CGSizeMake(280.0, 280.0);
     }
     if (itemSize.width == 0 || itemSize.height == 0) {
@@ -385,7 +393,7 @@ static const CGFloat menuBarBaseTag = 100;
     return _visualEffectView;
 }
 
-- (void)setup {
+- (void)_setup {
     
     _isInProcessing = NO;
     _isShow  = NO;
@@ -418,6 +426,7 @@ static const CGFloat menuBarBaseTag = 100;
                                            originX,
                                            _centerWindowSize.width,
                                            _centerWindowSize.height);
+    [self setNeedsLayout];
 }
 
 
@@ -633,37 +642,18 @@ static const CGFloat menuBarBaseTag = 100;
 
 @implementation SuspensionMenuWindow
 
+
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        
+        [self setAlpha:1.0];
+        self.isOnce = YES;
+        self.shouldShowWhenViewWillAppear = YES;
     }
     return self;
 }
 
-+ (instancetype)showWithMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems menuSize:(CGSize)menuSize itemSize:(CGSize)itemSize{
-    
-    SuspensionMenuWindow *windwow = [self showOnce:YES shouldShow:NO menuBarItems:menuBarItems];
-    
-    [windwow setMenuSize:menuSize itemSize:itemSize];
-    
-    return windwow;
-}
-
-/// 初始化SuspensionMenuWindow
-/// @param isOnce     是否是全局唯一的
-/// @param shouldShow 根据此参数确定在初始化完成后，是否立即显示
-/// @return SuspensionMenuWindow
-+ (instancetype)showOnce:(BOOL)isOnce shouldShow:(BOOL)shouldShow menuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems {
-    CGRect centerMenuFrame = CGRectMake(0, 0, 320.0, 320.0);
-    SuspensionMenuWindow *menuView = [self showOnce:isOnce frame:centerMenuFrame];
-    menuView.menuBarItems = menuBarItems;
-    menuView.shouldShowWhenViewWillAppear = shouldShow;
-    
-    return menuView;
-}
-
-- (void)setMenuSize:(CGSize)menuSize itemSize:(CGSize)itemSize {
-    [super setMenuSize:menuSize itemSize:itemSize];
+- (void)setItemSize:(CGSize)itemSize {
+    [super setItemSize:itemSize];
     [self _moveToSuperview];
     
     if (!self.shouldShowWhenViewWillAppear) {
@@ -671,25 +661,11 @@ static const CGFloat menuBarBaseTag = 100;
     }
 }
 
-+ (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame {
-    
-    SuspensionMenuWindow *menuView = [[self alloc] initWithFrame:frame];
-    [menuView setAlpha:1.0];
-    menuView.isOnce = isOnce;
-    return menuView;
-}
 
-
-- (void)dismiss:(void (^)(void))block {
-    
-    if (block) {
-        block();
-    }
-    
+- (void)removeFromSuperview {
     self.menuBarClickBlock = nil;
     [SuspensionControl removeWindowForKey:self.key];
-    [self removeFromSuperview];
-    
+    [super removeFromSuperview];
 }
 
 + (void)releaseAll {
@@ -728,7 +704,7 @@ static const CGFloat menuBarBaseTag = 100;
     
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
     
-    UIViewController *vc = [[NSClassFromString(@"SuspensionMenuController") alloc] performSelector:@selector(initWithMenuView:) withObject:self];
+    UIViewController *vc = [[SuspensionMenuController alloc] initWithMenuView:self];
     
     suspensionWindow.rootViewController = vc;
     // 不设置此属性，window在选择时，会出现四周黑屏现象
@@ -753,11 +729,12 @@ static const CGFloat menuBarBaseTag = 100;
 @property (nonatomic, strong) MenuBarHypotenuseButton *hypotenuseButton;
 @end
 @implementation MenuBarHypotenuseItem
+
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        self.hypotenuseButton = [MenuBarHypotenuseButton new];
+        self.hypotenuseButton = [MenuBarHypotenuseButton buttonWithType:OSButtonType3];
         
     }
     return self;
@@ -775,7 +752,7 @@ static const CGFloat menuBarBaseTag = 100;
 {
     self = [super initWithFrame:frame];
     if (self) {
-        [self setup];
+        [self _setup];
     }
     return self;
 }
@@ -783,14 +760,14 @@ static const CGFloat menuBarBaseTag = 100;
 {
     self = [super initWithCoder:coder];
     if (self) {
-        [self setup];
+        [self _setup];
     }
     return self;
 }
-- (void)setup {
-    [self.titleLabel setFont:[UIFont systemFontOfSize:12 weight:1.0]];
-    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    self.titleLabel.textAlignment = NSTextAlignmentCenter;
+- (void)_setup {
+//    [self.titleLabel setFont:[UIFont systemFontOfSize:12 weight:1.0]];
+//    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+//    self.titleLabel.textAlignment = NSTextAlignmentCenter;
 }
 @end
 
@@ -823,13 +800,6 @@ static const CGFloat menuBarBaseTag = 100;
 }
 @end
 
-@interface SuspensionMenuController : UIViewController
-
-- (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
-
-@property (nonatomic, weak) SuspensionMenuWindow *menuView;
-
-@end
 
 @implementation SuspensionMenuController
 

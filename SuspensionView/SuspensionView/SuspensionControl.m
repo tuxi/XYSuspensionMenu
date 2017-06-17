@@ -72,6 +72,8 @@
     return [SuspensionControl shareInstance].windows;
 }
 
+
+
 #pragma mark - setter \ getter
 - (NSMutableDictionary<NSString *, UIWindow *> *)windows {
     if (!_windows) {

@@ -159,26 +159,26 @@ imageView = _imageView;
         return;
     }
     _title = title;
-    [self setNeedsLayout];
     self.titleLabel.text = title;
     [self.titleLabel sizeToFit];
+    [self setNeedsLayout];
 }
 - (void)setSubtitle:(NSString *)subtitle {
     if (_subtitle == subtitle) {
         return;
     }
     _subtitle = subtitle;
-    [self setNeedsLayout];
     self.detailLabel.text = subtitle;
     [self.detailLabel sizeToFit];
+    [self setNeedsLayout];
 }
 - (void)setImage:(UIImage *)image {
     if (_image == image) {
         return;
     }
     _image = image;
-    [self setNeedsLayout];
     self.imageView.image = image;
+    [self setNeedsLayout];
 }
 
 

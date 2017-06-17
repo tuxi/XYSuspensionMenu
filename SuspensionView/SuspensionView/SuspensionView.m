@@ -10,6 +10,9 @@
 #import "SuspensionControl.h"
 #import <objc/runtime.h>
 
+static NSString * const PreviousCenterXKey = @"previousCenterX";
+static NSString * const PreviousCenterYKey = @"previousCenterY";
+
 @interface SuspensionView ()
 
 @property (nonatomic, assign) CGPoint previousCenter;
@@ -20,16 +23,14 @@
 
 @implementation SuspensionView
 
-- (NSString *)key {
-    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : [super key];
-}
+@synthesize previousCenter = _previousCenter;
 
 
 #pragma mark - 初始化
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self setup];
+        [self _suspensionViewSetup];
         [self addActions];
     }
     return self;
@@ -37,13 +38,13 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self setup];
+        [self _suspensionViewSetup];
         [self addActions];
     }
     return self;
 }
 
-- (void)setup {
+- (void)_suspensionViewSetup {
     
     self.autoLeanEdge = YES;
     self.leanEdgeInsets = UIEdgeInsetsMake(20, 0, 0, 0);
@@ -51,7 +52,15 @@
     self.isMoving = NO;
     self.usingSpringWithDamping = 0.8;
     self.initialSpringVelocity = 3.0;
-    self.previousCenter = self.center;
+    self.shouldLeanToPreviousPositionWhenAppStart = YES;
+    CGFloat centerX = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterXKey];
+    CGFloat centerY = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterYKey];
+    if (centerX > 0 || centerY > 0) {
+        self.previousCenter = CGPointMake(centerX, centerY);
+    } else {
+        self.previousCenter = self.center;
+    }
+    
 }
 
 
@@ -136,10 +145,15 @@
 
 - (void)checkTargetPosition {
     
-    CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
+    if (self.shouldLeanToPreviousPositionWhenAppStart) {
+        CGPoint newTargetPoint = [self _checkTargetPosition:self.previousCenter];
+        [self autoLeanToTargetPosition:newTargetPoint];
+    } else {
+        CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
+        CGPoint newTargetPoint = [self _checkTargetPosition:currentPoint];
+        [self autoLeanToTargetPosition:newTargetPoint];
+    }
     
-    CGPoint newTargetPoint = [self _checkTargetPosition:currentPoint];
-    [self autoLeanToTargetPosition:newTargetPoint];
 }
 
 /// 根据传入的位置检查处理最终依靠到边缘的位置
@@ -191,8 +205,10 @@
     }
     // 记录当前的center
     self.previousCenter = newTargetPoint;
+    
     return newTargetPoint;
 }
+
 
 - (void)moveToPreviousLeanPosition {
     
@@ -274,6 +290,17 @@
     NSLog(@"%s", __func__);
 }
 
+- (NSString *)key {
+    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : [super key];
+}
+
+- (void)setPreviousCenter:(CGPoint)previousCenter {
+    _previousCenter = previousCenter;
+    [[NSUserDefaults standardUserDefaults] setDouble:previousCenter.x forKey:PreviousCenterXKey];
+    [[NSUserDefaults standardUserDefaults] setDouble:previousCenter.y forKey:PreviousCenterYKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 @end
 
 
@@ -332,19 +359,12 @@
     return self.suspensionView.isHidden;
 }
 - (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state {
-    //    [self.suspensionView setTitle:title forState:state];
     [self.suspensionView setTitle:title];
 }
 - (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state {
-    //    [self.suspensionView setImage:image forState:state];
     [self.suspensionView setImage:image];
 }
 - (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state {
-    if ([name isEqualToString:@"partner_expedia"]) {
-        //        [self setHiddenSuspension:YES];
-        //        self.suspensionView.invalidHidden = YES;
-        //        name = @"scallcentergroup2.png";
-    }
     [self setSuspensionImage:[UIImage imageNamed:name] forState:state];
 }
 

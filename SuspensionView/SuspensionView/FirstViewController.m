@@ -27,14 +27,18 @@
     while (i <= 5) {
         
         MenuBarHypotenuseItem *item = [MenuBarHypotenuseItem new];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+        [item.hypotenuseButton setImage:[UIImage imageNamed:@"aws-icon"]];
         [a addObject:item];
         i++;
     }
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow showWithMenuBarItems:a menuSize:CGSizeMake(320, 320) itemSize:CGSizeMake(64.0, 64.0)];
+    
+    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 320, 320)];
+    menuView.isOnce = YES;
+    menuView.shouldShowWhenViewWillAppear = NO;
+    [menuView setMenuBarItems:a itemSize:CGSizeMake(64, 64)];
+    
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
-//    [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"]];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"]];
     
     __block __weak typeof(menuView) weakMenuView = menuView;
@@ -48,9 +52,7 @@
         }
     };
     
-//    UITextField *tf = [[UITextField alloc] initWithFrame:CGRectMake(0, 380, self.view.frame.size.width, 38)];
-//    [self.view addSubview:tf];
-//    [tf becomeFirstResponder];
+
 
 }
 
