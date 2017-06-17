@@ -142,7 +142,6 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 - (void)setItemSize:(CGSize)itemSize {
-    // 设置默认值
     CGSize menuSize = self.frame.size;
     if (self.frame.size.width == 0 || self.frame.size.height == 0) {
         menuSize = CGSizeMake(280.0, 280.0);

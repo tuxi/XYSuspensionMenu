@@ -159,26 +159,26 @@ imageView = _imageView;
         return;
     }
     _title = title;
+    [self setNeedsLayout];
     self.titleLabel.text = title;
     [self.titleLabel sizeToFit];
-    [self setNeedsLayout];
 }
 - (void)setSubtitle:(NSString *)subtitle {
     if (_subtitle == subtitle) {
         return;
     }
     _subtitle = subtitle;
+    [self setNeedsLayout];
     self.detailLabel.text = subtitle;
     [self.detailLabel sizeToFit];
-    [self setNeedsLayout];
 }
 - (void)setImage:(UIImage *)image {
     if (_image == image) {
         return;
     }
     _image = image;
-    self.imageView.image = image;
     [self setNeedsLayout];
+    self.imageView.image = image;
 }
 
 
@@ -206,15 +206,18 @@ imageView = _imageView;
     {
         case OSButtonStyleDefault:
         {
-            self.imageContentView.frame = CGRectNull;
-            self.detailContentView.frame = CGRectNull;
+            _imageContentView.frame = CGRectNull;
+            _detailContentView.frame = CGRectNull;
+            [_imageContentView removeFromSuperview];
+            [_detailContentView removeFromSuperview];
             self.titleContentView.frame = [self boxingRect];
         }
             break;
             
         case OSButtonStyleSubTitle:
         {
-            self.imageContentView.frame = CGRectNull;
+            _imageContentView.frame = CGRectNull;
+            [_imageContentView removeFromSuperview];
             CGRect boxRect = [self boxingRect];
             self.titleContentView.frame = CGRectMake(boxRect.origin.x,
                                                      boxRect.origin.y,
@@ -229,8 +232,10 @@ imageView = _imageView;
             
         case OSButtonStyleCentralImage:
         {
-            self.titleContentView.frame = CGRectNull;
-            self.detailContentView.frame = CGRectNull;
+            _titleContentView.frame = CGRectNull;
+            _detailContentView.frame = CGRectNull;
+            [_titleContentView removeFromSuperview];
+            [_detailContentView removeFromSuperview];
             self.imageContentView.frame = [self boxingRect];
         }
             break;
@@ -239,7 +244,8 @@ imageView = _imageView;
         default:
         {
             CGRect boxRect = [self boxingRect];
-            self.titleContentView.frame = CGRectNull;
+            _titleContentView.frame = CGRectNull;
+            [_titleContentView removeFromSuperview];
             self.imageContentView.frame = CGRectMake(boxRect.origin.x,
                                                      boxRect.origin.y,
                                                      CGRectGetWidth(boxRect),

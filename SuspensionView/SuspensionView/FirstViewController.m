@@ -27,7 +27,7 @@
     while (i <= 5) {
         
         MenuBarHypotenuseItem *item = [MenuBarHypotenuseItem new];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:@"aws-icon"]];
+        [item.hypotenuseButton setImage:[UIImage imageNamed:@"dropbox-icon"]];
         [a addObject:item];
         i++;
     }

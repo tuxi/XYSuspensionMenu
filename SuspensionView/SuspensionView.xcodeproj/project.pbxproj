@@ -13,6 +13,7 @@
 		18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */ = {isa = PBXBuildFile; fileRef = 18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */; };
 		187998AC1EF54C7E008A468F /* OSCustomButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 187998AB1EF54C7E008A468F /* OSCustomButton.m */; };
 		187998AE1EF54D50008A468F /* aws-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 187998AD1EF54D50008A468F /* aws-icon.png */; };
+		187998B11EF599E8008A468F /* dropbox-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 187998B01EF599E8008A468F /* dropbox-icon.png */; };
 		188666C51EF420B1006A332E /* SuspensionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 188666C41EF420B1006A332E /* SuspensionView.m */; };
 		188666C81EF42186006A332E /* NSObject+SuspensionKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 188666C71EF42186006A332E /* NSObject+SuspensionKey.m */; };
 		188666CB1EF422AC006A332E /* SuspensionMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 188666CA1EF422AC006A332E /* SuspensionMenuView.m */; };
@@ -50,6 +51,7 @@
 		187998AA1EF54C7E008A468F /* OSCustomButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSCustomButton.h; sourceTree = "<group>"; };
 		187998AB1EF54C7E008A468F /* OSCustomButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSCustomButton.m; sourceTree = "<group>"; };
 		187998AD1EF54D50008A468F /* aws-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "aws-icon.png"; sourceTree = "<group>"; };
+		187998B01EF599E8008A468F /* dropbox-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dropbox-icon.png"; sourceTree = "<group>"; };
 		188666C31EF420B1006A332E /* SuspensionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionView.h; sourceTree = "<group>"; };
 		188666C41EF420B1006A332E /* SuspensionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionView.m; sourceTree = "<group>"; };
 		188666C61EF42186006A332E /* NSObject+SuspensionKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+SuspensionKey.h"; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 				18D433BD1ED33BF200DC3734 /* mm.jpg */,
 				18BE092A1ECF7C1200A64543 /* partner_boobuz.png */,
 				18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */,
+				187998B01EF599E8008A468F /* dropbox-icon.png */,
 				187998AD1EF54D50008A468F /* aws-icon.png */,
 				182774701ECFD4CF00A72E00 /* Lib */,
 				18A504DB1E61DE4000EE96E8 /* Main.storyboard */,
@@ -299,6 +302,7 @@
 			files = (
 				187998AE1EF54D50008A468F /* aws-icon.png in Resources */,
 				18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */,
+				187998B11EF599E8008A468F /* dropbox-icon.png in Resources */,
 				18BE092B1ECF7C1200A64543 /* partner_boobuz.png in Resources */,
 				18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */,
 				18D433BE1ED33BF200DC3734 /* mm.jpg in Resources */,
