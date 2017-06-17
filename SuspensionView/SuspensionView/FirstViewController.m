@@ -8,6 +8,8 @@
 
 #import "FirstViewController.h"
 #import "SuspensionControl.h"
+#import "SuspensionView.h"
+#import "SuspensionMenuView.h"
 
 @interface FirstViewController ()
 
@@ -32,7 +34,8 @@
     SuspensionMenuWindow *menuView = [SuspensionMenuWindow showWithMenuBarItems:a menuSize:CGSizeMake(320, 320) itemSize:CGSizeMake(64.0, 64.0)];
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
-    [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"] forState:UIControlStateNormal];
+//    [menuView.centerButton setBackgroundImage:[UIImage imageNamed:@"message_keyboard"]];
+    [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"]];
     
     __block __weak typeof(menuView) weakMenuView = menuView;
     menuView.menuBarClickBlock = ^(NSInteger index) {
@@ -44,6 +47,10 @@
             [weakMenuView pushViewController:vc];
         }
     };
+    
+//    UITextField *tf = [[UITextField alloc] initWithFrame:CGRectMake(0, 380, self.view.frame.size.width, 38)];
+//    [self.view addSubview:tf];
+//    [tf becomeFirstResponder];
 
 }
 
