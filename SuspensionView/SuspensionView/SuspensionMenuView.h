@@ -9,23 +9,13 @@
 #import <UIKit/UIKit.h>
 #import "SuspensionView.h"
 
+
+NS_ASSUME_NONNULL_BEGIN
+
 @class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
-@protocol SuspensionWindowProtocol <NSObject>
 
-/// 创建悬浮控件
-/// isOnce属性为YES时，每次调用都会展示一个，但最终只会展示一个悬浮控件，保存在字典时，key相同，value被覆盖掉
-/// isOnce当为NO时重复调用此方法，可展示多个，注意：每调用一次就创建并展示一个
-+ (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame;
-
-/// 释放持有的所有window
-+ (void)releaseAll;
-
-- (void)dismiss:(void (^ _Nullable)(void))block;
-
-@end
-
-@interface SuspensionWindow : SuspensionView <SuspensionWindowProtocol>
+@interface SuspensionWindow : SuspensionView 
 
 @end
 
@@ -48,11 +38,15 @@
 
 @end
 
-@interface SuspensionMenuWindow : SuspensionMenuView <SuspensionWindowProtocol>
+@interface SuspensionMenuWindow : SuspensionMenuView
 
 @property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
 
 + (instancetype)showWithMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems menuSize:(CGSize)menuSize itemSize:(CGSize)itemSize;
+
+- (instancetype)initWithFrame:(CGRect)frame;
+
+//- (void)addAction:(MenuBarHypotenuseItem *)hypotenuseItem;
 
 @end
 
@@ -72,3 +66,5 @@
 @property (nonatomic, weak, nullable) SuspensionMenuView *suspensionMenuView;
 
 @end
+
+NS_ASSUME_NONNULL_END

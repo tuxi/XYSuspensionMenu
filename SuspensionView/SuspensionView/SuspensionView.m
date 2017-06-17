@@ -8,21 +8,22 @@
 
 #import "SuspensionView.h"
 #import "SuspensionControl.h"
+#import <objc/runtime.h>
 
 @interface SuspensionView ()
 
-@property (nonatomic, copy) void (^movingCallBack)();
-@property (nonatomic, copy) void (^beginMoveCallBack)();
 @property (nonatomic, assign) CGPoint previousCenter;
 @property (nonatomic, weak) UIPanGestureRecognizer *panGestureRecognizer;
+@property (nonatomic, assign) BOOL isMoving;
 
 @end
 
 @implementation SuspensionView
 
-- (NSString *)currentKey {
-    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : self.key;
+- (NSString *)key {
+    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : [super key];
 }
+
 
 #pragma mark - 初始化
 
@@ -69,58 +70,8 @@
 
 #pragma mark - Public
 
-- (void)defaultAnimation {
-    self.usingSpringWithDamping = 0.3;
-    self.initialSpringVelocity = 5.0;
-    self.alpha = 0.5;
-    [self beginMoveCallBack:^{
-        self.alpha = 0.8;
-    }];
-    [self moveCallBack:^{
-        self.alpha = 0.6;
-    }];
-    UIColor *oColor = self.backgroundColor;
-    [self leanFinishCallBack:^(CGPoint centerPoint){
-        [UIView animateWithDuration:1.0 delay:0.0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionAllowUserInteraction animations:^{
-            self.alpha = 1.0;
-            self.backgroundColor = [UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0];
-        } completion:^(BOOL finished) {
-            if (!self.isMoving) {
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [UIView animateWithDuration:3.0 delay:0.0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionAllowUserInteraction animations:^{
-                        self.alpha = 0.1;
-                        self.backgroundColor = [UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0];
-                    } completion:^(BOOL finished) {
-                        [UIView animateWithDuration:1.5 delay:0.0 options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionAllowUserInteraction animations:^{
-                            self.backgroundColor = oColor;
-                        } completion:^(BOOL finished) {
-                            
-                        }];
-                        
-                    }];
-                    
-                });
-            }
-        }];
-        
-    }];
-    
-}
-
 - (void)leanFinishCallBack:(void (^)(CGPoint centerPoint))callback {
     self.leanFinishCallBack = callback;
-}
-
-- (void)moveCallBack:(void (^)())callBcak {
-    self.movingCallBack = callBcak;
-}
-
-- (void)beginMoveCallBack:(void (^)())callBcak {
-    self.beginMoveCallBack = callBcak;
-}
-
-- (void)clickCallback:(void (^)())callback {
-    self.clickCallBack = callback;
 }
 
 - (void)setHidden:(BOOL)hidden {
@@ -130,26 +81,23 @@
     [super setHidden:hidden];
 }
 
-- (void)dismiss:(void (^)(void))block {
+- (void)removeFromSuperview {
+    [super removeFromSuperview];
     
-    if (block) {
-        block();
-    }
     self.clickCallBack = nil;
     self.leanFinishCallBack = nil;
-    [self removeFromSuperview];
-    
+    self.delegate = nil;
 }
 
-#pragma mark - Private
+
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Position ~~~~~~~~~~~~~~~~~~~~~~~
+
 - (void)_locationChange:(UIPanGestureRecognizer *)p {
     
     CGPoint panPoint = [p locationInView:[UIApplication sharedApplication].delegate.window];
     
     if(p.state == UIGestureRecognizerStateBegan) {
-        if (self.beginMoveCallBack) {
-            self.beginMoveCallBack();
-        }
+    
     }else if(p.state == UIGestureRecognizerStateChanged) {
         [self movingWithPoint:panPoint];
         
@@ -163,17 +111,21 @@
         [self autoLeanToTargetPosition:newTargetPoint];
     }
     
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:locationChange:)]) {
+        [self.delegate suspensionView:self locationChange:p];
+        return;
+    }
+    
     if (self.locationChange) {
         self.locationChange(panPoint);
     }
 }
 
-- (void)locationChange:(UIPanGestureRecognizer *)p {}
 
 /// 手指移动时，移动视图
 - (void)movingWithPoint:(CGPoint)point {
-    [SuspensionControl windowForKey:self.currentKey].center = CGPointMake(point.x, point.y);
-    UIWindow *w = [SuspensionControl windowForKey:self.currentKey];
+    [SuspensionControl windowForKey:self.key].center = CGPointMake(point.x, point.y);
+    UIWindow *w = [SuspensionControl windowForKey:self.key];
     if (w) {
         w.center = CGPointMake(point.x, point.y);
     } else {
@@ -192,6 +144,12 @@
 
 /// 根据传入的位置检查处理最终依靠到边缘的位置
 - (CGPoint)_checkTargetPosition:(CGPoint)panPoint {
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(leanToNewTragetPosionForSuspensionView:)]) {
+        self.previousCenter = [self.delegate leanToNewTragetPosionForSuspensionView:self];
+        return self.previousCenter;
+    }
+    
     CGFloat touchWidth = self.frame.size.width;
     CGFloat touchHeight = self.frame.size.height;
     CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
@@ -236,46 +194,50 @@
     return newTargetPoint;
 }
 
-- (void)leanToPreviousLeanPosition {
+- (void)moveToPreviousLeanPosition {
     
     [self autoLeanToTargetPosition:self.previousCenter];
 }
 
-//- (void)leanToPosition:(CGPoint)point{
-//    CGPoint newPoint = [self convertPoint:point toView:[UIApplication sharedApplication].delegate.window];
-//    [self autoLeanToTargetPosition:newPoint];
-//}
-
 /// 移动移动到屏幕中心位置
-- (void)leanToScreentCenter {
+- (void)moveToScreentCenter {
     
-    CGPoint screenCenter = CGPointMake((kSCREENT_WIDTH - [SuspensionControl windowForKey:self.key].bounds.size.width)*0.5, (kSCREENT_HEIGHT - [SuspensionControl windowForKey:self.key].bounds.size.height)*0.5);
+//    CGPoint screenCenter = CGPointMake((kSCREENT_WIDTH - [SuspensionControl windowForKey:self.key].bounds.size.width)*0.5, (kSCREENT_HEIGHT - [SuspensionControl windowForKey:self.key].bounds.size.height)*0.5);
     
-    [self autoLeanToTargetPosition:screenCenter];
+    [self autoLeanToTargetPosition:[UIApplication sharedApplication].delegate.window.center];
 }
 
 /// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
 - (void)autoLeanToTargetPosition:(CGPoint)point {
     
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:willAutoLeanToTargetPosition:)]) {
+        [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
+    }
     [UIView animateWithDuration:0.3 delay:0.1 usingSpringWithDamping:self.usingSpringWithDamping initialSpringVelocity:self.initialSpringVelocity options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionAllowUserInteraction animations:^{
-        UIWindow *w = [SuspensionControl windowForKey:self.currentKey];
+        UIWindow *w = [SuspensionControl windowForKey:self.key];
         if (w) {
             w.center = point;
         } else {
             self.center = point;
         }
-        if (self.movingCallBack) {
-            self.movingCallBack();
-        }
         
     } completion:^(BOOL finished) {
         if (finished) {
-            if (self.leanFinishCallBack) {
-                self.leanFinishCallBack(point);
-            }
+            
+            [self autoLeanToTargetPositionCompletion:point];
             _isMoving = NO;
         }
     }];
+}
+
+- (void)autoLeanToTargetPositionCompletion:(CGPoint)currentPosition {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:didAutoLeanToTargetPosition:)]) {
+        [self.delegate suspensionView:self didAutoLeanToTargetPosition:currentPosition];
+        return;
+    }
+    if (self.leanFinishCallBack) {
+        self.leanFinishCallBack(currentPosition);
+    }
 }
 
 - (void)orientationDidChange:(NSNotification *)note {
@@ -287,14 +249,22 @@
     }
 }
 
-#pragma mark - Actions
-- (void)btnClick:(UIButton *)btn {
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Actions ~~~~~~~~~~~~~~~~~~~~~~~
+
+- (void)btnClick:(id)sender {
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionViewDidClickedButton:)]) {
+        [self.delegate suspensionViewDidClickedButton:self];
+        return;
+    }
+    
     if (self.clickCallBack) {
         self.clickCallBack();
     }
 }
 
-#pragma mark - setter \ getter
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ setter \ getter ~~~~~~~~~~~~~~~~~~~~~~~
+
 - (SuspensionViewLeanEdgeType)leanEdgeType {
     return _leanEdgeType ?: SuspensionViewLeanEdgeTypeEachSide;
 }
@@ -306,3 +276,92 @@
 
 @end
 
+
+@interface UIResponder ()
+
+@property (nonatomic) SuspensionView *suspensionView;
+
+@end
+
+@implementation UIResponder (SuspensionView)
+
+- (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame {
+    BOOL result = [self isKindOfClass:[UIViewController class]] || [self isKindOfClass:[UIView class]];
+    if (!result) {
+        NSAssert(result, @"当前类应为UIViewController或UIView或他们的子类");
+        return nil;
+    }
+    if (!self.suspensionView && !self.suspensionView.superview) {
+        SuspensionView *sv = [[SuspensionView alloc] initWithFrame:frame];
+        sv.clipsToBounds = YES;
+        if ([self isKindOfClass:[UIViewController class]]) {
+            UIViewController *vc = (UIViewController *)self;
+            [vc.view addSubview:sv];
+        }
+        if ([self isKindOfClass:[UIView class]]) {
+            UIView *v = (UIView *)self;
+            [v addSubview:sv];
+        }
+        self.suspensionView = sv;
+    }
+    if ([self isKindOfClass:[UIViewController class]]) {
+        UIViewController *vc = (UIViewController *)self;
+        [vc.view bringSubviewToFront:self.suspensionView];
+    } else if ([self isKindOfClass:[UIView class]]) {
+        UIView *v = (UIView *)self;
+        [v bringSubviewToFront:self.suspensionView];
+    }
+    
+    return self.suspensionView;
+}
+
+
+- (void)dismissSuspensionView:(void (^)())block {
+    
+    [self.suspensionView removeFromSuperview];
+    self.suspensionView = nil;
+    if (block) {
+        block();
+    }
+}
+
+- (void)setHiddenSuspension:(BOOL)flag {
+    self.suspensionView.hidden = flag;
+}
+- (BOOL)isHiddenSuspension {
+    return self.suspensionView.isHidden;
+}
+- (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state {
+    //    [self.suspensionView setTitle:title forState:state];
+    [self.suspensionView setTitle:title];
+}
+- (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state {
+    //    [self.suspensionView setImage:image forState:state];
+    [self.suspensionView setImage:image];
+}
+- (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state {
+    if ([name isEqualToString:@"partner_expedia"]) {
+        //        [self setHiddenSuspension:YES];
+        //        self.suspensionView.invalidHidden = YES;
+        //        name = @"scallcentergroup2.png";
+    }
+    [self setSuspensionImage:[UIImage imageNamed:name] forState:state];
+}
+
+- (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius {
+    [self.suspensionView setBackgroundColor:color];
+    if (cornerRadius) {
+        self.suspensionView.layer.cornerRadius = cornerRadius;
+        self.suspensionView.layer.masksToBounds = YES;
+    }
+}
+
+- (SuspensionView *)suspensionView {
+    return objc_getAssociatedObject(self, @selector(suspensionView));
+}
+
+- (void)setSuspensionView:(SuspensionView *)suspensionView {
+    objc_setAssociatedObject(self, @selector(suspensionView), suspensionView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+@end

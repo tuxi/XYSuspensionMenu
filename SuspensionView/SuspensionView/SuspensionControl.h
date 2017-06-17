@@ -14,27 +14,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
-
 @class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
-
-@interface UIResponder (SuspensionView)
-
-- (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame;
-- (void)dismissSuspensionView:(void (^)())block;
-- (void)setHiddenSuspension:(BOOL)flag;
-- (BOOL)isHiddenSuspension;
-- (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state;
-- (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state;
-- (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state;
-- (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius;
-@end
 
 @interface SuspensionControl : NSObject
 
 @property (nonatomic, strong, class, readonly) SuspensionControl *shareInstance;
 
-@property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, UIWindow *> *windows;
++ (NSDictionary<NSString *, UIWindow *> *)windows;
 
 + (UIWindow *)windowForKey:(NSString *)key;
 + (void)setWindow:(UIWindow *)window forKey:(NSString *)key;
