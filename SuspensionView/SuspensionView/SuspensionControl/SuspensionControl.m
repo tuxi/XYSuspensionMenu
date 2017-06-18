@@ -15,6 +15,8 @@
 #define OS_MAX_CORNER_RADIUS    MIN(CGRectGetWidth(self.bounds) * 0.5, CGRectGetHeight(self.bounds) * 0.5)
 #define OS_MAX_BORDER_WIDTH     OS_MAX_CORNER_RADIUS
 #define OS_PADDING_VALUE        0.29
+#define  OS_MIN_SCREEN_SIZE     MIN(kSCREENT_WIDTH, kSCREENT_HEIGHT)
+#define OS_MAX_MENUVIEW_SIZE    CGSizeMake(MIN(MAX(MAX(CGRectGetWidth(self.frame), CGRectGetHeight(self.frame)), 280.0), OS_MIN_SCREEN_SIZE), MIN(MAX(MAX(CGRectGetWidth(self.frame), CGRectGetHeight(self.frame)), 280.0), OS_MIN_SCREEN_SIZE))
 
 typedef NS_ENUM(NSInteger, OSButtonStyle) {
     OSButtonStyleDefault,
@@ -69,8 +71,9 @@ static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    
-    self.textLabel.frame = self.bounds;
+    if (_usingMaskView) {
+        self.textLabel.frame = self.bounds;
+    }
 }
 
 @end
@@ -105,7 +108,9 @@ static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    self.imageView.frame = self.bounds;
+    if (_usingMaskView) {
+        self.imageView.frame = self.bounds;
+    }
     
 }
 
@@ -911,21 +916,27 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:willAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
     }
-    [UIView animateWithDuration:0.3 delay:0.1 usingSpringWithDamping:self.usingSpringWithDamping initialSpringVelocity:self.initialSpringVelocity options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionAllowUserInteraction animations:^{
-        UIWindow *w = [SuspensionControl windowForKey:self.key];
-        if (w) {
-            w.center = point;
-        } else {
-            self.center = point;
-        }
-        
-    } completion:^(BOOL finished) {
-        if (finished) {
-            
-            [self autoLeanToTargetPositionCompletion:point];
-            _isMoving = NO;
-        }
-    }];
+    [UIView animateWithDuration:0.3
+                          delay:0.1
+         usingSpringWithDamping:self.usingSpringWithDamping
+          initialSpringVelocity:self.initialSpringVelocity
+                        options:UIViewAnimationOptionCurveEaseIn |
+                        UIViewAnimationOptionAllowUserInteraction
+                     animations:^{
+                         UIWindow *w = [SuspensionControl windowForKey:self.key];
+                         if (w) {
+                             w.center = point;
+                         } else {
+                             self.center = point;
+                         }
+                         
+                     } completion:^(BOOL finished) {
+                         if (finished) {
+                             
+                             [self autoLeanToTargetPositionCompletion:point];
+                             _isMoving = NO;
+                         }
+                     }];
 }
 
 - (void)autoLeanToTargetPositionCompletion:(CGPoint)currentPosition {
@@ -1129,11 +1140,10 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 #else
     suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
 #endif
-    //    [suspensionWindow makeKeyAndVisible];
-    // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
+    
     UIViewController *vc = [UIViewController new];
     suspensionWindow.rootViewController = vc;
-    // 不设置此属性，window在选择时，会出现四周黑屏现象
+    
     [suspensionWindow.layer setMasksToBounds:YES];
     
     [SuspensionControl setWindow:suspensionWindow forKey:self.key];
@@ -1209,16 +1219,10 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 - (void)setItemSize:(CGSize)itemSize {
-    CGSize menuSize = self.frame.size;
-    if (self.frame.size.width == 0 || self.frame.size.height == 0) {
-        menuSize = CGSizeMake(280.0, 280.0);
-    }
-    if (itemSize.width == 0 || itemSize.height == 0) {
-        itemSize = CGSizeMake(64.0, 64.0);
-    }
-    _menuWindowSize = menuSize;
-    _itemSize = itemSize;
-    _centerWindowSize = itemSize;
+    
+    _menuWindowSize = self.frame.size;
+    _itemSize = CGSizeMake(MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80), MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80));
+    _centerWindowSize = _itemSize;
     
     [self setupLayout];
 }
@@ -1240,37 +1244,46 @@ static const CGFloat menuBarBaseTag = 100;
     }
 }
 
-//// Push View Controller
-- (void)pushViewController:(UIViewController *)viewController {
+- (void)testPushViewController:(UIViewController *)viewController {
+    
     [UIView animateWithDuration:0.3
                           delay:0.0
+         usingSpringWithDamping:0.8
+          initialSpringVelocity:0.5
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-                         // 在中心视图中滑动按钮并隐藏
-                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
-                         [self setAlpha:0.0];
-                         for (UIButton *btn in self.subviews) {
-                             if ([btn isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
-                                 [btn setAlpha:0.0];
-                             }
-                         }
-                         [self.centerButton moveToPreviousLeanPosition];
-                         
-                     } completion:^(BOOL finished) {
-                         [[self topViewController].navigationController pushViewController:viewController animated:YES];
-                         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
-                         CGRect menuFrame =  menuWindow.frame;
-                         menuFrame.size = CGSizeZero;
-                         menuWindow.frame = menuFrame;
-                         _isDismiss = YES;
-                         _isShow = NO;
-                     }];
+                     animations:[self pushAnimationsBlock]
+                     completion:[self pushAnimationsCompetionsBlockForViewController:viewController]];
 }
 
+- (void (^)())pushAnimationsBlock {
+    return ^ {
+        [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
+        [self setAlpha:0.0];
+        for (UIControl *btn in self.subviews) {
+            if ([btn isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+                [btn setAlpha:0.0];
+            }
+        }
+        [self.centerButton moveToPreviousLeanPosition];
+    };
+}
+
+- (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc {
+    return ^(BOOL finished) {
+        [[self topViewController].navigationController pushViewController:vc animated:YES];
+        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+        CGRect menuFrame =  menuWindow.frame;
+        menuFrame.size = CGSizeZero;
+        menuWindow.frame = menuFrame;
+        _isDismiss = YES;
+        _isShow = NO;
+    };
+}
 
 - (void)show {
     if (_isShow) return;
-    
+    self.centerButton.usingSpringWithDamping = 0.8;
+    self.centerButton.initialSpringVelocity = 20;
     if (_isFiristShow) {
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
     }
@@ -1279,8 +1292,6 @@ static const CGFloat menuBarBaseTag = 100;
         [self.centerButton moveToScreentCenter];
     }
     
-    UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
-    
     [self centerButton];
     [self _updateMenuViewCenterWithIsShow:YES];
     
@@ -1288,49 +1299,62 @@ static const CGFloat menuBarBaseTag = 100;
     
     [UIView animateWithDuration:0.4
                           delay:0.0
+         usingSpringWithDamping:self.usingSpringWithDamping
+          initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-                         
-                         [menuWindow setAlpha:1.0];
-                         [self setAlpha:1.0];
-                         
-                         for (UIButton *btn in self.subviews) {
-                             if ([btn isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
-                                 [btn setAlpha:1.0];
-                             }
+                     animations:[self showAnimationsBlock]
+                     completion:[self showCompletionBlock]];
+    
+}
+
+- (void (^)())showAnimationsBlock {
+    return ^ {
+        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+        [menuWindow setAlpha:1.0];
+        [self setAlpha:1.0];
+        
+        for (UIView *view in self.subviews) {
+            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+                [view setAlpha:1.0];
+            }
+        }
+        
+        // 更新menu bar 的 布局
+        CGFloat triangleHypotenuse = 0.0;
+        if (_isFiristShow) {
+            triangleHypotenuse = _minBounceOfTriangleHypotenuse;
+        } else {
+            triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
+        }
+        [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse];
+    };
+    
+}
+
+- (void (^)(BOOL finished))showCompletionBlock {
+    
+    return ^(BOOL finished) {
+        // 此处动画结束时,menuWindow的bounds为CGRectZero了,原因是动画时间相错
+        //                         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
+        //                         if (menuWindow.frame.size.width == 0 || menuWindow.frame.size.height == 0) {
+        //                             NSLog(@"为0了");
+        //                             [self _updateMenuViewCenterWithIsShow:YES];
+        //                         }
+        [UIView animateWithDuration:0.1
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                         animations:^{
+                             [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
                          }
-                         
-                         // 更新menu bar 的 布局
-                         CGFloat triangleHypotenuse = 0.0;
-                         if (_isFiristShow) {
-                             triangleHypotenuse = _minBounceOfTriangleHypotenuse;
-                         } else {
-                             triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
-                         }
-                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse];
-                     }
-                     completion:^(BOOL finished) {
-                         // 此处动画结束时,menuWindow的bounds为CGRectZero了,原因是动画时间相错
-                         //                         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
-                         //                         if (menuWindow.frame.size.width == 0 || menuWindow.frame.size.height == 0) {
-                         //                             NSLog(@"为0了");
-                         //                             [self _updateMenuViewCenterWithIsShow:YES];
-                         //                         }
-                         [UIView animateWithDuration:0.1
-                                               delay:0.0
-                                             options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                                          animations:^{
-                                              [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
-                                          }
-                                          completion:^(BOOL finished) {
-                                              _isShow = YES;
-                                              _isDismiss = NO;
-                                              _isInProcessing = NO;
-                                              _isFiristShow = NO;
-                                              [self _showCompetion];
-                                              
-                                          }];
-                     }];
+                         completion:^(BOOL finished) {
+                             _isShow = YES;
+                             _isDismiss = NO;
+                             _isInProcessing = NO;
+                             _isFiristShow = NO;
+                             [self _showCompetion];
+                             
+                         }];
+    };
 }
 
 - (void)dismiss {
@@ -1361,44 +1385,54 @@ static const CGFloat menuBarBaseTag = 100;
     //    }
     //
     _isInProcessing = YES;
+    self.centerButton.usingSpringWithDamping = 0.5;
+    self.centerButton.initialSpringVelocity = 10;
     
-    // 隐藏menu bar button
     [UIView animateWithDuration:0.3
                           delay:0.0
+         usingSpringWithDamping:self.usingSpringWithDamping
+          initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-                         
-                         for (UIButton * button in [self subviews])
-                             [button setFrame:_memuBarButtonOriginFrame];
-                         [self setAlpha:0.0];
-                         for (UIButton *btn in self.subviews) {
-                             if ([btn isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
-                                 [btn setAlpha:0.0];
-                             }
-                         }
-                         
-                         if (!isTriggerPanGesture) {
-                             [self.centerButton moveToPreviousLeanPosition];
-                         }
-                         
-                     } completion:^(BOOL finished) {
-                         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
-                         
-                         [UIView animateWithDuration:0.1 animations:^{
-                             [menuWindow setAlpha:0.0];
-                             // 让其frame为zero，为了防止其隐藏后所在的位置无法响应事件
-                         } completion:^(BOOL finished) {
-                             CGRect menuFrame =  menuWindow.frame;
-                             menuFrame.size = CGSizeZero;
-                             menuWindow.frame = menuFrame;
-                             _isDismiss = YES;
-                             _isShow  = NO;
-                             _isInProcessing = NO;
-                             _isFiristDismiss = NO;
-                             [self _dismissCompetion];
-                         } ];
-                         
-                     }];
+                     animations:[self dismissAnimationsBlockWityIsTriggerPanGesture:isTriggerPanGesture]
+                     completion:[self dismissCompletionBlock]];
+}
+
+- (void (^)())dismissAnimationsBlockWityIsTriggerPanGesture:(BOOL)isTriggerPanGesture {
+    return ^ {
+        for (UIView * view in [self subviews])
+            [view setFrame:_memuBarButtonOriginFrame];
+        [self setAlpha:0.0];
+        for (UIView *view in self.subviews) {
+            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+                [view setAlpha:0.0];
+            }
+        }
+        
+        if (!isTriggerPanGesture) {
+            [self.centerButton moveToPreviousLeanPosition];
+        }
+    };
+}
+
+- (void (^)(BOOL finished))dismissCompletionBlock {
+    return ^(BOOL finished) {
+        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+        
+        [UIView animateWithDuration:0.1 animations:^{
+            [menuWindow setAlpha:0.0];
+            // 让其frame为zero，为了防止其隐藏后所在的位置无法响应事件
+        } completion:^(BOOL finished) {
+            CGRect menuFrame =  menuWindow.frame;
+            menuFrame.size = CGSizeZero;
+            menuWindow.frame = menuFrame;
+            _isDismiss = YES;
+            _isShow  = NO;
+            _isInProcessing = NO;
+            _isFiristDismiss = NO;
+            [self _dismissCompetion];
+        } ];
+
+    };
 }
 
 - (void)_dismissCompetion {
@@ -1475,6 +1509,8 @@ static const CGFloat menuBarBaseTag = 100;
     _isFiristShow = YES;
     _isFiristDismiss = YES;
     _shouldLeanToScreenCenterWhenShow = YES;
+    _usingSpringWithDamping = 0.6;
+    _initialSpringVelocity = 0.0;
     
     self.autoresizingMask = UIViewAutoresizingNone;
     self.layer.cornerRadius = 12.8;
@@ -1507,6 +1543,9 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 
+- (void)setFrame:(CGRect)frame {
+    [super setFrame:CGRectMake(frame.origin.x, frame.origin.y, OS_MAX_MENUVIEW_SIZE.width, OS_MAX_MENUVIEW_SIZE.height)];
+}
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - Actions
@@ -1528,11 +1567,11 @@ static const CGFloat menuBarBaseTag = 100;
 //
 - (void)menuBarButtonClick:(id)sender {
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedHypotenuseButtonAtIndex:)]) {
-        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[(UIButton *)sender tag] - menuBarBaseTag - 1];
+        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[sender tag] - menuBarBaseTag - 1];
         return;
     }
     if (_menuBarClickBlock) {
-        _menuBarClickBlock([(UIButton *)sender tag] - menuBarBaseTag - 1);
+        _menuBarClickBlock([sender tag] - menuBarBaseTag - 1);
     }
 }
 
@@ -1607,7 +1646,7 @@ static const CGFloat menuBarBaseTag = 100;
         buttonTag = menuBarBaseTag + buttonTag;
     }
     
-    UIButton * button = (UIButton *)[self viewWithTag:buttonTag];
+    UIControl * button = (UIControl *)[self viewWithTag:buttonTag];
     if (button) {
         [button setFrame:CGRectMake(origin.x,
                                     origin.y,
@@ -1852,12 +1891,9 @@ static const CGFloat menuBarBaseTag = 100;
     suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
 #endif
     
-    // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
-    
     UIViewController *vc = [[SuspensionMenuController alloc] initWithMenuView:self];
     
     suspensionWindow.rootViewController = vc;
-    // 不设置此属性，window在选择时，会出现四周黑屏现象
     [suspensionWindow.layer setMasksToBounds:YES];
     
     [SuspensionControl setWindow:suspensionWindow forKey:self.key];

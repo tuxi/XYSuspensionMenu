@@ -44,6 +44,7 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 - (void)suspensionMenuViewDidDismiss:(SuspensionMenuView *)suspensionMenuView;
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView centerButtonLocationChange:(UIPanGestureRecognizer *)pan;
 
+
 @end
 
 
@@ -138,6 +139,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, copy) void (^ _Nullable showCompletion)();
 @property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
+@property (nonatomic, assign) CGFloat usingSpringWithDamping;
+@property (nonatomic, assign) CGFloat initialSpringVelocity;
 
 - (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems
                itemSize:(CGSize)itemSize;
@@ -145,7 +148,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)show;
 - (void)dismiss;
 
-- (void)pushViewController:(UIViewController *)viewController;
+- (void)testPushViewController:(UIViewController *)viewController;
 
 @end
 

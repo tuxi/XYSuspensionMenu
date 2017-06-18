@@ -46,10 +46,10 @@
         i++;
     }
     
-    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 320, 320)];
+    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
     menuView.isOnce = YES;
     menuView.shouldShowWhenViewWillAppear = NO;
-    [menuView setMenuBarItems:a itemSize:CGSizeMake(64, 64)];
+    [menuView setMenuBarItems:a itemSize:CGSizeMake(50, 50)];
     
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
@@ -62,7 +62,7 @@
             
             UIViewController *vc = [UIViewController new];
             vc.view.backgroundColor = [UIColor whiteColor];
-            [weakMenuView pushViewController:vc];
+            [weakMenuView testPushViewController:vc];
         }
     };
     
