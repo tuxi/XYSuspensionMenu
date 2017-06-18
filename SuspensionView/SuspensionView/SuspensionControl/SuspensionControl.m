@@ -1257,6 +1257,13 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void (^)())pushAnimationsBlock {
     return ^ {
+        if (self.shouldHiddenCenterButtonWhenShow) {
+            UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+            CGRect centerFrame =  centerWindow.frame;
+            centerFrame.size = _centerWindowSize;
+            centerWindow.frame = centerFrame;
+            centerWindow.alpha = 1.0;
+        }
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_maxTriangleHypotenuse];
         [self setAlpha:0.0];
         for (UIControl *btn in self.subviews) {
