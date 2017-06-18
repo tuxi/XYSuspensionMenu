@@ -728,7 +728,12 @@ static const CGFloat menuBarBaseTag = 100;
 @property (nonatomic, strong) MenuBarHypotenuseButton *hypotenuseButton;
 @end
 @implementation MenuBarHypotenuseItem
-
+- (instancetype)initWithButtonType:(OSButtonType)buttonType {
+    if (self = [super init]) {
+        self.hypotenuseButton = [MenuBarHypotenuseButton buttonWithType:buttonType];
+    }
+    return self;
+}
 - (instancetype)init
 {
     self = [super init];
@@ -739,9 +744,13 @@ static const CGFloat menuBarBaseTag = 100;
     return self;
 }
 
-- (void)dealloc {
+- (void)removeFromSuperview {
     [self.hypotenuseButton removeFromSuperview];
     self.hypotenuseButton = nil;
+}
+
+- (void)dealloc {
+    [self removeFromSuperview];
 }
 
 @end

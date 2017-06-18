@@ -30,8 +30,17 @@
     int i = 0;
     
     while (i <= 5) {
-        
-        MenuBarHypotenuseItem *item = [MenuBarHypotenuseItem new];
+        OSButtonType type = OSButtonType3;
+        if (i == 1) {
+            type = OSButtonType1;
+        }
+        if (i == 2) {
+            type = OSButtonType2;
+        }
+        if (i == 4) {
+            type = OSButtonType4;
+        }
+        MenuBarHypotenuseItem *item = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
         [item.hypotenuseButton setImage:[UIImage imageNamed:@"dropbox-icon"] forState:UIControlStateNormal];
         [a addObject:item];
         i++;

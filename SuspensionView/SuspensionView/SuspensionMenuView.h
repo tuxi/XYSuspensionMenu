@@ -57,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MenuBarHypotenuseItem : NSObject
 @property (nonatomic, strong, readonly) MenuBarHypotenuseButton *hypotenuseButton;
+- (instancetype)initWithButtonType:(OSButtonType)buttonType;
 @end
 
 @interface MenuBarHypotenuseButton : OSCustomButton

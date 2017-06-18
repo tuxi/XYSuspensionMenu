@@ -14,7 +14,8 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
     OSButtonTypeDefault,
     OSButtonType1,
     OSButtonType2,
-    OSButtonType3
+    OSButtonType3,
+    OSButtonType4
 };
 
 @interface OSCustomButton : UIControl
