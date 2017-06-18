@@ -21,11 +21,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    UIImageView *imageView = [UIImageView new];
-    imageView.frame = CGRectMake(0, 80, 64, 64);
-    imageView.image = [UIImage imageNamed:@"partner_boobuz"];
-    [self.view addSubview:imageView];
-    
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:3];
     int i = 0;
     

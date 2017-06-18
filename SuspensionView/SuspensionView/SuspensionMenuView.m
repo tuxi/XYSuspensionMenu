@@ -56,8 +56,6 @@
 
 - (void)_moveToSuperview {
     
-    UIWindow *currentKeyWindow = [UIApplication sharedApplication].keyWindow;
-    
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
     
 #ifdef DEBUG
@@ -80,9 +78,7 @@
     
     suspensionWindow.suspensionView = self;
     
-    // 保持原先的keyWindow，避免一些不必要的问题
-    [currentKeyWindow makeKeyWindow];
-    
+    suspensionWindow.hidden = NO;
 }
 
 @end
@@ -762,8 +758,6 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void)_moveToSuperview {
     
-    UIWindow *currentKeyWindow = [UIApplication sharedApplication].keyWindow;
-    
     CGRect menuWindowBounds = [UIScreen mainScreen].bounds;
     if (!_shouldShowWhenViewWillAppear) {
         menuWindowBounds = CGRectZero;
@@ -778,7 +772,6 @@ static const CGFloat menuBarBaseTag = 100;
 #else
     suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
 #endif
-    [suspensionWindow makeKeyAndVisible];
     
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
     
@@ -796,8 +789,8 @@ static const CGFloat menuBarBaseTag = 100;
     
     suspensionWindow.suspensionMenuView = self;
     
-    // 保持原先的keyWindow，避免一些不必要的问题
-    [currentKeyWindow makeKeyWindow];
+    suspensionWindow.hidden = NO;
+    
 }
 
 @end
