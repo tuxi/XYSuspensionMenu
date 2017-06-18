@@ -1584,11 +1584,11 @@ static const CGFloat menuBarBaseTag = 100;
 //
 - (void)menuBarButtonClick:(id)sender {
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedHypotenuseButtonAtIndex:)]) {
-        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[sender tag] - menuBarBaseTag - 1];
+        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[(UIView *)sender tag] - menuBarBaseTag - 1];
         return;
     }
     if (_menuBarClickBlock) {
-        _menuBarClickBlock([sender tag] - menuBarBaseTag - 1);
+        _menuBarClickBlock([(UIView *)sender tag] - menuBarBaseTag - 1);
     }
 }
 
