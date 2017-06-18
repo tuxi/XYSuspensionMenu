@@ -9,9 +9,6 @@
 
 #import <UIKit/UIKit.h>
 
-#define kSCREENT_HEIGHT [UIScreen mainScreen].bounds.size.height
-#define kSCREENT_WIDTH [UIScreen mainScreen].bounds.size.width
-
 NS_ASSUME_NONNULL_BEGIN
 @class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
@@ -76,8 +73,8 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 @end
 
 typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
-    SuspensionViewLeanEdgeTypeHorizontal = 1,  /// 自动依靠到屏幕左右边缘
-    SuspensionViewLeanEdgeTypeEachSide         /// 自动依靠到屏幕四边
+    SuspensionViewLeanEdgeTypeHorizontal = 1,
+    SuspensionViewLeanEdgeTypeEachSide
 };
 
 @interface SuspensionView : OSCustomButton
@@ -142,6 +139,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 
+- (instancetype)initWithFrame:(CGRect)frame;
 - (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems
                itemSize:(CGSize)itemSize;
 
