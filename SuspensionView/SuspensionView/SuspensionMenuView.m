@@ -496,6 +496,10 @@ static const CGFloat menuBarBaseTag = 100;
     }
 }
 
+//- (CGPoint)suspensionViewLeanToNewTragetPosion:(SuspensionView *)suspensionView {
+//    return CGPointMake(100, 300);
+//}
+
 #pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Private methods ~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -649,6 +653,32 @@ static const CGFloat menuBarBaseTag = 100;
         [self _setButtonWithTag:5 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
                                                      menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
         [self _setButtonWithTag:6 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+    }
+    
+    if (_menuBarItems.count == 8) {
+        CGFloat degree      = 2 * M_PI / (_menuBarItems.count * 1.0f);   // 计算度数
+        CGFloat triangleA = triangleHypotenuse * cosf(degree); // 斜边的余弦值
+        CGFloat triangleB = triangleHypotenuse * sinf(degree); // 斜边正弦值
+        [self _setButtonWithTag:1 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:2 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+        [self _setButtonWithTag:3 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:4 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:5 origin:CGPointMake(menuWindowRadius - centerWindowRadius,
+                                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
+        [self _setButtonWithTag:6 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+        
+        degree    = M_PI / 2.0f;  // = 36 * M_PI / 180
+        triangleA = triangleHypotenuse * cosf(degree);
+        triangleB = triangleHypotenuse * sinf(degree);
+        [self _setButtonWithTag:7 origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+        [self _setButtonWithTag:8 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
                                                      menuWindowRadius + triangleA - centerWindowRadius)];
     }
     

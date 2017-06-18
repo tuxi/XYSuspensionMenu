@@ -160,8 +160,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 /// 根据传入的位置检查处理最终依靠到边缘的位置
 - (CGPoint)_checkTargetPosition:(CGPoint)panPoint {
     
-    if (self.delegate && [self.delegate respondsToSelector:@selector(leanToNewTragetPosionForSuspensionView:)]) {
-        self.previousCenter = [self.delegate leanToNewTragetPosionForSuspensionView:self];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionViewLeanToNewTragetPosion:)]) {
+        self.previousCenter = [self.delegate suspensionViewLeanToNewTragetPosion:self];
         return self.previousCenter;
     }
     

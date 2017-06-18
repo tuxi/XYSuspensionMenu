@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 - (void)suspensionViewClickedButton:(SuspensionView *)suspensionView;
 - (void)suspensionView:(SuspensionView *)suspensionView locationChange:(UIPanGestureRecognizer *)pan;
-- (CGPoint)leanToNewTragetPosionForSuspensionView:(SuspensionView *)suspensionView;
+- (CGPoint)suspensionViewLeanToNewTragetPosion:(SuspensionView *)suspensionView;
 - (void)suspensionView:(SuspensionView *)suspensionView didAutoLeanToTargetPosition:(CGPoint)position;
 - (void)suspensionView:(SuspensionView *)suspensionView willAutoLeanToTargetPosition:(CGPoint)position;
 

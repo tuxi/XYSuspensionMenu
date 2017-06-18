@@ -29,7 +29,7 @@
     NSMutableArray *a = [NSMutableArray arrayWithCapacity:3];
     int i = 0;
     
-    while (i <= 5) {
+    while (i <= 7) {
         OSButtonType type = OSButtonType3;
         if (i == 1) {
             type = OSButtonType1;
