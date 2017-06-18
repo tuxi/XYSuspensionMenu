@@ -18,6 +18,7 @@
 
 @end
 
+
 @implementation SuspensionWindow
 
 #pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ public methods ~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,7 +64,6 @@
 #else
     suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
 #endif
-    [suspensionWindow makeKeyAndVisible];
     // 给window设置rootViewController是为了当屏幕旋转时，winwow跟随旋转并更新坐标
     UIViewController *vc = [UIViewController new];
     suspensionWindow.rootViewController = vc;
