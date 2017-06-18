@@ -11,12 +11,8 @@
 		182774781ECFD54900A72E00 /* UIImage+Blur.m in Sources */ = {isa = PBXBuildFile; fileRef = 182774771ECFD54900A72E00 /* UIImage+Blur.m */; };
 		18710FA11ED18DC300B4340D /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18710FA01ED18DC300B4340D /* FirstViewController.m */; };
 		18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */ = {isa = PBXBuildFile; fileRef = 18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */; };
-		187998AC1EF54C7E008A468F /* OSCustomButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 187998AB1EF54C7E008A468F /* OSCustomButton.m */; };
 		187998AE1EF54D50008A468F /* aws-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 187998AD1EF54D50008A468F /* aws-icon.png */; };
 		187998B11EF599E8008A468F /* dropbox-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 187998B01EF599E8008A468F /* dropbox-icon.png */; };
-		188666C51EF420B1006A332E /* SuspensionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 188666C41EF420B1006A332E /* SuspensionView.m */; };
-		188666C81EF42186006A332E /* NSObject+SuspensionKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 188666C71EF42186006A332E /* NSObject+SuspensionKey.m */; };
-		188666CB1EF422AC006A332E /* SuspensionMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 188666CA1EF422AC006A332E /* SuspensionMenuView.m */; };
 		18A504D41E61DE4000EE96E8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D31E61DE4000EE96E8 /* main.m */; };
 		18A504D71E61DE4000EE96E8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D61E61DE4000EE96E8 /* AppDelegate.m */; };
 		18A504DA1E61DE4000EE96E8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D91E61DE4000EE96E8 /* ViewController.m */; };
@@ -48,16 +44,8 @@
 		18710F9F1ED18DC300B4340D /* FirstViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirstViewController.h; sourceTree = "<group>"; };
 		18710FA01ED18DC300B4340D /* FirstViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FirstViewController.m; sourceTree = "<group>"; };
 		18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2017-05-21 17_28_52.gif"; sourceTree = "<group>"; };
-		187998AA1EF54C7E008A468F /* OSCustomButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSCustomButton.h; sourceTree = "<group>"; };
-		187998AB1EF54C7E008A468F /* OSCustomButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSCustomButton.m; sourceTree = "<group>"; };
 		187998AD1EF54D50008A468F /* aws-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "aws-icon.png"; sourceTree = "<group>"; };
 		187998B01EF599E8008A468F /* dropbox-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dropbox-icon.png"; sourceTree = "<group>"; };
-		188666C31EF420B1006A332E /* SuspensionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionView.h; sourceTree = "<group>"; };
-		188666C41EF420B1006A332E /* SuspensionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionView.m; sourceTree = "<group>"; };
-		188666C61EF42186006A332E /* NSObject+SuspensionKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+SuspensionKey.h"; sourceTree = "<group>"; };
-		188666C71EF42186006A332E /* NSObject+SuspensionKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+SuspensionKey.m"; sourceTree = "<group>"; };
-		188666C91EF422AC006A332E /* SuspensionMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionMenuView.h; sourceTree = "<group>"; };
-		188666CA1EF422AC006A332E /* SuspensionMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionMenuView.m; sourceTree = "<group>"; };
 		18A504CF1E61DE4000EE96E8 /* SuspensionView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuspensionView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18A504D31E61DE4000EE96E8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18A504D51E61DE4000EE96E8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -124,16 +112,8 @@
 		182774711ECFD4EA00A72E00 /* SuspensionControl */ = {
 			isa = PBXGroup;
 			children = (
-				187998AA1EF54C7E008A468F /* OSCustomButton.h */,
-				187998AB1EF54C7E008A468F /* OSCustomButton.m */,
 				18BE09271ECF7BB400A64543 /* SuspensionControl.h */,
 				18BE09281ECF7BB400A64543 /* SuspensionControl.m */,
-				188666C31EF420B1006A332E /* SuspensionView.h */,
-				188666C41EF420B1006A332E /* SuspensionView.m */,
-				188666C91EF422AC006A332E /* SuspensionMenuView.h */,
-				188666CA1EF422AC006A332E /* SuspensionMenuView.m */,
-				188666C61EF42186006A332E /* NSObject+SuspensionKey.h */,
-				188666C71EF42186006A332E /* NSObject+SuspensionKey.m */,
 			);
 			name = SuspensionControl;
 			sourceTree = "<group>";
@@ -319,13 +299,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				188666CB1EF422AC006A332E /* SuspensionMenuView.m in Sources */,
 				182774751ECFD53F00A72E00 /* UIImage+ImageEffects.m in Sources */,
-				188666C51EF420B1006A332E /* SuspensionView.m in Sources */,
 				18710FA11ED18DC300B4340D /* FirstViewController.m in Sources */,
 				182774781ECFD54900A72E00 /* UIImage+Blur.m in Sources */,
 				F3374B0B1E629FBF00F8F10D /* MASConstraintMaker.m in Sources */,
-				187998AC1EF54C7E008A468F /* OSCustomButton.m in Sources */,
 				18A504DA1E61DE4000EE96E8 /* ViewController.m in Sources */,
 				F3374B0A1E629FBF00F8F10D /* MASConstraint.m in Sources */,
 				F3374B121E629FBF00F8F10D /* ViewController+MASAdditions.m in Sources */,
@@ -335,7 +312,6 @@
 				F3374B0D1E629FBF00F8F10D /* MASViewAttribute.m in Sources */,
 				18BE09291ECF7BB400A64543 /* SuspensionControl.m in Sources */,
 				F3374B111E629FBF00F8F10D /* View+MASAdditions.m in Sources */,
-				188666C81EF42186006A332E /* NSObject+SuspensionKey.m in Sources */,
 				18A504D71E61DE4000EE96E8 /* AppDelegate.m in Sources */,
 				18A504D41E61DE4000EE96E8 /* main.m in Sources */,
 				F3374B131E629FBF00F8F10D /* README.md in Sources */,

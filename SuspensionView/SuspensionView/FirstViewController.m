@@ -8,8 +8,6 @@
 
 #import "FirstViewController.h"
 #import "SuspensionControl.h"
-#import "SuspensionView.h"
-#import "SuspensionMenuView.h"
 
 @interface FirstViewController ()
 
