@@ -11,7 +11,7 @@
 		186DA2D81EF66B8B00DBE1C5 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 186DA2D11EF66B8B00DBE1C5 /* FirstViewController.m */; };
 		186DA2D91EF66B8B00DBE1C5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 186DA2D31EF66B8B00DBE1C5 /* ViewController.m */; };
 		186DA2DA1EF66B8B00DBE1C5 /* SuspensionControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 186DA2D61EF66B8B00DBE1C5 /* SuspensionControl.m */; };
-		18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */ = {isa = PBXBuildFile; fileRef = 18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */; };
+		186DA2DC1EF66EEE00DBE1C5 /* 2017-06-18 16_18_06.gif in Resources */ = {isa = PBXBuildFile; fileRef = 186DA2DB1EF66EEE00DBE1C5 /* 2017-06-18 16_18_06.gif */; };
 		18A504D41E61DE4000EE96E8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A504D31E61DE4000EE96E8 /* main.m */; };
 		18A504DD1E61DE4000EE96E8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 18A504DB1E61DE4000EE96E8 /* Main.storyboard */; };
 		18A504DF1E61DE4000EE96E8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 18A504DE1E61DE4000EE96E8 /* Assets.xcassets */; };
@@ -27,7 +27,7 @@
 		186DA2D31EF66B8B00DBE1C5 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		186DA2D51EF66B8B00DBE1C5 /* SuspensionControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SuspensionControl.h; sourceTree = "<group>"; };
 		186DA2D61EF66B8B00DBE1C5 /* SuspensionControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SuspensionControl.m; sourceTree = "<group>"; };
-		18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2017-05-21 17_28_52.gif"; sourceTree = "<group>"; };
+		186DA2DB1EF66EEE00DBE1C5 /* 2017-06-18 16_18_06.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2017-06-18 16_18_06.gif"; sourceTree = "<group>"; };
 		18A504CF1E61DE4000EE96E8 /* SuspensionView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuspensionView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18A504D31E61DE4000EE96E8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18A504DC1E61DE4000EE96E8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -110,7 +110,7 @@
 				18A504DE1E61DE4000EE96E8 /* Assets.xcassets */,
 				18A504E01E61DE4000EE96E8 /* LaunchScreen.storyboard */,
 				18A504E31E61DE4000EE96E8 /* Info.plist */,
-				18710FA21ED195A300B4340D /* 2017-05-21 17_28_52.gif */,
+				186DA2DB1EF66EEE00DBE1C5 /* 2017-06-18 16_18_06.gif */,
 				18A504D31E61DE4000EE96E8 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -176,9 +176,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				18A504E21E61DE4000EE96E8 /* LaunchScreen.storyboard in Resources */,
-				18710FA31ED195A300B4340D /* 2017-05-21 17_28_52.gif in Resources */,
 				18A504DF1E61DE4000EE96E8 /* Assets.xcassets in Resources */,
 				18A504DD1E61DE4000EE96E8 /* Main.storyboard in Resources */,
+				186DA2DC1EF66EEE00DBE1C5 /* 2017-06-18 16_18_06.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
