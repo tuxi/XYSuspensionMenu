@@ -12,10 +12,12 @@
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 
+#define kSCREENT_HEIGHT         [UIScreen mainScreen].bounds.size.height
+#define kSCREENT_WIDTH          [UIScreen mainScreen].bounds.size.width
 #define OS_MAX_CORNER_RADIUS    MIN(CGRectGetWidth(self.bounds) * 0.5, CGRectGetHeight(self.bounds) * 0.5)
 #define OS_MAX_BORDER_WIDTH     OS_MAX_CORNER_RADIUS
 #define OS_PADDING_VALUE        0.29
-#define  OS_MIN_SCREEN_SIZE     MIN(kSCREENT_WIDTH, kSCREENT_HEIGHT)
+#define OS_MIN_SCREEN_SIZE      MIN(kSCREENT_WIDTH, kSCREENT_HEIGHT)
 #define OS_MAX_MENUVIEW_SIZE    CGSizeMake(MIN(MAX(MAX(CGRectGetWidth(self.frame), CGRectGetHeight(self.frame)), 280.0), OS_MIN_SCREEN_SIZE), MIN(MAX(MAX(CGRectGetWidth(self.frame), CGRectGetHeight(self.frame)), 280.0), OS_MIN_SCREEN_SIZE))
 
 typedef NS_ENUM(NSInteger, OSButtonStyle) {
@@ -25,8 +27,6 @@ typedef NS_ENUM(NSInteger, OSButtonStyle) {
     OSButtonStyleImageWithSubtitle
 };
 
-
-typedef void(^OSButtonAnimateBlock)();
 
 static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
 {
@@ -644,7 +644,7 @@ imageView = _imageView;
 #pragma mark - Animate
 ////////////////////////////////////////////////////////////////////////
 
-- (OSButtonAnimateBlock)fadeInBlock {
+- (void (^)())fadeInBlock {
     return ^ {
         if (self.contentAnimateColor) {
             self.titleContentView.backgroundColor = self.contentAnimateColor;
@@ -670,7 +670,7 @@ imageView = _imageView;
     
 }
 
-- (OSButtonAnimateBlock)fadeOutBlock {
+- (void (^)())fadeOutBlock {
     return ^ {
         self.titleContentView.backgroundColor = self.contentColor;
         self.detailContentView.backgroundColor = self.contentColor;
@@ -1170,8 +1170,8 @@ static const CGFloat menuBarBaseTag = 100;
     CGRect _memuBarButtonOriginFrame;       // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用,重叠
     
     BOOL _isInProcessing;    // 是否正在执行显示或消失
-    BOOL _isShow;            // 是否已经显示
-    BOOL _isDismiss;         // 是否已经消失
+    BOOL _isShowing;            // 是否已经显示
+    BOOL _isDismissing;         // 是否已经消失
     BOOL _isFiristShow;      // 是否第一次显示
     BOOL _isFiristDismiss;   // 是否第一次消失
     CGSize _itemSize;
@@ -1275,13 +1275,13 @@ static const CGFloat menuBarBaseTag = 100;
         CGRect menuFrame =  menuWindow.frame;
         menuFrame.size = CGSizeZero;
         menuWindow.frame = menuFrame;
-        _isDismiss = YES;
-        _isShow = NO;
+        _isDismissing = YES;
+        _isShowing = NO;
     };
 }
 
 - (void)show {
-    if (_isShow) return;
+    if (_isShowing) return;
     self.centerButton.usingSpringWithDamping = 0.8;
     self.centerButton.initialSpringVelocity = 20;
     if (_isFiristShow) {
@@ -1297,6 +1297,13 @@ static const CGFloat menuBarBaseTag = 100;
     
     _isInProcessing = YES;
     
+    if (self.shouldHiddenCenterButtonWhenShow) {
+        UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+        CGRect centerFrame =  centerWindow.frame;
+        centerFrame.size = CGSizeZero;
+        centerWindow.frame = centerFrame;
+        centerWindow.alpha = 0.0;
+    }
     [UIView animateWithDuration:0.4
                           delay:0.0
          usingSpringWithDamping:self.usingSpringWithDamping
@@ -1347,8 +1354,8 @@ static const CGFloat menuBarBaseTag = 100;
                              [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse];
                          }
                          completion:^(BOOL finished) {
-                             _isShow = YES;
-                             _isDismiss = NO;
+                             _isShowing = YES;
+                             _isDismissing = NO;
                              _isInProcessing = NO;
                              _isFiristShow = NO;
                              [self _showCompetion];
@@ -1376,7 +1383,7 @@ static const CGFloat menuBarBaseTag = 100;
 /// 执行dismiss，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
 - (void)_dismissWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
     
-    if (_isDismiss)
+    if (_isDismissing)
         return;
     
     //    if (_isFiristDismiss) {
@@ -1387,7 +1394,13 @@ static const CGFloat menuBarBaseTag = 100;
     _isInProcessing = YES;
     self.centerButton.usingSpringWithDamping = 0.5;
     self.centerButton.initialSpringVelocity = 10;
-    
+    if (self.shouldHiddenCenterButtonWhenShow) {
+        UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+        CGRect centerFrame =  centerWindow.frame;
+        centerFrame.size = _centerWindowSize;
+        centerWindow.frame = centerFrame;
+        centerWindow.alpha = 1.0;
+    }
     [UIView animateWithDuration:0.3
                           delay:0.0
          usingSpringWithDamping:self.usingSpringWithDamping
@@ -1399,6 +1412,7 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void (^)())dismissAnimationsBlockWityIsTriggerPanGesture:(BOOL)isTriggerPanGesture {
     return ^ {
+        
         for (UIView * view in [self subviews])
             [view setFrame:_memuBarButtonOriginFrame];
         [self setAlpha:0.0];
@@ -1411,6 +1425,7 @@ static const CGFloat menuBarBaseTag = 100;
         if (!isTriggerPanGesture) {
             [self.centerButton moveToPreviousLeanPosition];
         }
+        
     };
 }
 
@@ -1425,8 +1440,8 @@ static const CGFloat menuBarBaseTag = 100;
             CGRect menuFrame =  menuWindow.frame;
             menuFrame.size = CGSizeZero;
             menuWindow.frame = menuFrame;
-            _isDismiss = YES;
-            _isShow  = NO;
+            _isDismissing = YES;
+            _isShowing  = NO;
             _isInProcessing = NO;
             _isFiristDismiss = NO;
             [self _dismissCompetion];
@@ -1504,13 +1519,15 @@ static const CGFloat menuBarBaseTag = 100;
 - (void)_suspensionMenuViewSetup {
     
     _isInProcessing = NO;
-    _isShow  = NO;
-    _isDismiss = YES;
+    _isShowing  = NO;
+    _isDismissing = YES;
     _isFiristShow = YES;
     _isFiristDismiss = YES;
     _shouldLeanToScreenCenterWhenShow = YES;
     _usingSpringWithDamping = 0.6;
     _initialSpringVelocity = 0.0;
+    _shouldHiddenCenterButtonWhenShow = NO;
+    _shouldDismissWhenDeviceOrientationDidChange = NO;
     
     self.autoresizingMask = UIViewAutoresizingNone;
     self.layer.cornerRadius = 12.8;
@@ -1554,7 +1571,7 @@ static const CGFloat menuBarBaseTag = 100;
 
 // 中心 button 点击事件
 - (void)centerBarButtonClick:(id)senter {
-    _isDismiss ? [self show] : [self dismiss];
+    _isDismissing ? [self show] : [self dismiss];
 }
 
 // 斜边的 button 点击事件 button tag 如下图:
@@ -1576,8 +1593,14 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 - (void)orientationDidChange:(NSNotification *)note {
+    if (self.shouldDismissWhenDeviceOrientationDidChange) {
+        _isDismissing = NO;
+        [self _dismissWithTriggerPanGesture:YES];
+        [self.centerButton checkTargetPosition];
+        return;
+    }
+    [self _updateMenuViewCenterWithIsShow:_isShowing];
     
-    [self _updateMenuViewCenterWithIsShow:_isShow];
 }
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - SuspensionViewDelegate
@@ -1617,10 +1640,17 @@ static const CGFloat menuBarBaseTag = 100;
         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
         menuWindow.rootViewController.view.frame =  menuWindow.bounds;
         UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+        
         CGRect centerFrame =  centerWindow.frame;
-        centerFrame.size = CGSizeMake(_centerWindowSize.width, _centerWindowSize.height);
+        if (!self.shouldHiddenCenterButtonWhenShow) {
+            centerFrame.size = CGSizeMake(_centerWindowSize.width, _centerWindowSize.height);
+        }
+        CGFloat centerX = (kSCREENT_WIDTH - _centerWindowSize.width)*0.5;
+        CGFloat centerY = (kSCREENT_HEIGHT - _centerWindowSize.height)*0.5;
+        centerFrame.origin = CGPointMake(centerX, centerY);
         centerWindow.frame = centerFrame;
         
+    
         CGPoint newCenter = [centerWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
         self.center = newCenter;
         

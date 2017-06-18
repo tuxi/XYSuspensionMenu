@@ -49,6 +49,8 @@
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
     menuView.isOnce = YES;
     menuView.shouldShowWhenViewWillAppear = NO;
+    menuView.shouldHiddenCenterButtonWhenShow = YES;
+    menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
     [menuView setMenuBarItems:a itemSize:CGSizeMake(50, 50)];
     
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];

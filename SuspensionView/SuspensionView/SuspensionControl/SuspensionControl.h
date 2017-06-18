@@ -138,6 +138,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
+@property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenShow;
+@property (nonatomic, assign) BOOL shouldDismissWhenDeviceOrientationDidChange;
 
 - (instancetype)initWithFrame:(CGRect)frame;
 - (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems
