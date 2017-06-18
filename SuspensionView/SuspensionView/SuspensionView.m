@@ -3,7 +3,7 @@
 //  SuspensionView
 //
 //  Created by Ossey on 2017/6/16.
-//  Copyright © 2017年 com.test.demo. All rights reserved.
+//  Copyright © 2017年 Ossey. All rights reserved.
 //
 
 #import "SuspensionView.h"
@@ -25,8 +25,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 @synthesize previousCenter = _previousCenter;
 
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ initialize ~~~~~~~~~~~~~~~~~~~~~~~
 
-#pragma mark - 初始化
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -77,7 +77,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 }
 
-#pragma mark - Public
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Public ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - (void)leanFinishCallBack:(void (^)(CGPoint centerPoint))callback {
     self.leanFinishCallBack = callback;
@@ -269,8 +270,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (void)btnClick:(id)sender {
     
-    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionViewDidClickedButton:)]) {
-        [self.delegate suspensionViewDidClickedButton:self];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionViewClickedButton:)]) {
+        [self.delegate suspensionViewClickedButton:self];
         return;
     }
     

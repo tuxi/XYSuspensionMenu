@@ -20,7 +20,8 @@
 
 @implementation SuspensionWindow
 
-#pragma mark - public methods
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ public methods ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 + (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame {
     
@@ -50,7 +51,8 @@
     temp = nil;
 }
 
-#pragma mark - Private methods
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Private methods ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - (void)_moveToSuperview {
     
@@ -87,7 +89,7 @@
 
 static const CGFloat menuBarBaseTag = 100;
 
-@interface SuspensionMenuView () {
+@interface SuspensionMenuView () <SuspensionViewDelegate> {
 @protected
     CGFloat _defaultTriangleHypotenuse;     // 默认关闭时的三角斜边
     CGFloat _minBounceOfTriangleHypotenuse; // 当第一次显示完成后的三角斜边
@@ -116,13 +118,14 @@ static const CGFloat menuBarBaseTag = 100;
 
 @synthesize centerButton = _centerButton;
 
-#pragma mark - Public Methods
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Public Methods ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
-        [self _setup];
+        [self _suspensionMenuViewSetup];
     }
     return self;
 }
@@ -131,7 +134,7 @@ static const CGFloat menuBarBaseTag = 100;
 {
     self = [super initWithCoder:coder];
     if (self) {
-        [self _setup];
+        [self _suspensionMenuViewSetup];
     }
     return self;
 }
@@ -260,9 +263,7 @@ static const CGFloat menuBarBaseTag = 100;
                                               _isDismiss = NO;
                                               _isInProcessing = NO;
                                               _isFiristShow = NO;
-                                              if (self.showCompletion) {
-                                                  self.showCompletion();
-                                              }
+                                              [self _showCompetion];
                                               
                                           }];
                      }];
@@ -270,6 +271,18 @@ static const CGFloat menuBarBaseTag = 100;
 
 - (void)dismiss {
     [self _dismissWithTriggerPanGesture:NO];
+}
+
+- (void)_showCompetion {
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidShow:)]) {
+        [self.delegate suspensionMenuViewDidShow:self];
+        return;
+    }
+    
+    if (self.showCompletion) {
+        self.showCompletion();
+    }
 }
 
 /// 执行dismiss，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
@@ -314,20 +327,29 @@ static const CGFloat menuBarBaseTag = 100;
                              CGRect menuFrame =  menuWindow.frame;
                              menuFrame.size = CGSizeZero;
                              menuWindow.frame = menuFrame;
-                             if (self.dismissCompletion) {
-                                 self.dismissCompletion();
-                             }
                              _isDismiss = YES;
                              _isShow  = NO;
                              _isInProcessing = NO;
                              _isFiristDismiss = NO;
+                             [self _dismissCompetion];
                          } ];
                          
                      }];
 }
 
+- (void)_dismissCompetion {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidDismiss:)]) {
+        [self.delegate suspensionMenuViewDidDismiss:self];
+        return;
+    }
+    if (self.dismissCompletion) {
+        self.dismissCompletion();
+    }
+}
 
-#pragma mark - 初始化
+
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Lazy ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - (SuspensionView *)centerButton {
     if (_centerButton == nil) {
@@ -337,28 +359,15 @@ static const CGFloat menuBarBaseTag = 100;
         CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
         
         SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showOnce:YES frame:centerRec];
-        
         centerButton.autoLeanEdge = YES;
-        
-        [centerButton addTarget:self action:@selector(centerBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-        
-        __weak typeof(self) weakSelf = self;
-        __weak typeof(centerButton) weakCenterButton = centerButton;
-        centerButton.locationChange = ^(CGPoint currentPoint) {
-            weakSelf.center = currentPoint;
-            if (weakCenterButton.panGestureRecognizer.state == UIGestureRecognizerStateEnded || weakCenterButton.panGestureRecognizer.state == UIGestureRecognizerStateCancelled) {
-                [weakCenterButton moveToPreviousLeanPosition];
-            }
-            if (weakCenterButton.panGestureRecognizer.state == UIGestureRecognizerStateBegan) {
-                [weakSelf _dismissWithTriggerPanGesture:YES];
-            }
-        };
+        centerButton.delegate = self;
         
         _centerButton = centerButton;
         
     }
     return _centerButton;
 }
+
 
 
 - (UIImageView *)backgroundImageView {
@@ -392,7 +401,7 @@ static const CGFloat menuBarBaseTag = 100;
     return _visualEffectView;
 }
 
-- (void)_setup {
+- (void)_suspensionMenuViewSetup {
     
     _isInProcessing = NO;
     _isShow  = NO;
@@ -407,7 +416,10 @@ static const CGFloat menuBarBaseTag = 100;
     [self setClipsToBounds:YES];
     [self visualEffectView];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(orientationDidChange:)
+                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
+                                               object:nil];
     
 }
 
@@ -430,10 +442,11 @@ static const CGFloat menuBarBaseTag = 100;
 
 
 
-#pragma mark - Events
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Actions ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 // 中心 button 点击事件
-- (void)centerBarButtonClick:(UIButton *)btn {
+- (void)centerBarButtonClick:(id)senter {
     _isDismiss ? [self show] : [self dismiss];
 }
 
@@ -446,6 +459,10 @@ static const CGFloat menuBarBaseTag = 100;
 // TAG:                             3       3   4     4   5     4 5 6
 //
 - (void)menuBarButtonClick:(id)sender {
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedHypotenuseButtonAtIndex:)]) {
+        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[(UIButton *)sender tag] - menuBarBaseTag - 1];
+        return;
+    }
     if (_menuBarClickBlock) {
         _menuBarClickBlock([(UIButton *)sender tag] - menuBarBaseTag - 1);
     }
@@ -455,9 +472,32 @@ static const CGFloat menuBarBaseTag = 100;
     
     [self _updateMenuViewCenterWithIsShow:_isShow];
 }
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ SuspensionViewDelegate ~~~~~~~~~~~~~~~~~~~~~~~
 
+- (void)suspensionViewClickedButton:(SuspensionView *)suspensionView {
+    [self centerBarButtonClick:suspensionView];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedCenterButton:)]) {
+        [self.delegate suspensionMenuView:self clickedCenterButton:suspensionView];
+    }
+}
 
-#pragma mark - Private methods
+- (void)suspensionView:(SuspensionView *)suspensionView locationChange:(UIPanGestureRecognizer *)pan {
+    CGPoint panPoint = [pan locationInView:[UIApplication sharedApplication].delegate.window];
+    self.center = panPoint;
+    if (pan.state == UIGestureRecognizerStateEnded ||
+        pan.state == UIGestureRecognizerStateCancelled) {
+        [suspensionView moveToPreviousLeanPosition];
+    }
+    if (pan.state == UIGestureRecognizerStateBegan) {
+        [self _dismissWithTriggerPanGesture:YES];
+    }
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:centerButtonLocationChange:)]) {
+        [self.delegate suspensionMenuView:self centerButtonLocationChange:pan];
+    }
+}
+
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Private methods ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - (void)_updateMenuViewCenterWithIsShow:(BOOL)isShow {
     if (isShow) {
@@ -497,7 +537,10 @@ static const CGFloat menuBarBaseTag = 100;
     
     UIButton * button = (UIButton *)[self viewWithTag:buttonTag];
     if (button) {
-        [button setFrame:CGRectMake(origin.x, origin.y, self.centerButton.frame.size.width, self.centerButton.frame.size.height)];
+        [button setFrame:CGRectMake(origin.x,
+                                    origin.y,
+                                    self.centerButton.frame.size.width,
+                                    self.centerButton.frame.size.height)];
         button = nil;
     }
 }
@@ -611,14 +654,17 @@ static const CGFloat menuBarBaseTag = 100;
     
 }
 
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Other ~~~~~~~~~~~~~~~~~~~~~~~
+
+
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     if (_menuBarItems.count) {
         [_menuBarItems makeObjectsPerformSelector:@selector(removeFromSuperview)];
         _menuBarItems = nil;
     }
-    self.showCompletion = nil;
-    self.dismissCompletion = nil;
+    _showCompletion = nil;
+    _dismissCompletion = nil;
 }
 
 - (UIViewController *)topViewController {
@@ -640,6 +686,8 @@ static const CGFloat menuBarBaseTag = 100;
 
 
 @implementation SuspensionMenuWindow
+
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ initialize ~~~~~~~~~~~~~~~~~~~~~~~
 
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -679,7 +727,8 @@ static const CGFloat menuBarBaseTag = 100;
     temp = nil;
 }
 
-#pragma mark - Private methods
+#pragma mark - ~~~~~~~~~~~~~~~~~~~~~~~ Private methods ~~~~~~~~~~~~~~~~~~~~~~~
+
 
 - (void)_moveToSuperview {
     
@@ -723,6 +772,9 @@ static const CGFloat menuBarBaseTag = 100;
 
 @end
 
+@interface MenuBarHypotenuseButton : OSCustomButton
+
+@end
 
 @interface MenuBarHypotenuseItem ()
 @property (nonatomic, strong) MenuBarHypotenuseButton *hypotenuseButton;

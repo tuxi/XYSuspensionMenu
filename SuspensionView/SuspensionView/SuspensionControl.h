@@ -7,7 +7,6 @@
 //
 
 
-
 #import <UIKit/UIKit.h>
 #import "SuspensionView.h"
 
@@ -30,7 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)removeAllWindows;
 
 @end
-
 
 
 

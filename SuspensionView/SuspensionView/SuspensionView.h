@@ -3,7 +3,7 @@
 //  SuspensionView
 //
 //  Created by Ossey on 2017/6/16.
-//  Copyright © 2017年 com.test.demo. All rights reserved.
+//  Copyright © 2017年 Ossey. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
@@ -19,7 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol SuspensionViewDelegate <NSObject>
 
-- (void)suspensionViewDidClickedButton:(SuspensionView *)suspensionView;
+@optional
+- (void)suspensionViewClickedButton:(SuspensionView *)suspensionView;
 - (void)suspensionView:(SuspensionView *)suspensionView locationChange:(UIPanGestureRecognizer *)pan;
 - (CGPoint)leanToNewTragetPosionForSuspensionView:(SuspensionView *)suspensionView;
 - (void)suspensionView:(SuspensionView *)suspensionView didAutoLeanToTargetPosition:(CGPoint)position;

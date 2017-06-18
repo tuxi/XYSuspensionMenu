@@ -14,6 +14,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
+@protocol SuspensionMenuViewDelegate <NSObject>
+
+@optional
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex;
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedCenterButton:(SuspensionView *)centerButton;
+- (void)suspensionMenuViewDidShow:(SuspensionMenuView *)suspensionMenuView;
+- (void)suspensionMenuViewDidDismiss:(SuspensionMenuView *)suspensionMenuView;
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView centerButtonLocationChange:(UIPanGestureRecognizer *)pan;
+
+@end
 
 @interface SuspensionWindow : SuspensionView 
 
@@ -25,18 +35,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SuspensionMenuView : UIView
 
+@property (nonatomic, weak) id<SuspensionMenuViewDelegate> delegate;
+
 @property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
-/// 当显示SuspensionMenuView的时候，依靠到屏幕中心位置
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
-/// 根据menuBarImages创建对应menuBar，最多只能有6个
 @property (nonatomic, strong, readonly) NSArray<MenuBarHypotenuseItem *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, copy) void (^ _Nullable showCompletion)();
 @property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
 
-- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems itemSize:(CGSize)itemSize;
+- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems
+               itemSize:(CGSize)itemSize;
 
 - (void)show;
 - (void)dismiss;
@@ -56,11 +67,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface MenuBarHypotenuseItem : NSObject
-@property (nonatomic, strong, readonly) MenuBarHypotenuseButton *hypotenuseButton;
-- (instancetype)initWithButtonType:(OSButtonType)buttonType;
-@end
 
-@interface MenuBarHypotenuseButton : OSCustomButton
+@property (nonatomic, strong, readonly) OSCustomButton *hypotenuseButton;
+- (instancetype)initWithButtonType:(OSButtonType)buttonType;
 
 @end
 
