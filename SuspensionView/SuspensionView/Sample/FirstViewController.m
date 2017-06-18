@@ -24,17 +24,24 @@
     
     while (i <= 7) {
         OSButtonType type = OSButtonType3;
+        NSString *imageNamed = @"aws-icon";
         if (i == 1) {
             type = OSButtonType1;
+            imageNamed = @"apple-icon";
         }
         if (i == 2) {
             type = OSButtonType2;
+            imageNamed = @"blip-icon";
         }
         if (i == 4) {
             type = OSButtonType4;
+            imageNamed = @"dropbox-icon";
         }
         MenuBarHypotenuseItem *item = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:@"dropbox-icon"] forState:UIControlStateNormal];
+        [item.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
+        if (type == OSButtonType1) {
+            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        }
         [a addObject:item];
         i++;
     }
