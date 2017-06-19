@@ -38,6 +38,16 @@
             imageNamed = @"dropbox-icon";
         }
         MenuBarHypotenuseItem *item = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
+        if (i == 1) {
+            NSInteger j = 0;
+            while (j <= 5) {
+                MenuBarHypotenuseItem *itemM = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
+                [itemM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
+                [item.moreHypotenusItems addObject:itemM];
+                j++;
+            }
+            
+        }
         [item.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
         if (type == OSButtonType1) {
             [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
