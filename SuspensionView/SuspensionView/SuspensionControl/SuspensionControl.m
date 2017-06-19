@@ -36,7 +36,7 @@ static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
                       CGRectGetHeight(rect) - insets.top - insets.bottom);
 }
 
-
+#pragma mark *** OSLabelContentView ***
 
 @interface OSLabelContentView : UIView
 
@@ -78,6 +78,7 @@ static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
 
 @end
 
+#pragma mark *** OSImageConentView ***
 @interface OSImageConentView : UIView
 
 @property (nonatomic, strong) UIImageView *imageView;
@@ -116,6 +117,7 @@ static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
 
 @end
 
+#pragma mark *** OSCustomButton ***
 
 @interface OSCustomButton ()
 
@@ -690,6 +692,8 @@ imageView = _imageView;
 
 @end
 
+#pragma mark *** SuspensionView ***
+
 static NSString * const PreviousCenterXKey = @"previousCenterX";
 static NSString * const PreviousCenterYKey = @"previousCenterY";
 
@@ -732,8 +736,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     self.leanEdgeInsets = UIEdgeInsetsMake(20, 0, 0, 0);
     self.invalidHidden = NO;
     self.isMoving = NO;
-    self.usingSpringWithDamping = 0.8;
-    self.initialSpringVelocity = 3.0;
+    self.usingSpringWithDamping = 0.8; // 范围的为0.0f到1.0f，数值越小「弹簧」的振动效果越明显
+    self.initialSpringVelocity = 3.0; // 表示初始的速度，数值越大一开始移动越快
     self.shouldLeanToPreviousPositionWhenAppStart = YES;
     CGFloat centerX = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterXKey];
     CGFloat centerY = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterYKey];
@@ -921,7 +925,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
          usingSpringWithDamping:self.usingSpringWithDamping
           initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationOptionCurveEaseIn |
-                        UIViewAnimationOptionAllowUserInteraction
+     UIViewAnimationOptionAllowUserInteraction
                      animations:^{
                          UIWindow *w = [SuspensionControl windowForKey:self.key];
                          if (w) {
@@ -1000,6 +1004,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 @end
 
+#pragma mark *** UIResponder (SuspensionView) ***
 
 @interface UIResponder ()
 
@@ -1083,6 +1088,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 @end
 
+#pragma mark *** SuspensionMenuController ***
+
 @interface SuspensionMenuController : UIViewController
 
 - (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
@@ -1090,6 +1097,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 @property (nonatomic, weak) SuspensionMenuWindow *menuView;
 
 @end
+
+#pragma mark *** SuspensionWindow ***
 
 @implementation SuspensionWindow
 
@@ -1185,6 +1194,8 @@ static const CGFloat menuBarBaseTag = 100;
 @property (nonatomic, assign) CGSize itemSize;
 
 @end
+
+#pragma mark *** SuspensionMenuView ***
 
 @implementation SuspensionMenuView
 
@@ -1453,7 +1464,7 @@ static const CGFloat menuBarBaseTag = 100;
             _isFiristDismiss = NO;
             [self _dismissCompetion];
         } ];
-
+        
     };
 }
 
@@ -1657,7 +1668,7 @@ static const CGFloat menuBarBaseTag = 100;
         centerFrame.origin = CGPointMake(centerX, centerY);
         centerWindow.frame = centerFrame;
         
-    
+        
         CGPoint newCenter = [centerWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
         self.center = newCenter;
         
@@ -1825,7 +1836,7 @@ static const CGFloat menuBarBaseTag = 100;
         [self _setButtonWithTag:8 origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
                                                      menuWindowRadius + triangleA - centerWindowRadius)];
     }
-
+    
     
 }
 
@@ -1946,6 +1957,8 @@ static const CGFloat menuBarBaseTag = 100;
 }
 
 @end
+
+#pragma mark *** MenuBarHypotenuseButton ***
 
 @interface MenuBarHypotenuseButton : OSCustomButton
 
@@ -2069,6 +2082,8 @@ static const CGFloat menuBarBaseTag = 100;
 
 
 @end
+
+#pragma mark *** SuspensionControl ***
 
 @interface SuspensionControl ()
 

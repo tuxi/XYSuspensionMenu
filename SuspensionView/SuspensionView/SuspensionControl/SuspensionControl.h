@@ -10,8 +10,8 @@
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
-@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
+@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
 
 typedef NS_ENUM(NSInteger, OSButtonType) {
     OSButtonTypeDefault,
@@ -20,6 +20,8 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
     OSButtonType3,
     OSButtonType4
 };
+
+#pragma mark *** Protocol ***
 
 @protocol SuspensionViewDelegate <NSObject>
 
@@ -44,6 +46,7 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 
 @end
 
+#pragma mark *** OSCustomButton ***
 
 @interface OSCustomButton : UIControl
 
@@ -77,6 +80,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
     SuspensionViewLeanEdgeTypeEachSide
 };
 
+#pragma mark *** SuspensionView ***
+
 @interface SuspensionView : OSCustomButton
 
 @property (nonatomic, weak) id<SuspensionViewDelegate> delegate;
@@ -88,9 +93,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) BOOL invalidHidden;
 @property (nonatomic, assign, readonly) BOOL isMoving;
 @property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
-/// 范围的为0.0f到1.0f，数值越小「弹簧」的振动效果越明显
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
-/// 表示初始的速度，数值越大一开始移动越快
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 @property (nonatomic, copy, nullable) void (^locationChange)(CGPoint currentPoint);
 @property (nonatomic, copy, nullable) void (^ leanFinishCallBack)(CGPoint centerPoint);
@@ -104,6 +107,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
+#pragma mark *** UIResponder (SuspensionView) ***
+
 @interface UIResponder (SuspensionView)
 
 - (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame;
@@ -116,6 +121,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius;
 @end
 
+#pragma mark *** SuspensionWindow ***
+
 @interface SuspensionWindow : SuspensionView
 
 + (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame;
@@ -123,6 +130,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 + (void)releaseAll;
 
 @end
+
+#pragma mark *** SuspensionMenuView ***
 
 @interface SuspensionMenuView : UIView
 
@@ -152,6 +161,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
+#pragma mark *** SuspensionMenuWindow ***
+
 @interface SuspensionMenuWindow : SuspensionMenuView
 
 @property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
@@ -162,6 +173,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
+#pragma mark *** MenuBarHypotenuseItem ***
+
 @interface MenuBarHypotenuseItem : NSObject
 
 @property (nonatomic, strong, readonly) OSCustomButton *hypotenuseButton;
@@ -169,12 +182,16 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
+#pragma mark *** UIWindow (SuspensionWindow) ***
+
 @interface UIWindow (SuspensionWindow)
 
 @property (nonatomic, weak, nullable) SuspensionView *suspensionView;
 @property (nonatomic, weak, nullable) SuspensionMenuView *suspensionMenuView;
 
 @end
+
+#pragma mark *** SuspensionControl ***
 
 @interface SuspensionControl : NSObject
 
@@ -189,6 +206,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 + (void)removeAllWindows;
 
 @end
+
+#pragma mark *** NSObject (SuspensionKey) ***
 
 @interface NSObject (SuspensionKey)
 
