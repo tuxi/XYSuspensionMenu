@@ -40,10 +40,34 @@
         MenuBarHypotenuseItem *item = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
         if (i == 1) {
             NSInteger j = 0;
-            while (j <= 5) {
+            while (j <= 4) {
                 MenuBarHypotenuseItem *itemM = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
                 [item.moreHypotenusItems addObject:itemM];
+                [item.hypotenuseButton setTitle:@"更多" forState:UIControlStateNormal];
+                if (j == 1) {
+                    NSInteger k = 0;
+                    while (k <= 5) {
+                        MenuBarHypotenuseItem *itemMM = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
+                        [itemMM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
+                        [itemM.moreHypotenusItems addObject:itemMM];
+                        [itemM.hypotenuseButton setTitle:@"更多" forState:UIControlStateNormal];
+                        if (k == 1) {
+                            NSInteger l = 0;
+                            while (l <= 7) {
+                                MenuBarHypotenuseItem *iteml = [[MenuBarHypotenuseItem alloc] initWithButtonType:type];
+                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
+                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM.hypotenuseButton setTitle:@"更多" forState:UIControlStateNormal];
+                                l++;
+                            }
+                            
+                        }
+                        
+                        
+                        k++;
+                    }
+                }
                 j++;
             }
             
