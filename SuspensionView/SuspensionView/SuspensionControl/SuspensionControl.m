@@ -232,10 +232,13 @@ imageView = _imageView;
 #pragma mark - layout
 ////////////////////////////////////////////////////////////////////////
 
+- (void)setFrame:(CGRect)frame {
+    [super setFrame:frame];
+    [self setButtonType:self.buttonType];
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
-    
-    [self setButtonType:self.buttonType];
     
     CGFloat cornerRadius = self.layer.cornerRadius = MAX(MIN(OS_MAX_CORNER_RADIUS, self.cornerRadius), 0);
     CGFloat borderWidth = self.layer.borderWidth = MAX(MIN(OS_MAX_BORDER_WIDTH, self.borderWidth), 0);
