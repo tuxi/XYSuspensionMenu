@@ -1208,9 +1208,9 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, weak) UIImageView *backgroundImageView;
 @property (nonatomic, weak) UIVisualEffectView *visualEffectView;
 @property (nonatomic, assign) CGSize itemSize;
-@property (nonatomic, strong) NSArray<MenuBarHypotenuseItem *> *currentDisplayMoreItems;
+@property (nonatomic, strong) MenuBarHypotenuseItem *currentDisplayMoreItem;
 /// 保证currentDisplayMoreItems在栈顶，menuBarItems在栈底
-@property (nonatomic, strong) NSMutableArray<NSArray<MenuBarHypotenuseItem *> *> *stackDisplayedItems;
+@property (nonatomic, strong) NSMutableArray<MenuBarHypotenuseItem *> *stackDisplayedItems;
 @end
 
 #pragma mark *** SuspensionMenuView ***
@@ -1261,20 +1261,18 @@ NSInteger idx = 0;
     [self setupLayout];
 }
 
-
-
-- (void)setCurrentDisplayMoreItems:(NSArray<MenuBarHypotenuseItem *> *)currentDisplayMoreItems {
-    _currentDisplayMoreItems = currentDisplayMoreItems;
-    NSUInteger foundIdx = [self.stackDisplayedItems indexOfObjectPassingTest:^BOOL(NSArray<MenuBarHypotenuseItem *> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        return [obj isEqualToArray:currentDisplayMoreItems];
-    }];
+- (void)setCurrentDisplayMoreItem:(MenuBarHypotenuseItem *)currentDisplayMoreItem {
+    _currentDisplayMoreItem = currentDisplayMoreItem;
     
+    NSUInteger foundIdx = [self.stackDisplayedItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        return [obj isEqual:currentDisplayMoreItem];
+    }];
     if (foundIdx != NSNotFound) {
         [self.stackDisplayedItems removeObjectAtIndex:foundIdx];
     }
-    [self.stackDisplayedItems addObject:currentDisplayMoreItems];
+    [self.stackDisplayedItems addObject:currentDisplayMoreItem];
     
-    for (MenuBarHypotenuseItem *item in currentDisplayMoreItems) {
+    for (MenuBarHypotenuseItem *item in currentDisplayMoreItem.moreHypotenusItems) {
         [item.hypotenuseButton setOpaque:NO];
         [item.hypotenuseButton setTag:moreBarButtonBaseTag+idx+1];
         [item.hypotenuseButton addTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
@@ -1283,14 +1281,14 @@ NSInteger idx = 0;
         [item.hypotenuseButton setFrame:_memuBarButtonOriginFrame];
         idx++;
     }
-    
 }
+
+
 
 - (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems {
     
     if (_menuBarItems != menuBarItems) {
         [self.stackDisplayedItems removeAllObjects];
-        [self.stackDisplayedItems insertObject:menuBarItems atIndex:0];
     }
     _menuBarItems = menuBarItems;
     
@@ -1428,7 +1426,11 @@ NSInteger idx = 0;
                              _isInProcessing = NO;
                              _isFiristShow = NO;
                              [self _showCompetion];
-                             
+                             if (self.menuBarItems) {
+                                 for (MenuBarHypotenuseItem *item in self.menuBarItems) {
+                                     item.orginRect = item.hypotenuseButton.frame;
+                                 }
+                             }
                          }];
     };
 }
@@ -1590,12 +1592,13 @@ NSInteger idx = 0;
     return _visualEffectView;
 }
 
-- (NSMutableArray<NSArray<MenuBarHypotenuseItem *> *> *)stackDisplayedItems {
+- (NSMutableArray<MenuBarHypotenuseItem *> *)stackDisplayedItems {
     if (!_stackDisplayedItems) {
         _stackDisplayedItems = [NSMutableArray array];
     }
     return _stackDisplayedItems;
 }
+
 
 - (void)_suspensionMenuViewSetup {
     
@@ -1683,11 +1686,15 @@ NSInteger idx = 0;
 }
 
 - (void)moreBarButtonClick:(id)sender {
-    
-    NSUInteger foundIdx = [self.currentDisplayMoreItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+
+    NSUInteger foundIdx = [self.currentDisplayMoreItem.moreHypotenusItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return sender == obj.hypotenuseButton;
     }];
-    MenuBarHypotenuseItem *item = self.currentDisplayMoreItems[foundIdx];
+    
+    if (foundIdx == NSNotFound) {
+        return;
+    }
+    MenuBarHypotenuseItem *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundIdx];
     
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
@@ -1708,13 +1715,16 @@ NSInteger idx = 0;
           initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
                      animations:[self dismissCurrentDisplayButtonAnimationsBlock]
-                     completion:[self showMoreButtonAnimationsBlockWithItems:item.moreHypotenusItems]];
+                     completion:[self showMoreButtonAnimationsBlockWithItem:item]];
 }
 
 /// 隐藏当前显示着的button，显示需要展示的more button
 - (void (^)())dismissCurrentDisplayButtonAnimationsBlock {
     return ^ {
-            
+        
+        for (MenuBarHypotenuseItem *item in self.currentDisplayMoreItem.moreHypotenusItems) {
+            item.orginRect = item.hypotenuseButton.frame;
+        }
         for (UIView *view in self.subviews) {
             if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
                 [view setAlpha:0.0];
@@ -1728,10 +1738,10 @@ NSInteger idx = 0;
 }
 
 
-- (void (^)(BOOL finished))showMoreButtonAnimationsBlockWithItems:(NSMutableArray *)items {
+- (void (^)(BOOL finished))showMoreButtonAnimationsBlockWithItem:(MenuBarHypotenuseItem *)item {
     return ^(BOOL finished) {
         
-        [self showMoreButtonsWithItems:items];
+        [self showMoreButtonsWithItem:item];
         _isInProcessing = NO;
     };
 }
@@ -1741,10 +1751,9 @@ NSInteger idx = 0;
 
 #pragma mark *** More button animation ***
 
-- (void)showMoreButtonsWithItems:(NSArray *)items {
+- (void)showMoreButtonsWithItem:(MenuBarHypotenuseItem *)item {
     
-    [self setCurrentDisplayMoreItems:items];
-    
+    self.currentDisplayMoreItem = item;
     [UIView animateWithDuration:0.4
                           delay:0.0
          usingSpringWithDamping:self.usingSpringWithDamping
@@ -1755,7 +1764,7 @@ NSInteger idx = 0;
                          [menuWindow setAlpha:1.0];
                          [self setAlpha:1.0];
                          
-                         for (MenuBarHypotenuseItem *moreItem in items) {
+                         for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
                              if (moreItem.hypotenuseButton) {
                                  [moreItem.hypotenuseButton setAlpha:1.0];
                              }
@@ -1768,17 +1777,32 @@ NSInteger idx = 0;
                          } else {
                              triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
                          }
-                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse hypotenuseItems:items];
+                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse hypotenuseItems:item.moreHypotenusItems];
                      }
                      completion:nil];
 }
 
 
 
-- (void)dismissMoreButtonsWithItems:(NSArray *)items {
-    for (MenuBarHypotenuseItem *moreItem in items) {
-        [moreItem removeFromSuperview];
-    }
+- (void)dismissMoreButtonsWithItem:(MenuBarHypotenuseItem *)item animationCompletion:(void (^)())completion {
+    
+    [UIView animateWithDuration:0.3 animations:^{
+        for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+            moreItem.hypotenuseButton.frame = item.orginRect;
+        }
+    } completion:^(BOOL finished) {
+        if (finished) {
+            for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+                [moreItem removeFromSuperview];
+            }
+            if (completion) {
+                completion();
+            }
+        }
+        
+    }];
+    
+
     
 }
 #pragma mark *** Notify ***
@@ -1789,6 +1813,13 @@ NSInteger idx = 0;
         _isDismiss = NO;
         [self _dismissWithTriggerPanGesture:YES];
         [self.centerButton checkTargetPosition];
+        for (UIView *view in self.subviews) {
+            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+                if (view.tag >= moreBarButtonBaseTag) {
+                    [view removeFromSuperview];
+                }
+            }
+        }
         return;
     }
     [self _updateMenuViewCenterWithIsShow:_isShow];
@@ -2041,37 +2072,37 @@ NSInteger idx = 0;
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     
-    static BOOL isShowMainMenu = NO;
-    if (self.currentDisplayMoreItems.count) {
-        [self dismissMoreButtonsWithItems:self.currentDisplayMoreItems];
-        [self.stackDisplayedItems removeObject:self.currentDisplayMoreItems];
-    }
-    if (self.stackDisplayedItems.count > 1) {
-        isShowMainMenu = NO;
-        // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
-        _isInProcessing = YES;
-        [UIView animateWithDuration:0.3
-                              delay:0.0
-             usingSpringWithDamping:self.usingSpringWithDamping
-              initialSpringVelocity:self.initialSpringVelocity
-                            options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                         animations:^{
-                             [self showMoreButtonsWithItems:self.stackDisplayedItems.lastObject];
-                         }
-                         completion:nil];
-
+    if (self.currentDisplayMoreItem.moreHypotenusItems.count) {
+        [self dismissMoreButtonsWithItem:self.currentDisplayMoreItem animationCompletion:^{
+            if (self.stackDisplayedItems.count) {
+                [self.stackDisplayedItems removeObject:self.currentDisplayMoreItem];
+                // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
+                _isInProcessing = YES;
+                [UIView animateWithDuration:0.3
+                                      delay:0.0
+                     usingSpringWithDamping:self.usingSpringWithDamping
+                      initialSpringVelocity:self.initialSpringVelocity
+                                    options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
+                                 animations:^{
+                                     if (self.stackDisplayedItems.count) {
+                                         [self showMoreButtonsWithItem:self.stackDisplayedItems.lastObject];
+                                     } else {
+                                         _isShow = NO;
+                                         [self show];
+                                         _currentDisplayMoreItem = nil;
+                                     }
+                                 }
+                                 completion:^(BOOL finished) {
+                                     
+                                 }];
+                
+            }
+        }];
     }
     
-    if (isShowMainMenu) {
+    if (!self.currentDisplayMoreItem) {
         [self dismiss];
     }
-    
-    if (!isShowMainMenu && self.stackDisplayedItems.count == 1) {
-        _isShow = NO;
-        [self show];
-        isShowMainMenu = YES;
-    }
-
 }
 
 @end

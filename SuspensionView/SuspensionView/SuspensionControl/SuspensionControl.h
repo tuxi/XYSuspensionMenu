@@ -178,8 +178,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @interface MenuBarHypotenuseItem : NSObject
 
 @property (nonatomic, strong, readonly) OSCustomButton *hypotenuseButton;
-/// 用于点击当前item后需要展示的更多按钮
 @property (nonatomic, strong) NSMutableArray<MenuBarHypotenuseItem *> *moreHypotenusItems;
+@property (nonatomic, assign) CGRect orginRect;
 - (instancetype)initWithButtonType:(OSButtonType)buttonType;
 
 @end
