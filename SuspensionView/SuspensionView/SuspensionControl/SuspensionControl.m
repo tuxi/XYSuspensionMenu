@@ -1220,7 +1220,6 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @synthesize
 centerButton = _centerButton,
 stackDisplayedItems = _stackDisplayedItems;
-NSInteger idx = 0;
 
 
 
@@ -1271,10 +1270,10 @@ NSInteger idx = 0;
         [self.stackDisplayedItems removeObjectAtIndex:foundIdx];
     }
     [self.stackDisplayedItems addObject:currentDisplayMoreItem];
-    
+    static NSInteger idx = 0;
     for (MenuBarHypotenuseItem *item in currentDisplayMoreItem.moreHypotenusItems) {
         [item.hypotenuseButton setOpaque:NO];
-        [item.hypotenuseButton setTag:moreBarButtonBaseTag+idx+1];
+        [item.hypotenuseButton setTag:moreBarButtonBaseTag + idx];
         [item.hypotenuseButton addTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton setAlpha:0.0];
         [self addSubview:item.hypotenuseButton];
@@ -1295,7 +1294,7 @@ NSInteger idx = 0;
     NSInteger idx = 0;
     for (MenuBarHypotenuseItem *item in menuBarItems) {
         [item.hypotenuseButton setOpaque:NO];
-        [item.hypotenuseButton setTag:menuBarButtonBaseTag+idx+1];
+        [item.hypotenuseButton setTag:menuBarButtonBaseTag+idx];
         [item.hypotenuseButton addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton setAlpha:0.0];
         [self addSubview:item.hypotenuseButton];
@@ -1344,6 +1343,7 @@ NSInteger idx = 0;
         menuWindow.frame = menuFrame;
         _isDismiss = YES;
         _isShow = NO;
+        [self _dismissCompetion];
     };
 }
 
@@ -1541,6 +1541,8 @@ NSInteger idx = 0;
 }
 
 - (void)_dismissCompetion {
+
+    [self removeAllMoreButtons];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidDismiss:)]) {
         [self.delegate suspensionMenuViewDidDismiss:self];
         return;
@@ -1550,8 +1552,15 @@ NSInteger idx = 0;
     }
 }
 
-- (void)removeAllMoreItems {
-
+- (void)removeAllMoreButtons {
+    for (UIView *view in self.subviews) {
+        if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+            if (view.tag >= moreBarButtonBaseTag) {
+                [view removeFromSuperview];
+            }
+        }
+    }
+    _currentDisplayMoreItem = nil;
 }
 
 
@@ -1688,33 +1697,43 @@ NSInteger idx = 0;
 - (void)menuBarButtonClick:(id)sender {
     
     // 获取当前点击的button是否有更多button需要展示
-    NSInteger btnIdx = [(UIView *)sender tag] - menuBarButtonBaseTag - 1;
-    MenuBarHypotenuseItem *item = self.menuBarItems[btnIdx];
+    NSUInteger foundMenuButtonIdx = [self.menuBarItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        return sender == obj.hypotenuseButton;
+    }];
+    
+    if (foundMenuButtonIdx == NSNotFound) {
+        return;
+    }
+    
+    MenuBarHypotenuseItem *item = self.menuBarItems[foundMenuButtonIdx];
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
         return;
     }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedHypotenuseButtonAtIndex:)]) {
-        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[(UIView *)sender tag] - menuBarButtonBaseTag - 1];
+        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[(UIView *)sender tag] - menuBarButtonBaseTag];
         return;
     }
     if (_menuBarClickBlock) {
         _menuBarClickBlock([(UIView *)sender tag] - menuBarButtonBaseTag - 1);
     }
+
 }
 
 - (void)moreBarButtonClick:(id)sender {
 
-    NSUInteger foundIdx = [self.currentDisplayMoreItem.moreHypotenusItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSUInteger foundMoreButtonIdx = [self.currentDisplayMoreItem.moreHypotenusItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return sender == obj.hypotenuseButton;
     }];
     
-    if (foundIdx == NSNotFound) {
+    if (foundMoreButtonIdx == NSNotFound) {
         return;
     }
-    MenuBarHypotenuseItem *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundIdx];
-    
+    MenuBarHypotenuseItem *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundMoreButtonIdx];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedMoreButtonAtIndex:fromHypotenuseItem:)]) {
+        [self.delegate suspensionMenuView:self clickedMoreButtonAtIndex:foundMoreButtonIdx fromHypotenuseItem:item];
+    }
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
         return;
@@ -1831,13 +1850,6 @@ NSInteger idx = 0;
         _isDismiss = NO;
         [self _dismissWithTriggerPanGesture:YES];
         [self.centerButton checkTargetPosition];
-        for (UIView *view in self.subviews) {
-            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
-                if (view.tag >= moreBarButtonBaseTag) {
-                    [view removeFromSuperview];
-                }
-            }
-        }
         return;
     }
     [self _updateMenuViewCenterWithIsShow:_isShow];

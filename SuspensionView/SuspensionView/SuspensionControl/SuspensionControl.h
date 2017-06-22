@@ -38,6 +38,7 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 
 @optional
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex;
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(MenuBarHypotenuseItem *)hypotenuseItem;
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedCenterButton:(SuspensionView *)centerButton;
 - (void)suspensionMenuViewDidShow:(SuspensionMenuView *)suspensionMenuView;
 - (void)suspensionMenuViewDidDismiss:(SuspensionMenuView *)suspensionMenuView;

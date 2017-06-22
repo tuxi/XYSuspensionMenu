@@ -9,7 +9,9 @@
 #import "FirstViewController.h"
 #import "SuspensionControl.h"
 
-@interface FirstViewController ()
+#pragma mark *** Sample ***
+
+@interface FirstViewController () <SuspensionMenuViewDelegate>
 
 @end
 
@@ -167,24 +169,48 @@
     menuView.shouldHiddenCenterButtonWhenShow = YES;
     menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
     [menuView setMenuBarItems:a itemSize:CGSizeMake(50, 50)];
+    menuView.delegate = self;
     
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
     [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     
-    __block __weak typeof(menuView) weakMenuView = menuView;
-    menuView.menuBarClickBlock = ^(NSInteger index) {
-        
-        if (index < 3) {
-            
-            UIViewController *vc = [UIViewController new];
-            vc.view.backgroundColor = [UIColor whiteColor];
-            [weakMenuView testPushViewController:vc];
-        }
-    };
+    /*
+     __block __weak typeof(menuView) weakMenuView = menuView;
+     menuView.menuBarClickBlock = ^(NSInteger index) {
+     
+     if (index < 3) {
+     
+     UIViewController *vc = [UIViewController new];
+     vc.view.backgroundColor = [UIColor whiteColor];
+     [weakMenuView testPushViewController:vc];
+     }
+     };
+     
+     */
     
+}
+
+////////////////////////////////////////////////////////////////////////
+#pragma mark - SuspensionMenuViewDelegate
+////////////////////////////////////////////////////////////////////////
+
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedCenterButton:(SuspensionView *)centerButton {
+
+}
+
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex < 3) {
+        
+        UIViewController *vc = [UIViewController new];
+        vc.view.backgroundColor = [UIColor whiteColor];
+        [suspensionMenuView testPushViewController:vc];
+    }
+}
 
 
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(MenuBarHypotenuseItem *)hypotenuseItem {
+    
 }
 
 - (void)didReceiveMemoryWarning {
