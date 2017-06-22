@@ -1347,7 +1347,7 @@ NSInteger idx = 0;
     };
 }
 
-- (void)show {
+- (void)_showWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
     if (_isShow) return;
     self.centerButton.usingSpringWithDamping = 0.8;
     self.centerButton.initialSpringVelocity = 20;
@@ -1371,17 +1371,31 @@ NSInteger idx = 0;
         centerWindow.frame = centerFrame;
         centerWindow.alpha = 0.0;
     }
+    
+    void (^showCompletionBlock)(BOOL finished) = [self showCompletionBlock];
+    NSTimeInterval usingSpringWithDamping = self.usingSpringWithDamping;
+    NSTimeInterval initialSpringVelocity = self.initialSpringVelocity;
+    if (!isCurveEaseInOut) {
+        showCompletionBlock = nil;
+        usingSpringWithDamping = 1.0;
+        initialSpringVelocity = 10.0;
+    }
+    
     [UIView animateWithDuration:0.4
                           delay:0.0
-         usingSpringWithDamping:self.usingSpringWithDamping
-          initialSpringVelocity:self.initialSpringVelocity
+         usingSpringWithDamping:usingSpringWithDamping
+          initialSpringVelocity:initialSpringVelocity
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self showAnimationsBlock]
-                     completion:[self showCompletionBlock]];
+                     animations:[self showAnimationsBlockWithNeedCurveEaseInOut:isCurveEaseInOut]
+                     completion:showCompletionBlock];
+}
+
+- (void)show {
+    [self _showWithNeedCurveEaseInOut:YES];
     
 }
 
-- (void (^)())showAnimationsBlock {
+- (void (^)())showAnimationsBlockWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
     return ^ {
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         [menuWindow setAlpha:1.0];
@@ -1395,11 +1409,16 @@ NSInteger idx = 0;
         
         // 更新menu bar 的 布局
         CGFloat triangleHypotenuse = 0.0;
-        if (_isFiristShow) {
-            triangleHypotenuse = _minBounceOfTriangleHypotenuse;
+        if (!isCurveEaseInOut) {
+            triangleHypotenuse = _defaultTriangleHypotenuse;
         } else {
-            triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
+            if (_isFiristShow) {
+                triangleHypotenuse = _minBounceOfTriangleHypotenuse;
+            } else {
+                triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
+            }
         }
+        
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse hypotenuseItems:self.menuBarItems];
     };
     
@@ -1754,12 +1773,13 @@ NSInteger idx = 0;
 - (void)showMoreButtonsWithItem:(MenuBarHypotenuseItem *)item {
     
     self.currentDisplayMoreItem = item;
-    [UIView animateWithDuration:0.4
+    [UIView animateWithDuration:0.3
                           delay:0.0
-         usingSpringWithDamping:self.usingSpringWithDamping
-          initialSpringVelocity:self.initialSpringVelocity
+         usingSpringWithDamping:1.0
+          initialSpringVelocity:10
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
+                         
                          UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
                          [menuWindow setAlpha:1.0];
                          [self setAlpha:1.0];
@@ -1770,14 +1790,7 @@ NSInteger idx = 0;
                              }
                          }
                          
-                         // 更新menu bar 的 布局
-                         CGFloat triangleHypotenuse = 0.0;
-                         if (_isFiristShow) {
-                             triangleHypotenuse = _minBounceOfTriangleHypotenuse;
-                         } else {
-                             triangleHypotenuse = _maxBounceOfTriangleHypotenuse;
-                         }
-                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse hypotenuseItems:item.moreHypotenusItems];
+                         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_defaultTriangleHypotenuse hypotenuseItems:item.moreHypotenusItems];
                      }
                      completion:nil];
 }
@@ -1786,23 +1799,28 @@ NSInteger idx = 0;
 
 - (void)dismissMoreButtonsWithItem:(MenuBarHypotenuseItem *)item animationCompletion:(void (^)())completion {
     
-    [UIView animateWithDuration:0.3 animations:^{
-        for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
-            moreItem.hypotenuseButton.frame = item.orginRect;
-        }
-    } completion:^(BOOL finished) {
-        if (finished) {
-            for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
-                [moreItem removeFromSuperview];
-            }
-            if (completion) {
-                completion();
-            }
-        }
-        
-    }];
-    
-
+    [UIView animateWithDuration:0.2
+                          delay:0.0
+         usingSpringWithDamping:1.0
+          initialSpringVelocity:10
+                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                     animations:^{
+                         
+                         for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+                             moreItem.hypotenuseButton.frame = item.orginRect;
+                             moreItem.hypotenuseButton.alpha = 0.03;
+                         }
+                     }
+                     completion:^(BOOL finished) {
+                         if (finished) {
+                             for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+                                 [moreItem removeFromSuperview];
+                             }
+                             if (completion) {
+                                 completion();
+                             }
+                         }
+                     }];
     
 }
 #pragma mark *** Notify ***
@@ -1898,8 +1916,8 @@ NSInteger idx = 0;
     if (button) {
         [button setFrame:CGRectMake(origin.x,
                                     origin.y,
-                                    self.centerButton.frame.size.width,
-                                    self.centerButton.frame.size.height)];
+                                    _centerWindowSize.width,
+                                    _centerWindowSize.height)];
     }
 }
 
@@ -2078,23 +2096,14 @@ NSInteger idx = 0;
                 [self.stackDisplayedItems removeObject:self.currentDisplayMoreItem];
                 // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
                 _isInProcessing = YES;
-                [UIView animateWithDuration:0.3
-                                      delay:0.0
-                     usingSpringWithDamping:self.usingSpringWithDamping
-                      initialSpringVelocity:self.initialSpringVelocity
-                                    options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                                 animations:^{
-                                     if (self.stackDisplayedItems.count) {
-                                         [self showMoreButtonsWithItem:self.stackDisplayedItems.lastObject];
-                                     } else {
-                                         _isShow = NO;
-                                         [self show];
-                                         _currentDisplayMoreItem = nil;
-                                     }
-                                 }
-                                 completion:^(BOOL finished) {
-                                     
-                                 }];
+                if (self.stackDisplayedItems.count) {
+                    [self showMoreButtonsWithItem:self.stackDisplayedItems.lastObject];
+                } else {
+                    _isShow = NO;
+                    [self _showWithNeedCurveEaseInOut:NO];
+
+                    _currentDisplayMoreItem = nil;
+                }
                 
             }
         }];
