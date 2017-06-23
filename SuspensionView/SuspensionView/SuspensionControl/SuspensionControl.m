@@ -1211,6 +1211,9 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, strong) MenuBarHypotenuseItem *currentDisplayMoreItem;
 /// 保证currentDisplayMoreItems在栈顶，menuBarItems在栈底
 @property (nonatomic, strong) NSMutableArray<MenuBarHypotenuseItem *> *stackDisplayedItems;
+/// 存储的为调用testPushViewController时的MenuBarHypotenuseItem和跳转的viewController，保证第二次点击时pop并从此字典中移除
+@property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
+@property (nonatomic, weak) MenuBarHypotenuseItem *currentClickHypotenuseItem;
 @end
 
 #pragma mark *** SuspensionMenuView ***
@@ -1304,7 +1307,54 @@ stackDisplayedItems = _stackDisplayedItems;
 }
 
 - (void)testPushViewController:(UIViewController *)viewController {
+    NSParameterAssert(viewController);
     
+    if ([[self topViewController] isMemberOfClass:[viewController class]]) {
+        [[self topViewController].navigationController popViewControllerAnimated:YES];
+        [self dismiss];
+        self.testPushViewControllerDictionary = nil;
+        return;
+    } else {
+        
+        NSMutableArray *vcs = [[self topViewController].navigationController.viewControllers mutableCopy];
+        NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            return [obj class] == [viewController class];
+        }];
+        if (founVcIndex != NSNotFound) {
+            UIViewController *targetVc = vcs[founVcIndex];
+            [[self topViewController].navigationController popToViewController:targetVc animated:YES];
+            self.testPushViewControllerDictionary = nil;
+            [self dismiss];
+            return;
+        }
+    }
+    
+    if (_currentClickHypotenuseItem && viewController) {
+        // 取
+        NSString *vcProAddress = self.testPushViewControllerDictionary.allValues.lastObject;
+        if (vcProAddress.length) {
+            NSMutableArray *vcs = [[self topViewController].navigationController.viewControllers mutableCopy];
+            NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                return [[NSString stringWithFormat:@"%p", obj] isEqualToString:vcProAddress];
+            }];
+            Class founVcClass;
+            if (founVcIndex != NSNotFound) {
+                founVcClass = [[vcs objectAtIndex:founVcIndex] class];
+                if (founVcIndex > 0) {
+                    UIViewController *targetVc = vcs[founVcIndex - 1];
+                    [[self topViewController].navigationController popToViewController:targetVc animated:YES];
+                } else {
+                    [[self topViewController].navigationController popToRootViewControllerAnimated:YES];
+                }
+                self.testPushViewControllerDictionary = nil;
+                [self dismiss];
+                if (founVcClass == [viewController class]) {
+                    return;
+                }
+            }
+        }
+        
+    }
     [UIView animateWithDuration:0.3
                           delay:0.0
          usingSpringWithDamping:0.8
@@ -1344,6 +1394,12 @@ stackDisplayedItems = _stackDisplayedItems;
         _isDismiss = YES;
         _isShow = NO;
         [self _dismissCompetion];
+        // 存
+        NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+        if (!btnTag) {
+            return;
+        }
+        self.testPushViewControllerDictionary = @{btnTag: [NSString stringWithFormat:@"%p", vc]};
     };
 }
 
@@ -1627,6 +1683,13 @@ stackDisplayedItems = _stackDisplayedItems;
     return _stackDisplayedItems;
 }
 
+- (NSDictionary<NSNumber *, NSString*> *)testPushViewControllerDictionary {
+    if (!_testPushViewControllerDictionary) {
+        _testPushViewControllerDictionary = [NSMutableDictionary dictionary];
+    }
+    return _testPushViewControllerDictionary;
+}
+
 
 - (void)_suspensionMenuViewSetup {
     
@@ -1706,6 +1769,7 @@ stackDisplayedItems = _stackDisplayedItems;
     }
     
     MenuBarHypotenuseItem *item = self.menuBarItems[foundMenuButtonIdx];
+    _currentClickHypotenuseItem = item;
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
         return;
@@ -1730,16 +1794,22 @@ stackDisplayedItems = _stackDisplayedItems;
     if (foundMoreButtonIdx == NSNotFound) {
         return;
     }
+    
+    
     MenuBarHypotenuseItem *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundMoreButtonIdx];
+    _currentClickHypotenuseItem = item;
+    
+    if (item.moreHypotenusItems.count) {
+        [self moreButtonClickWithHypotenuseItem:item];
+        return;
+    }
+    
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedMoreButtonAtIndex:fromHypotenuseItem:)]) {
         [self.delegate suspensionMenuView:self clickedMoreButtonAtIndex:foundMoreButtonIdx fromHypotenuseItem:item];
     } else if (self.moreButtonClickBlock) {
         self.moreButtonClickBlock(foundMoreButtonIdx);
     }
-    if (item.moreHypotenusItems.count) {
-        [self moreButtonClickWithHypotenuseItem:item];
-        return;
-    }
+
 }
 
 - (void)moreButtonClickWithHypotenuseItem:(MenuBarHypotenuseItem *)item {
@@ -2084,6 +2154,8 @@ stackDisplayedItems = _stackDisplayedItems;
     }
     _showCompletion = nil;
     _dismissCompletion = nil;
+    _testPushViewControllerDictionary = nil;
+    _currentDisplayMoreItem = nil;
 }
 
 - (UIViewController *)topViewController {

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		182F70EA1EFD663900B26264 /* OSTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 182F70E91EFD663900B26264 /* OSTestViewController.m */; };
+		182F70ED1EFD708800B26264 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 182F70EC1EFD708800B26264 /* SecondViewController.m */; };
 		186DA2D71EF66B8B00DBE1C5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 186DA2CF1EF66B8B00DBE1C5 /* AppDelegate.m */; };
 		186DA2D81EF66B8B00DBE1C5 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 186DA2D11EF66B8B00DBE1C5 /* FirstViewController.m */; };
 		186DA2D91EF66B8B00DBE1C5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 186DA2D31EF66B8B00DBE1C5 /* ViewController.m */; };
@@ -19,6 +21,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		182F70E81EFD663900B26264 /* OSTestViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSTestViewController.h; sourceTree = "<group>"; };
+		182F70E91EFD663900B26264 /* OSTestViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSTestViewController.m; sourceTree = "<group>"; };
+		182F70EB1EFD708800B26264 /* SecondViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SecondViewController.h; sourceTree = "<group>"; };
+		182F70EC1EFD708800B26264 /* SecondViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		186DA2CE1EF66B8B00DBE1C5 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		186DA2CF1EF66B8B00DBE1C5 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		186DA2D01EF66B8B00DBE1C5 /* FirstViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirstViewController.h; sourceTree = "<group>"; };
@@ -63,6 +69,10 @@
 				186DA2D11EF66B8B00DBE1C5 /* FirstViewController.m */,
 				186DA2D21EF66B8B00DBE1C5 /* ViewController.h */,
 				186DA2D31EF66B8B00DBE1C5 /* ViewController.m */,
+				182F70E81EFD663900B26264 /* OSTestViewController.h */,
+				182F70E91EFD663900B26264 /* OSTestViewController.m */,
+				182F70EB1EFD708800B26264 /* SecondViewController.h */,
+				182F70EC1EFD708800B26264 /* SecondViewController.m */,
 			);
 			path = Sample;
 			sourceTree = "<group>";
@@ -191,6 +201,8 @@
 			files = (
 				186DA2D71EF66B8B00DBE1C5 /* AppDelegate.m in Sources */,
 				186DA2D81EF66B8B00DBE1C5 /* FirstViewController.m in Sources */,
+				182F70EA1EFD663900B26264 /* OSTestViewController.m in Sources */,
+				182F70ED1EFD708800B26264 /* SecondViewController.m in Sources */,
 				186DA2D91EF66B8B00DBE1C5 /* ViewController.m in Sources */,
 				186DA2DA1EF66B8B00DBE1C5 /* SuspensionControl.m in Sources */,
 				18A504D41E61DE4000EE96E8 /* main.m in Sources */,

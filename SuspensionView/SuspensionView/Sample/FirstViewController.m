@@ -8,6 +8,9 @@
 
 #import "FirstViewController.h"
 #import "SuspensionControl.h"
+#import "OSTestViewController.h"
+#import "ViewController.h"
+#import "SecondViewController.h"
 
 #pragma mark *** Sample ***
 
@@ -200,17 +203,24 @@
 }
 
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex {
-    if (buttonIndex < 3) {
+    if (buttonIndex == 3) {
         
-        UIViewController *vc = [UIViewController new];
-        vc.view.backgroundColor = [UIColor whiteColor];
+        OSTestViewController *vc = [OSTestViewController new];
+        [suspensionMenuView testPushViewController:vc];
+    }
+    if (buttonIndex == 4) {
+        
+        ViewController *vc = [ViewController new];
         [suspensionMenuView testPushViewController:vc];
     }
 }
 
 
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(MenuBarHypotenuseItem *)hypotenuseItem {
-    
+    if (buttonIndex < 2) {
+        SecondViewController *vc = [SecondViewController new];
+        [suspensionMenuView testPushViewController:vc];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
