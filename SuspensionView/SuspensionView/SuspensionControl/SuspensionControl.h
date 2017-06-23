@@ -140,6 +140,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
+@property (nonatomic, copy) void (^ _Nullable moreButtonClickBlock)(NSInteger index);
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
 @property (nonatomic, strong, readonly) NSArray<MenuBarHypotenuseItem *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;

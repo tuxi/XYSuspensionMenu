@@ -1712,11 +1712,11 @@ stackDisplayedItems = _stackDisplayedItems;
     }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedHypotenuseButtonAtIndex:)]) {
-        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:[(UIView *)sender tag] - menuBarButtonBaseTag];
+        [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:foundMenuButtonIdx];
         return;
     }
     if (_menuBarClickBlock) {
-        _menuBarClickBlock([(UIView *)sender tag] - menuBarButtonBaseTag - 1);
+        _menuBarClickBlock(foundMenuButtonIdx);
     }
 
 }
@@ -1733,6 +1733,8 @@ stackDisplayedItems = _stackDisplayedItems;
     MenuBarHypotenuseItem *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundMoreButtonIdx];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedMoreButtonAtIndex:fromHypotenuseItem:)]) {
         [self.delegate suspensionMenuView:self clickedMoreButtonAtIndex:foundMoreButtonIdx fromHypotenuseItem:item];
+    } else if (self.moreButtonClickBlock) {
+        self.moreButtonClickBlock(foundMoreButtonIdx);
     }
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
