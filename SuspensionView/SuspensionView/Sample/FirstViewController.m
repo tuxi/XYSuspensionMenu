@@ -206,12 +206,12 @@
     if (buttonIndex == 3) {
         
         OSTestViewController *vc = [OSTestViewController new];
-        [suspensionMenuView testPushViewController:vc];
+        [suspensionMenuView testPushViewController:vc animated:YES];
     }
     if (buttonIndex == 4) {
         
         ViewController *vc = [ViewController new];
-        [suspensionMenuView testPushViewController:vc];
+        [suspensionMenuView testPushViewController:vc animated:YES];
     }
 }
 
@@ -219,7 +219,7 @@
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(MenuBarHypotenuseItem *)hypotenuseItem {
     if (buttonIndex < 2) {
         SecondViewController *vc = [SecondViewController new];
-        [suspensionMenuView testPushViewController:vc];
+        [suspensionMenuView testPushViewController:vc animated:YES];
     }
 }
 

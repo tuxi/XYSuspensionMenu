@@ -1306,7 +1306,7 @@ stackDisplayedItems = _stackDisplayedItems;
     }
 }
 
-- (void)testPushViewController:(UIViewController *)viewController {
+- (void)testPushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     NSParameterAssert(viewController);
     
     if ([[self topViewController] isMemberOfClass:[viewController class]]) {
@@ -1342,9 +1342,9 @@ stackDisplayedItems = _stackDisplayedItems;
                 founVcClass = [[vcs objectAtIndex:founVcIndex] class];
                 if (founVcIndex > 0) {
                     UIViewController *targetVc = vcs[founVcIndex - 1];
-                    [[self topViewController].navigationController popToViewController:targetVc animated:YES];
+                    [[self topViewController].navigationController popToViewController:targetVc animated:animated];
                 } else {
-                    [[self topViewController].navigationController popToRootViewControllerAnimated:YES];
+                    [[self topViewController].navigationController popToRootViewControllerAnimated:animated];
                 }
                 self.testPushViewControllerDictionary = nil;
                 [self dismiss];
@@ -1361,7 +1361,7 @@ stackDisplayedItems = _stackDisplayedItems;
           initialSpringVelocity:0.5
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:[self pushAnimationsBlock]
-                     completion:[self pushAnimationsCompetionsBlockForViewController:viewController]];
+                     completion:[self pushAnimationsCompetionsBlockForViewController:viewController animated:animated]];
 }
 
 - (void (^)())pushAnimationsBlock {
@@ -1384,9 +1384,9 @@ stackDisplayedItems = _stackDisplayedItems;
     };
 }
 
-- (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc {
+- (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc animated:(BOOL)animated {
     return ^(BOOL finished) {
-        [[self topViewController].navigationController pushViewController:vc animated:YES];
+        [[self topViewController].navigationController pushViewController:vc animated:animated];
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         CGRect menuFrame =  menuWindow.frame;
         menuFrame.size = CGSizeZero;
@@ -1537,7 +1537,7 @@ stackDisplayedItems = _stackDisplayedItems;
     //        [self.centerButton checkTargetPosition];
     //    }
     //
-
+    
     _isInProcessing = YES;
     self.centerButton.usingSpringWithDamping = 0.5;
     self.centerButton.initialSpringVelocity = 10;
@@ -1597,7 +1597,7 @@ stackDisplayedItems = _stackDisplayedItems;
 }
 
 - (void)_dismissCompetion {
-
+    
     [self removeAllMoreButtons];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidDismiss:)]) {
         [self.delegate suspensionMenuViewDidDismiss:self];
@@ -1782,11 +1782,11 @@ stackDisplayedItems = _stackDisplayedItems;
     if (_menuBarClickBlock) {
         _menuBarClickBlock(foundMenuButtonIdx);
     }
-
+    
 }
 
 - (void)moreBarButtonClick:(id)sender {
-
+    
     NSUInteger foundMoreButtonIdx = [self.currentDisplayMoreItem.moreHypotenusItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return sender == obj.hypotenuseButton;
     }];
@@ -1809,7 +1809,7 @@ stackDisplayedItems = _stackDisplayedItems;
     } else if (self.moreButtonClickBlock) {
         self.moreButtonClickBlock(foundMoreButtonIdx);
     }
-
+    
 }
 
 - (void)moreButtonClickWithHypotenuseItem:(MenuBarHypotenuseItem *)item {
@@ -1843,8 +1843,8 @@ stackDisplayedItems = _stackDisplayedItems;
         }
         
     };
-
-
+    
+    
 }
 
 
@@ -2034,7 +2034,7 @@ stackDisplayedItems = _stackDisplayedItems;
     if (hypotenuseItems.count == 1) {
         
         [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
     }
     
     if (hypotenuseItems.count == 2) {
@@ -2057,11 +2057,11 @@ stackDisplayedItems = _stackDisplayedItems;
         CGFloat triangleA = triangleHypotenuse * cosf(degree);
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
         [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
     }
     if (hypotenuseItems.count == 4) {
         CGFloat degree    = M_PI / 4.0f; // = 45 * M_PI / 180
@@ -2079,19 +2079,19 @@ stackDisplayedItems = _stackDisplayedItems;
         CGFloat triangleA = triangleHypotenuse * cosf(degree);
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
         [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
         [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         
         degree    = M_PI / 5.0f;  // = 36 * M_PI / 180
         triangleA = triangleHypotenuse * cosf(degree);
         triangleB = triangleHypotenuse * sinf(degree);
         [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[4].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
     }
     
     if (hypotenuseItems.count == 6) {
@@ -2099,17 +2099,17 @@ stackDisplayedItems = _stackDisplayedItems;
         CGFloat triangleA = triangleHypotenuse * cosf(degree); // 斜边的余弦值
         CGFloat triangleB = triangleHypotenuse * sinf(degree); // 斜边正弦值
         [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
         [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[4].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
         [self _setButton:hypotenuseItems[5].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
     }
     
     if (hypotenuseItems.count == 8) {
@@ -2117,25 +2117,25 @@ stackDisplayedItems = _stackDisplayedItems;
         CGFloat triangleA = triangleHypotenuse * cosf(degree);         // 斜边的余弦值
         CGFloat triangleB = triangleHypotenuse * sinf(degree);         // 斜边正弦值
         [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
         [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius - triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[4].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
         [self _setButton:hypotenuseItems[5].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
         
         degree    = M_PI / 2.0f;  // = 36 * M_PI / 180
         triangleA = triangleHypotenuse * cosf(degree);
         triangleB = triangleHypotenuse * sinf(degree);
         [self _setButton:hypotenuseItems[6].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
         [self _setButton:hypotenuseItems[7].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                     menuWindowRadius + triangleA - centerWindowRadius)];
+                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
     }
     
     
@@ -2187,7 +2187,7 @@ stackDisplayedItems = _stackDisplayedItems;
                 } else {
                     _isShow = NO;
                     [self _showWithNeedCurveEaseInOut:NO];
-
+                    
                     _currentDisplayMoreItem = nil;
                 }
                 
