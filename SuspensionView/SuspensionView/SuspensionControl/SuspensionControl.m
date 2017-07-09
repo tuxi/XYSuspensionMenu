@@ -1308,7 +1308,7 @@ stackDisplayedItems = _stackDisplayedItems;
 
 - (void)testPushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     NSParameterAssert(viewController);
-    
+    viewController.hidesBottomBarWhenPushed = YES;
     if ([[self topViewController] isMemberOfClass:[viewController class]]) {
         [[self topViewController].navigationController popViewControllerAnimated:YES];
         [self dismiss];
