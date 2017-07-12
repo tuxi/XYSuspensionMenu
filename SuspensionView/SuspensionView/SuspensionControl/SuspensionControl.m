@@ -973,7 +973,9 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
         
-        [self performSelector:@selector(_checkTargetPosition:) withObject:[NSValue valueWithCGPoint:currentPoint] afterDelay:0.0];
+        // iPhone5 iOS8.2 crash 
+//        [self performSelector:@selector(_checkTargetPosition:) withObject:[NSValue valueWithCGPoint:currentPoint] afterDelay:0.0];
+        [self _checkTargetPosition:currentPoint];
     }
 }
 
