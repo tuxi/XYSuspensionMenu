@@ -43,7 +43,7 @@ static CGRect CGRectEdgeInset(CGRect rect, UIEdgeInsets insets)
 @end
 
 
-@interface MenuBarHypotenuseItem ()
+@interface HypotenuseAction ()
 @property (nonatomic, strong) MenuBarHypotenuseButton *hypotenuseButton;
 - (void)removeFromSuperview;
 @end
@@ -973,8 +973,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
         
-        // iPhone5 iOS8.2 crash 
-//        [self performSelector:@selector(_checkTargetPosition:) withObject:[NSValue valueWithCGPoint:currentPoint] afterDelay:0.0];
         [self _checkTargetPosition:currentPoint];
     }
 }
@@ -1210,12 +1208,14 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, weak) UIImageView *backgroundImageView;
 @property (nonatomic, weak) UIVisualEffectView *visualEffectView;
 @property (nonatomic, assign) CGSize itemSize;
-@property (nonatomic, strong) MenuBarHypotenuseItem *currentDisplayMoreItem;
+@property (nonatomic, strong) HypotenuseAction *currentDisplayMoreItem;
 /// 保证currentDisplayMoreItems在栈顶，menuBarItems在栈底
-@property (nonatomic, strong) NSMutableArray<MenuBarHypotenuseItem *> *stackDisplayedItems;
-/// 存储的为调用testPushViewController时的MenuBarHypotenuseItem和跳转的viewController，保证第二次点击时pop并从此字典中移除
+@property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *stackDisplayedItems;
+/// 存储的为调用testPushViewController时的HypotenuseAction和跳转的viewController，保证第二次点击时pop并从此字典中移除
 @property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
-@property (nonatomic, weak) MenuBarHypotenuseItem *currentClickHypotenuseItem;
+@property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
+@property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
+
 @end
 
 #pragma mark *** SuspensionMenuView ***
@@ -1224,7 +1224,8 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 
 @synthesize
 centerButton = _centerButton,
-stackDisplayedItems = _stackDisplayedItems;
+stackDisplayedItems = _stackDisplayedItems,
+menuBarItems = _menuBarItems;
 
 
 
@@ -1251,24 +1252,40 @@ stackDisplayedItems = _stackDisplayedItems;
     return self;
 }
 
-- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems itemSize:(CGSize)itemSize {
-    self.menuBarItems = menuBarItems;
+
+- (void)setMenuBarItems:(NSArray<HypotenuseAction *> *)menuBarItems itemSize:(CGSize)itemSize {
+    self.menuBarItems = [menuBarItems mutableCopy];
     [self setItemSize:itemSize];
+}
+
+- (void)addAction:(HypotenuseAction *)action {
+    if (!action) {
+        return;
+    }
+    if (!_menuBarItems) {
+        _menuBarItems = [NSMutableArray array];
+    }
+    [_menuBarItems addObject:action];
+}
+
+- (void)prepareForAppearWithActionSize:(CGSize)size {
+    [self setMenuBarItems:self.menuBarItems itemSize:size];
 }
 
 - (void)setItemSize:(CGSize)itemSize {
     
     _menuWindowSize = self.frame.size;
-    _itemSize = CGSizeMake(MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80), MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80));
+    _itemSize = CGSizeMake(MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80),
+                           MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80));
     _centerWindowSize = _itemSize;
     
     [self setupLayout];
 }
 
-- (void)setCurrentDisplayMoreItem:(MenuBarHypotenuseItem *)currentDisplayMoreItem {
+- (void)setCurrentDisplayMoreItem:(HypotenuseAction *)currentDisplayMoreItem {
     _currentDisplayMoreItem = currentDisplayMoreItem;
     
-    NSUInteger foundIdx = [self.stackDisplayedItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSUInteger foundIdx = [self.stackDisplayedItems indexOfObjectPassingTest:^BOOL(HypotenuseAction * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return [obj isEqual:currentDisplayMoreItem];
     }];
     if (foundIdx != NSNotFound) {
@@ -1276,7 +1293,7 @@ stackDisplayedItems = _stackDisplayedItems;
     }
     [self.stackDisplayedItems addObject:currentDisplayMoreItem];
     static NSInteger idx = 0;
-    for (MenuBarHypotenuseItem *item in currentDisplayMoreItem.moreHypotenusItems) {
+    for (HypotenuseAction *item in currentDisplayMoreItem.moreHypotenusItems) {
         [item.hypotenuseButton setOpaque:NO];
         [item.hypotenuseButton setTag:moreBarButtonBaseTag + idx];
         [item.hypotenuseButton addTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
@@ -1289,15 +1306,15 @@ stackDisplayedItems = _stackDisplayedItems;
 
 
 
-- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems {
+- (void)setMenuBarItems:(NSArray<HypotenuseAction *> *)menuBarItems {
     
     if (_menuBarItems != menuBarItems) {
         [self.stackDisplayedItems removeAllObjects];
     }
-    _menuBarItems = menuBarItems;
+    _menuBarItems = [menuBarItems mutableCopy];
     
     NSInteger idx = 0;
-    for (MenuBarHypotenuseItem *item in menuBarItems) {
+    for (HypotenuseAction *item in menuBarItems) {
         [item.hypotenuseButton setOpaque:NO];
         [item.hypotenuseButton setTag:menuBarButtonBaseTag+idx];
         [item.hypotenuseButton addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
@@ -1388,7 +1405,11 @@ stackDisplayedItems = _stackDisplayedItems;
 
 - (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc animated:(BOOL)animated {
     return ^(BOOL finished) {
-        [[self topViewController].navigationController pushViewController:vc animated:animated];
+        if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
+            [[self topViewController].navigationController showViewController:vc sender:self];
+        } else {
+            [[self topViewController].navigationController pushViewController:vc animated:animated];
+        }
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         CGRect menuFrame =  menuWindow.frame;
         menuFrame.size = CGSizeZero;
@@ -1504,7 +1525,7 @@ stackDisplayedItems = _stackDisplayedItems;
                              _isFiristShow = NO;
                              [self _showCompetion];
                              if (self.menuBarItems) {
-                                 for (MenuBarHypotenuseItem *item in self.menuBarItems) {
+                                 for (HypotenuseAction *item in self.menuBarItems) {
                                      item.orginRect = item.hypotenuseButton.frame;
                                  }
                              }
@@ -1678,7 +1699,7 @@ stackDisplayedItems = _stackDisplayedItems;
     return _visualEffectView;
 }
 
-- (NSMutableArray<MenuBarHypotenuseItem *> *)stackDisplayedItems {
+- (NSMutableArray<HypotenuseAction *> *)stackDisplayedItems {
     if (!_stackDisplayedItems) {
         _stackDisplayedItems = [NSMutableArray array];
     }
@@ -1705,6 +1726,7 @@ stackDisplayedItems = _stackDisplayedItems;
     _initialSpringVelocity = 0.0;
     _shouldHiddenCenterButtonWhenShow = NO;
     _shouldDismissWhenDeviceOrientationDidChange = NO;
+     _menuBarItems = [NSMutableArray array];
     
     self.autoresizingMask = UIViewAutoresizingNone;
     self.layer.cornerRadius = 12.8;
@@ -1762,7 +1784,7 @@ stackDisplayedItems = _stackDisplayedItems;
 - (void)menuBarButtonClick:(id)sender {
     
     // 获取当前点击的button是否有更多button需要展示
-    NSUInteger foundMenuButtonIdx = [self.menuBarItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSUInteger foundMenuButtonIdx = [self.menuBarItems indexOfObjectPassingTest:^BOOL(HypotenuseAction * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return sender == obj.hypotenuseButton;
     }];
     
@@ -1770,7 +1792,7 @@ stackDisplayedItems = _stackDisplayedItems;
         return;
     }
     
-    MenuBarHypotenuseItem *item = self.menuBarItems[foundMenuButtonIdx];
+    HypotenuseAction *item = self.menuBarItems[foundMenuButtonIdx];
     _currentClickHypotenuseItem = item;
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
@@ -1789,7 +1811,7 @@ stackDisplayedItems = _stackDisplayedItems;
 
 - (void)moreBarButtonClick:(id)sender {
     
-    NSUInteger foundMoreButtonIdx = [self.currentDisplayMoreItem.moreHypotenusItems indexOfObjectPassingTest:^BOOL(MenuBarHypotenuseItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSUInteger foundMoreButtonIdx = [self.currentDisplayMoreItem.moreHypotenusItems indexOfObjectPassingTest:^BOOL(HypotenuseAction * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         return sender == obj.hypotenuseButton;
     }];
     
@@ -1798,7 +1820,7 @@ stackDisplayedItems = _stackDisplayedItems;
     }
     
     
-    MenuBarHypotenuseItem *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundMoreButtonIdx];
+    HypotenuseAction *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundMoreButtonIdx];
     _currentClickHypotenuseItem = item;
     
     if (item.moreHypotenusItems.count) {
@@ -1814,7 +1836,7 @@ stackDisplayedItems = _stackDisplayedItems;
     
 }
 
-- (void)moreButtonClickWithHypotenuseItem:(MenuBarHypotenuseItem *)item {
+- (void)moreButtonClickWithHypotenuseItem:(HypotenuseAction *)item {
     if (_isDismiss) {
         return;
     }
@@ -1834,7 +1856,7 @@ stackDisplayedItems = _stackDisplayedItems;
 - (void (^)())dismissCurrentDisplayButtonAnimationsBlock {
     return ^ {
         
-        for (MenuBarHypotenuseItem *item in self.currentDisplayMoreItem.moreHypotenusItems) {
+        for (HypotenuseAction *item in self.currentDisplayMoreItem.moreHypotenusItems) {
             item.orginRect = item.hypotenuseButton.frame;
         }
         for (UIView *view in self.subviews) {
@@ -1850,7 +1872,7 @@ stackDisplayedItems = _stackDisplayedItems;
 }
 
 
-- (void (^)(BOOL finished))showMoreButtonAnimationsBlockWithItem:(MenuBarHypotenuseItem *)item {
+- (void (^)(BOOL finished))showMoreButtonAnimationsBlockWithItem:(HypotenuseAction *)item {
     return ^(BOOL finished) {
         
         [self showMoreButtonsWithItem:item];
@@ -1863,7 +1885,7 @@ stackDisplayedItems = _stackDisplayedItems;
 
 #pragma mark *** More button animation ***
 
-- (void)showMoreButtonsWithItem:(MenuBarHypotenuseItem *)item {
+- (void)showMoreButtonsWithItem:(HypotenuseAction *)item {
     
     self.currentDisplayMoreItem = item;
     [UIView animateWithDuration:0.3
@@ -1877,7 +1899,7 @@ stackDisplayedItems = _stackDisplayedItems;
                          [menuWindow setAlpha:1.0];
                          [self setAlpha:1.0];
                          
-                         for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+                         for (HypotenuseAction *moreItem in item.moreHypotenusItems) {
                              if (moreItem.hypotenuseButton) {
                                  [moreItem.hypotenuseButton setAlpha:1.0];
                              }
@@ -1890,7 +1912,7 @@ stackDisplayedItems = _stackDisplayedItems;
 
 
 
-- (void)dismissMoreButtonsWithItem:(MenuBarHypotenuseItem *)item animationCompletion:(void (^)())completion {
+- (void)dismissMoreButtonsWithItem:(HypotenuseAction *)item animationCompletion:(void (^)())completion {
     
     [UIView animateWithDuration:0.2
                           delay:0.0
@@ -1899,14 +1921,14 @@ stackDisplayedItems = _stackDisplayedItems;
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
                          
-                         for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+                         for (HypotenuseAction *moreItem in item.moreHypotenusItems) {
                              moreItem.hypotenuseButton.frame = item.orginRect;
                              moreItem.hypotenuseButton.alpha = 0.03;
                          }
                      }
                      completion:^(BOOL finished) {
                          if (finished) {
-                             for (MenuBarHypotenuseItem *moreItem in item.moreHypotenusItems) {
+                             for (HypotenuseAction *moreItem in item.moreHypotenusItems) {
                                  [moreItem removeFromSuperview];
                              }
                              if (completion) {
@@ -2008,7 +2030,7 @@ stackDisplayedItems = _stackDisplayedItems;
 }
 
 
-- (void)updateMenuBarButtonLayoutWithTriangleHypotenuse:(CGFloat)triangleHypotenuse hypotenuseItems:(NSArray<MenuBarHypotenuseItem *> *)hypotenuseItems {
+- (void)updateMenuBarButtonLayoutWithTriangleHypotenuse:(CGFloat)triangleHypotenuse hypotenuseItems:(NSArray<HypotenuseAction *> *)hypotenuseItems {
     //
     //  Triangle Values for Buttons' Position
     //
@@ -2211,6 +2233,8 @@ stackDisplayedItems = _stackDisplayedItems;
     }
 }
 
+
+
 @end
 
 
@@ -2300,13 +2324,21 @@ stackDisplayedItems = _stackDisplayedItems;
 @end
 
 
-@implementation MenuBarHypotenuseItem
+@implementation HypotenuseAction
 - (instancetype)initWithButtonType:(OSButtonType)buttonType {
-    if (self = [super init]) {
-        self.hypotenuseButton = [MenuBarHypotenuseButton buttonWithType:buttonType];
+    if (self = [self init]) {
+        [self.hypotenuseButton addTarget:self action:@selector(hypotenuseButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     }
     return self;
 }
+
++ (instancetype)actionWithType:(OSButtonType)buttonType handler:(void (^)(HypotenuseAction * _Nonnull))handler {
+    HypotenuseAction *action = [[HypotenuseAction alloc] initWithButtonType:buttonType];
+    action.actionHandler = handler;
+    return action;
+    
+}
+
 - (instancetype)init
 {
     self = [super init];
@@ -2317,12 +2349,18 @@ stackDisplayedItems = _stackDisplayedItems;
     return self;
 }
 
+- (void)hypotenuseButtonClick:(id)sender {
+    if (self.actionHandler) {
+        self.actionHandler(self);
+    }
+}
+
 - (void)removeFromSuperview {
     [self.hypotenuseButton removeFromSuperview];
     
 }
 
-- (NSMutableArray<MenuBarHypotenuseItem *> *)moreHypotenusItems {
+- (NSMutableArray<HypotenuseAction *> *)moreHypotenusItems {
     if (!_moreHypotenusItems) {
         _moreHypotenusItems = [NSMutableArray array];
     }

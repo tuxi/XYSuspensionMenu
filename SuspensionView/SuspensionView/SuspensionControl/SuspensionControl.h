@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, MenuBarHypotenuseItem;
+@class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, HypotenuseAction;
 
 typedef NS_ENUM(NSInteger, OSButtonType) {
     OSButtonTypeDefault,
@@ -38,7 +38,7 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 
 @optional
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex;
-- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(MenuBarHypotenuseItem *)hypotenuseItem;
+- (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(HypotenuseAction *)hypotenuseItem;
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedCenterButton:(SuspensionView *)centerButton;
 - (void)suspensionMenuViewDidShow:(SuspensionMenuView *)suspensionMenuView;
 - (void)suspensionMenuViewDidDismiss:(SuspensionMenuView *)suspensionMenuView;
@@ -142,7 +142,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
 @property (nonatomic, copy) void (^ _Nullable moreButtonClickBlock)(NSInteger index);
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
-@property (nonatomic, strong, readonly) NSArray<MenuBarHypotenuseItem *> *menuBarItems;
+@property (nonatomic, strong, readonly) NSArray<HypotenuseAction *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, copy) void (^ _Nullable showCompletion)();
@@ -153,13 +153,14 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) BOOL shouldDismissWhenDeviceOrientationDidChange;
 
 - (instancetype)initWithFrame:(CGRect)frame;
-- (void)setMenuBarItems:(NSArray<MenuBarHypotenuseItem *> *)menuBarItems
-               itemSize:(CGSize)itemSize;
 
+- (void)prepareForAppearWithActionSize:(CGSize)size;;
 - (void)show;
 - (void)dismiss;
+- (void)addAction:(HypotenuseAction *)action;
 
-- (void)testPushViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)testPushViewController:(UIViewController *)viewController
+                      animated:(BOOL)animated;
 
 @end
 
@@ -175,14 +176,17 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
-#pragma mark *** MenuBarHypotenuseItem ***
+#pragma mark *** HypotenuseAction ***
 
-@interface MenuBarHypotenuseItem : NSObject
+@interface HypotenuseAction : NSObject
 
 @property (nonatomic, strong, readonly) OSCustomButton *hypotenuseButton;
-@property (nonatomic, strong) NSMutableArray<MenuBarHypotenuseItem *> *moreHypotenusItems;
+@property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *moreHypotenusItems;
 @property (nonatomic, assign) CGRect orginRect;
+@property (nullable, nonatomic, copy) void (^ actionHandler)(HypotenuseAction *action);
 - (instancetype)initWithButtonType:(OSButtonType)buttonType;
++ (instancetype)actionWithType:(OSButtonType)buttonType
+                       handler:(void (^__nullable)(HypotenuseAction *action))handler;
 
 @end
 
