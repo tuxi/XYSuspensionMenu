@@ -1171,7 +1171,10 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     [suspensionWindow.layer setMasksToBounds:YES];
     
     [SuspensionControl setWindow:suspensionWindow forKey:self.key];
-    self.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+    self.frame = CGRectMake(0,
+                            0,
+                            self.frame.size.width,
+                            self.frame.size.height);
     self.clipsToBounds = YES;
     
     [vc.view addSubview:self];
@@ -1651,7 +1654,10 @@ menuBarItems = _menuBarItems;
 - (SuspensionView *)centerButton {
     if (_centerButton == nil) {
         // 创建中心按钮
-        CGRect centerButtonFrame = CGRectMake((CGRectGetWidth(self.frame) - _centerWindowSize.width) * 0.5, (CGRectGetHeight(self.frame) - _centerWindowSize.height) * 0.5, _centerWindowSize.width, _centerWindowSize.height);
+        CGRect centerButtonFrame = CGRectMake((CGRectGetWidth(self.frame) - _centerWindowSize.width) * 0.5,
+                                              (CGRectGetHeight(self.frame) - _centerWindowSize.height) * 0.5,
+                                              _centerWindowSize.width,
+                                              _centerWindowSize.height);
         
         CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
         
@@ -1760,7 +1766,10 @@ menuBarItems = _menuBarItems;
 
 
 - (void)setFrame:(CGRect)frame {
-    [super setFrame:CGRectMake(frame.origin.x, frame.origin.y, OS_MAX_MENUVIEW_SIZE.width, OS_MAX_MENUVIEW_SIZE.height)];
+    [super setFrame:CGRectMake(frame.origin.x,
+                               frame.origin.y,
+                               OS_MAX_MENUVIEW_SIZE.width,
+                               OS_MAX_MENUVIEW_SIZE.height)];
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1992,11 +2001,13 @@ menuBarItems = _menuBarItems;
         
         CGRect centerFrame =  centerWindow.frame;
         if (!self.shouldHiddenCenterButtonWhenShow) {
-            centerFrame.size = CGSizeMake(_centerWindowSize.width, _centerWindowSize.height);
+            centerFrame.size = CGSizeMake(_centerWindowSize.width,
+                                          _centerWindowSize.height);
         }
         CGFloat centerX = (kSCREENT_WIDTH - _centerWindowSize.width)*0.5;
         CGFloat centerY = (kSCREENT_HEIGHT - _centerWindowSize.height)*0.5;
-        centerFrame.origin = CGPointMake(centerX, centerY);
+        centerFrame.origin = CGPointMake(centerX,
+                                         centerY);
         centerWindow.frame = centerFrame;
         
         
@@ -2048,6 +2059,9 @@ menuBarItems = _menuBarItems;
         // 距离中心
         triangleHypotenuse = _defaultTriangleHypotenuse;
     }
+    
+    NSMutableArray<NSValue *> *pointList = [NSMutableArray arrayWithCapacity:1];
+    
     //
     //      o       o   o      o   o     o   o     o o o     o o o
     //     \|/       \|/        \|/       \|/       \|/       \|/
@@ -2057,8 +2071,12 @@ menuBarItems = _menuBarItems;
     //
     if (hypotenuseItems.count == 1) {
         
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
+        CGPoint point = CGPointMake(menuWindowRadius - centerWindowRadius,
+                    menuWindowRadius - triangleHypotenuse - centerWindowRadius);
+        NSValue *pointValue = [NSValue valueWithCGPoint:point];
+        
+        [pointList addObject:pointValue];
+        
     }
     
     if (hypotenuseItems.count == 2) {
@@ -2067,8 +2085,15 @@ menuBarItems = _menuBarItems;
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
         CGFloat negativeValue = menuWindowRadius - triangleB - centerWindowRadius;
         CGFloat positiveValue = menuWindowRadius + triangleB - centerWindowRadius;
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(negativeValue, negativeValue)];
-        [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(positiveValue, negativeValue)];
+        
+        CGPoint point1 = CGPointMake(negativeValue,
+                                     negativeValue);
+        CGPoint point2 = CGPointMake(positiveValue,
+                                     negativeValue);
+        NSValue *pointValue1 = [NSValue valueWithCGPoint:point1];
+        NSValue *pointValue2 = [NSValue valueWithCGPoint:point2];
+        [pointList addObject:pointValue1];
+        [pointList addObject:pointValue2];
         
     }
     
@@ -2080,89 +2105,165 @@ menuBarItems = _menuBarItems;
         CGFloat degree    = M_PI / 3.0f; // = 60 * M_PI / 180
         CGFloat triangleA = triangleHypotenuse * cosf(degree);
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
+        
+        CGPoint point1 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point2 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point3 = CGPointMake(menuWindowRadius - centerWindowRadius,
+                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius);
+        
+        NSValue *pointValue1 = [NSValue valueWithCGPoint:point1];
+        NSValue *pointValue2 = [NSValue valueWithCGPoint:point2];
+        NSValue *pointValue3 = [NSValue valueWithCGPoint:point3];
+        [pointList addObject:pointValue1];
+        [pointList addObject:pointValue2];
+        [pointList addObject:pointValue3];
+        
     }
     if (hypotenuseItems.count == 4) {
         CGFloat degree    = M_PI / 4.0f; // = 45 * M_PI / 180
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
         CGFloat negativeValue = menuWindowRadius - triangleB - centerWindowRadius;
         CGFloat positiveValue = menuWindowRadius + triangleB - centerWindowRadius;
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(negativeValue, negativeValue)];
-        [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(positiveValue, negativeValue)];
-        [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(negativeValue, positiveValue)];
-        [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(positiveValue, positiveValue)];
+        
+        CGPoint point1 = CGPointMake(negativeValue,
+                                     negativeValue);
+        CGPoint point2 = CGPointMake(positiveValue,
+                                     negativeValue);
+        CGPoint point3 = CGPointMake(negativeValue,
+                                     positiveValue);
+        CGPoint point4 = CGPointMake(positiveValue,
+                                     positiveValue);
+        
+        NSValue *pointValue1 = [NSValue valueWithCGPoint:point1];
+        NSValue *pointValue2 = [NSValue valueWithCGPoint:point2];
+        NSValue *pointValue3 = [NSValue valueWithCGPoint:point3];
+        NSValue *pointValue4 = [NSValue valueWithCGPoint:point4];
+        [pointList addObject:pointValue1];
+        [pointList addObject:pointValue2];
+        [pointList addObject:pointValue3];
+        [pointList addObject:pointValue4];
+
     }
     
     if (hypotenuseItems.count == 5) {
         CGFloat degree      = 2 * M_PI / _menuBarItems.count ; //= M_PI / 3.0;// = M_PI / 20.5; // = 72 * M_PI / 180
         CGFloat triangleA = triangleHypotenuse * cosf(degree);
         CGFloat triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
         
+        CGPoint point1 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point2 = CGPointMake(menuWindowRadius - centerWindowRadius,
+                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius);
+        CGPoint point3 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+       
         degree    = M_PI / 5.0f;  // = 36 * M_PI / 180
         triangleA = triangleHypotenuse * cosf(degree);
         triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[4].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
+        
+        CGPoint point4 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        CGPoint point5 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        
+        NSValue *pointValue1 = [NSValue valueWithCGPoint:point1];
+        NSValue *pointValue2 = [NSValue valueWithCGPoint:point2];
+        NSValue *pointValue3 = [NSValue valueWithCGPoint:point3];
+        NSValue *pointValue4 = [NSValue valueWithCGPoint:point4];
+        NSValue *pointValue5 = [NSValue valueWithCGPoint:point5];
+        
+        [pointList addObject:pointValue1];
+        [pointList addObject:pointValue2];
+        [pointList addObject:pointValue3];
+        [pointList addObject:pointValue4];
+        [pointList addObject:pointValue5];
     }
     
     if (hypotenuseItems.count == 6) {
         CGFloat degree    = M_PI / 3.0f; // = 60 * M_PI / 180
         CGFloat triangleA = triangleHypotenuse * cosf(degree); // 斜边的余弦值
         CGFloat triangleB = triangleHypotenuse * sinf(degree); // 斜边正弦值
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[4].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[5].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
+        
+        CGPoint point1 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point2 = CGPointMake(menuWindowRadius - centerWindowRadius,
+                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius);
+        CGPoint point3 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point4 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        CGPoint point5 = CGPointMake(menuWindowRadius - centerWindowRadius,
+                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius);
+        CGPoint point6 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        
+        NSValue *pointValue1 = [NSValue valueWithCGPoint:point1];
+        NSValue *pointValue2 = [NSValue valueWithCGPoint:point2];
+        NSValue *pointValue3 = [NSValue valueWithCGPoint:point3];
+        NSValue *pointValue4 = [NSValue valueWithCGPoint:point4];
+        NSValue *pointValue5 = [NSValue valueWithCGPoint:point5];
+        NSValue *pointValue6 = [NSValue valueWithCGPoint:point6];
+
+        [pointList addObject:pointValue1];
+        [pointList addObject:pointValue2];
+        [pointList addObject:pointValue3];
+        [pointList addObject:pointValue4];
+        [pointList addObject:pointValue5];
+        [pointList addObject:pointValue6];
     }
     
     if (hypotenuseItems.count == 8) {
         CGFloat degree      = 2 * M_PI / (_menuBarItems.count * 1.0f);   // 计算度数
         CGFloat triangleA = triangleHypotenuse * cosf(degree);         // 斜边的余弦值
         CGFloat triangleB = triangleHypotenuse * sinf(degree);         // 斜边正弦值
-        [self _setButton:hypotenuseItems[0].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[1].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius - triangleHypotenuse - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[2].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius - triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[3].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[4].hypotenuseButton origin:CGPointMake(menuWindowRadius - centerWindowRadius,
-                                                                                menuWindowRadius + triangleHypotenuse - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[5].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
+        
+        CGPoint point1 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point2 = CGPointMake(menuWindowRadius - centerWindowRadius,
+                                     menuWindowRadius - triangleHypotenuse - centerWindowRadius);
+        CGPoint point3 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius - triangleA - centerWindowRadius);
+        CGPoint point4 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        CGPoint point5 = CGPointMake(menuWindowRadius - centerWindowRadius,
+                                     menuWindowRadius + triangleHypotenuse - centerWindowRadius);
+        CGPoint point6 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
         
         degree    = M_PI / 2.0f;  // = 36 * M_PI / 180
         triangleA = triangleHypotenuse * cosf(degree);
         triangleB = triangleHypotenuse * sinf(degree);
-        [self _setButton:hypotenuseItems[6].hypotenuseButton origin:CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
-        [self _setButton:hypotenuseItems[7].hypotenuseButton origin:CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
-                                                                                menuWindowRadius + triangleA - centerWindowRadius)];
+        CGPoint point7 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        CGPoint point8 = CGPointMake(menuWindowRadius - triangleB - centerWindowRadius,
+                                     menuWindowRadius + triangleA - centerWindowRadius);
+        
+        NSValue *pointValue1 = [NSValue valueWithCGPoint:point1];
+        NSValue *pointValue2 = [NSValue valueWithCGPoint:point2];
+        NSValue *pointValue3 = [NSValue valueWithCGPoint:point3];
+        NSValue *pointValue4 = [NSValue valueWithCGPoint:point4];
+        NSValue *pointValue5 = [NSValue valueWithCGPoint:point5];
+        NSValue *pointValue6 = [NSValue valueWithCGPoint:point6];
+        NSValue *pointValue7 = [NSValue valueWithCGPoint:point7];
+        NSValue *pointValue8 = [NSValue valueWithCGPoint:point8];
+        
+        [pointList addObject:pointValue1];
+        [pointList addObject:pointValue2];
+        [pointList addObject:pointValue3];
+        [pointList addObject:pointValue4];
+        [pointList addObject:pointValue5];
+        [pointList addObject:pointValue6];
+        [pointList addObject:pointValue7];
+        [pointList addObject:pointValue8];
     }
     
-    
+    if (pointList.count) {
+        [pointList enumerateObjectsUsingBlock:^(NSValue * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [self _setButton:hypotenuseItems[idx].hypotenuseButton origin:[obj CGPointValue]];
+        }];
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -2310,7 +2411,10 @@ menuBarItems = _menuBarItems;
     [suspensionWindow.layer setMasksToBounds:YES];
     
     [SuspensionControl setWindow:suspensionWindow forKey:self.key];
-    self.frame = CGRectMake((kSCREENT_WIDTH - self.frame.size.width) * 0.5, (kSCREENT_HEIGHT - self.frame.size.height) * 0.5, self.frame.size.width, self.frame.size.height);
+    self.frame = CGRectMake((kSCREENT_WIDTH - self.frame.size.width) * 0.5,
+                            (kSCREENT_HEIGHT - self.frame.size.height) * 0.5,
+                            self.frame.size.width,
+                            self.frame.size.height);
     self.clipsToBounds = YES;
     
     [vc.view addSubview:self];
@@ -2369,9 +2473,9 @@ menuBarItems = _menuBarItems;
 
 - (void)dealloc {
     [self removeFromSuperview];
-    [_moreHypotenusItems removeAllObjects];
     _moreHypotenusItems = nil;
     _hypotenuseButton = nil;
+    _actionHandler = nil;
 }
 
 @end
