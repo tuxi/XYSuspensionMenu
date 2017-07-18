@@ -26,7 +26,7 @@
     // Do any additional setup after loading the view.
     
     [self sample1ForDelegate];
-//    [self sample2ForBlock];
+    //    [self sample2ForBlock];
     
 }
 
@@ -86,11 +86,11 @@
         {
             HypotenuseAction *itemM = nil;
             {
-              itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -98,7 +98,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -106,7 +106,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
         }
@@ -140,7 +140,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -148,7 +148,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -156,7 +156,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -164,7 +164,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -172,7 +172,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -180,7 +180,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
         }
@@ -216,7 +216,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -224,7 +224,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -232,7 +232,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -240,7 +240,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -248,7 +248,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
             
             {
@@ -256,7 +256,7 @@
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
             }
         }
         
@@ -294,7 +294,7 @@
     menuView.backgroundImageView.image = image;
     [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     
-
+    
 }
 
 
@@ -307,8 +307,8 @@
     menuView.shouldHiddenCenterButtonWhenShow = YES;
     menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
     menuView.delegate = self;
-
-
+    
+    
     int i = 0;
     
     while (i <= 7) {
@@ -332,21 +332,21 @@
             while (j <= 4) {
                 HypotenuseAction *itemM = [[HypotenuseAction alloc] initWithButtonType:type];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                [item.moreHypotenusItems addObject:itemM];
+                [item addMoreAction:itemM];
                 [item.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                 if (j == 1) {
                     NSInteger k = 0;
                     while (k <= 5) {
                         HypotenuseAction *itemMM = [[HypotenuseAction alloc] initWithButtonType:type];
                         [itemMM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                        [itemM.moreHypotenusItems addObject:itemMM];
+                        [itemM addMoreAction:itemMM];
                         [itemM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                         if (k == 1) {
                             NSInteger l = 0;
                             while (l <= 7) {
                                 HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
                                 [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM addMoreAction:iteml];
                                 [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                 
                                 
@@ -355,7 +355,7 @@
                                     while (s <= 7) {
                                         HypotenuseAction *items = [[HypotenuseAction alloc] initWithButtonType:type];
                                         [items.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                        [iteml.moreHypotenusItems addObject:items];
+                                        [iteml addMoreAction:items];
                                         [iteml.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                         s++;
                                     }
@@ -371,7 +371,7 @@
                             while (l <= 7) {
                                 HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
                                 [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM addMoreAction:iteml];
                                 [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                 l++;
                             }
@@ -382,7 +382,7 @@
                             while (l <= 7) {
                                 HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
                                 [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM addMoreAction:iteml];
                                 [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                 l++;
                             }
@@ -398,14 +398,14 @@
                     while (k <= 5) {
                         HypotenuseAction *itemMM = [[HypotenuseAction alloc] initWithButtonType:type];
                         [itemMM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                        [itemM.moreHypotenusItems addObject:itemMM];
+                        [itemM addMoreAction:itemMM];
                         [itemM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                         if (k == 1) {
                             NSInteger l = 0;
                             while (l <= 7) {
                                 HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
                                 [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM addMoreAction:iteml];
                                 [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                 l++;
                             }
@@ -416,7 +416,7 @@
                             while (l <= 7) {
                                 HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
                                 [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM addMoreAction:iteml];
                                 [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                 l++;
                             }
@@ -427,7 +427,7 @@
                             while (l <= 7) {
                                 HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
                                 [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM.moreHypotenusItems addObject:iteml];
+                                [itemMM addMoreAction:iteml];
                                 [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
                                 l++;
                             }
@@ -446,7 +446,7 @@
         if (type == OSButtonType1) {
             [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
         }
-
+        
         [menuView addAction:item];
         i++;
     }
@@ -478,7 +478,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedCenterButton:(SuspensionView *)centerButton {
-
+    
 }
 
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex {
@@ -508,13 +508,13 @@
 }
 
 /*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+ }
+ */
 
 @end

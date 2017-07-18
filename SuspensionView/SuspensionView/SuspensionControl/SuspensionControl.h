@@ -181,12 +181,13 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @interface HypotenuseAction : NSObject
 
 @property (nonatomic, strong, readonly) OSCustomButton *hypotenuseButton;
-@property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *moreHypotenusItems;
+@property (nonatomic, strong, readonly) NSArray<HypotenuseAction *> *moreHypotenusItems;
 @property (nonatomic, assign) CGRect orginRect;
 @property (nullable, nonatomic, copy) void (^ actionHandler)(HypotenuseAction *action);
 - (instancetype)initWithButtonType:(OSButtonType)buttonType;
 + (instancetype)actionWithType:(OSButtonType)buttonType
                        handler:(void (^__nullable)(HypotenuseAction *action))handler;
+- (void)addMoreAction:(HypotenuseAction *)action;
 
 @end
 

@@ -1732,7 +1732,7 @@ menuBarItems = _menuBarItems;
     _initialSpringVelocity = 0.0;
     _shouldHiddenCenterButtonWhenShow = NO;
     _shouldDismissWhenDeviceOrientationDidChange = NO;
-     _menuBarItems = [NSMutableArray array];
+    _menuBarItems = [NSMutableArray array];
     
     self.autoresizingMask = UIViewAutoresizingNone;
     self.layer.cornerRadius = 12.8;
@@ -2072,7 +2072,7 @@ menuBarItems = _menuBarItems;
     if (hypotenuseItems.count == 1) {
         
         CGPoint point = CGPointMake(menuWindowRadius - centerWindowRadius,
-                    menuWindowRadius - triangleHypotenuse - centerWindowRadius);
+                                    menuWindowRadius - triangleHypotenuse - centerWindowRadius);
         NSValue *pointValue = [NSValue valueWithCGPoint:point];
         
         [pointList addObject:pointValue];
@@ -2144,7 +2144,7 @@ menuBarItems = _menuBarItems;
         [pointList addObject:pointValue2];
         [pointList addObject:pointValue3];
         [pointList addObject:pointValue4];
-
+        
     }
     
     if (hypotenuseItems.count == 5) {
@@ -2158,7 +2158,7 @@ menuBarItems = _menuBarItems;
                                      menuWindowRadius - triangleHypotenuse - centerWindowRadius);
         CGPoint point3 = CGPointMake(menuWindowRadius + triangleB - centerWindowRadius,
                                      menuWindowRadius - triangleA - centerWindowRadius);
-       
+        
         degree    = M_PI / 5.0f;  // = 36 * M_PI / 180
         triangleA = triangleHypotenuse * cosf(degree);
         triangleB = triangleHypotenuse * sinf(degree);
@@ -2205,7 +2205,7 @@ menuBarItems = _menuBarItems;
         NSValue *pointValue4 = [NSValue valueWithCGPoint:point4];
         NSValue *pointValue5 = [NSValue valueWithCGPoint:point5];
         NSValue *pointValue6 = [NSValue valueWithCGPoint:point6];
-
+        
         [pointList addObject:pointValue1];
         [pointList addObject:pointValue2];
         [pointList addObject:pointValue3];
@@ -2427,11 +2427,17 @@ menuBarItems = _menuBarItems;
 
 @end
 
+@interface HypotenuseAction ()
+
+@property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *moreHypotenusItems;
+
+@end
 
 @implementation HypotenuseAction
+
 - (instancetype)initWithButtonType:(OSButtonType)buttonType {
     if (self = [self init]) {
-        [self.hypotenuseButton addTarget:self action:@selector(hypotenuseButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+        self.hypotenuseButton.buttonType = buttonType;
     }
     return self;
 }
@@ -2448,7 +2454,7 @@ menuBarItems = _menuBarItems;
     self = [super init];
     if (self) {
         self.hypotenuseButton = [MenuBarHypotenuseButton buttonWithType:OSButtonType3];
-        
+        [self.hypotenuseButton addTarget:self action:@selector(hypotenuseButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     }
     return self;
 }
@@ -2464,12 +2470,17 @@ menuBarItems = _menuBarItems;
     
 }
 
-- (NSMutableArray<HypotenuseAction *> *)moreHypotenusItems {
-    if (!_moreHypotenusItems) {
-        _moreHypotenusItems = [NSMutableArray array];
+- (void)addMoreAction:(HypotenuseAction *)action {
+    NSParameterAssert(action);
+    if (!action) {
+        return;
     }
-    return _moreHypotenusItems;
+    if (!_moreHypotenusItems) {
+        _moreHypotenusItems = [@[] mutableCopy];
+    }
+    [_moreHypotenusItems addObject:action];
 }
+
 
 - (void)dealloc {
     [self removeFromSuperview];
