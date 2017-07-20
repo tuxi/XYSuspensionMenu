@@ -145,8 +145,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, strong, readonly) NSArray<HypotenuseAction *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
-@property (nonatomic, copy) void (^ _Nullable showCompletion)();
-@property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 @property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenShow;
@@ -154,7 +152,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 - (instancetype)initWithFrame:(CGRect)frame;
 
-- (void)prepareForAppearWithActionSize:(CGSize)size;;
+- (void)presentWithCenterButton:(SuspensionView * (^)(SuspensionView *centerButton))centerButton
+                     ActionSize:(CGSize)size
+                  showCompetion:(void (^ __nullable)(void))competion;
 - (void)show;
 - (void)dismiss;
 - (void)addAction:(HypotenuseAction *)action;

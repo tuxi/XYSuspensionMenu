@@ -1218,6 +1218,8 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
 @property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
+@property (nonatomic, copy) void (^ _Nullable showCompletion)();
+@property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
 
 @end
 
@@ -1271,8 +1273,17 @@ menuBarItems = _menuBarItems;
     [_menuBarItems addObject:action];
 }
 
-- (void)prepareForAppearWithActionSize:(CGSize)size {
+- (void)presentWithActionSize:(CGSize)size showCompetion:(void (^ _Nullable)(void))competion {
     [self setMenuBarItems:self.menuBarItems itemSize:size];
+    self.showCompletion = competion;
+    
+}
+
+- (void)presentWithCenterButton:(SuspensionView * _Nonnull (^)(SuspensionView * _Nonnull))centerButton
+                     ActionSize:(CGSize)size
+                  showCompetion:(void (^)(void))competion {
+    [self presentWithActionSize:size showCompetion:competion];
+    self.centerButton = centerButton(self.centerButton);
 }
 
 - (void)setItemSize:(CGSize)itemSize {
@@ -1408,7 +1419,7 @@ menuBarItems = _menuBarItems;
 
 - (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc animated:(BOOL)animated {
     return ^(BOOL finished) {
-        if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1) {
+        if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
             [[self topViewController].navigationController showViewController:vc sender:self];
         } else {
             [[self topViewController].navigationController pushViewController:vc animated:animated];
@@ -2548,7 +2559,7 @@ menuBarItems = _menuBarItems;
 @implementation SuspensionMenuController
 
 - (instancetype)initWithMenuView:(SuspensionMenuWindow *)menuView {
-    if (self = [super init]) {
+    if (self = [super initWithNibName:nil bundle:nil]) {
         _menuView = menuView;
     }
     return self;

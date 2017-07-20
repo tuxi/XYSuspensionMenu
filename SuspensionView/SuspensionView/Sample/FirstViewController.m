@@ -39,6 +39,8 @@
     menuView.shouldShowWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenShow = YES;
     menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
+    UIImage *image = [UIImage imageNamed:@"mm.jpg"];
+    menuView.backgroundImageView.image = image;
     
     NSMutableArray *types = [NSMutableArray array];
     NSMutableArray *images = [NSMutableArray array];
@@ -288,11 +290,12 @@
     }
     
     
-    [menuView prepareForAppearWithActionSize:CGSizeMake(50, 50)];
+    [menuView presentWithCenterButton:^SuspensionView * _Nonnull(SuspensionView * _Nonnull centerButton) {
+        [centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+        return centerButton;
+    } ActionSize:CGSizeMake(50, 50) showCompetion:nil];
     
-    UIImage *image = [UIImage imageNamed:@"mm.jpg"];
-    menuView.backgroundImageView.image = image;
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+    
     
     
 }
@@ -307,7 +310,8 @@
     menuView.shouldHiddenCenterButtonWhenShow = YES;
     menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
     menuView.delegate = self;
-    
+    UIImage *image = [UIImage imageNamed:@"mm.jpg"];
+    menuView.backgroundImageView.image = image;
     
     int i = 0;
     
@@ -451,11 +455,12 @@
         i++;
     }
     
-    [menuView prepareForAppearWithActionSize:CGSizeMake(50, 50)];
+    [menuView presentWithCenterButton:^SuspensionView * _Nonnull(SuspensionView * _Nonnull centerButton) {
+        [centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+        return centerButton;
+    } ActionSize:CGSizeMake(50, 50) showCompetion:nil];
+
     
-    UIImage *image = [UIImage imageNamed:@"mm.jpg"];
-    menuView.backgroundImageView.image = image;
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     
     /*
      __block __weak typeof(menuView) weakMenuView = menuView;
