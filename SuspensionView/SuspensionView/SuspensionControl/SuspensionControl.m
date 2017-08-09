@@ -1353,7 +1353,7 @@ menuBarItems = _menuBarItems;
         NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             return [obj class] == [viewController class];
         }];
-        if (founVcIndex != NSNotFound) {
+        if (vcs && founVcIndex != NSNotFound) {
             UIViewController *targetVc = vcs[founVcIndex];
             [[self topViewController].navigationController popToViewController:targetVc animated:YES];
             self.testPushViewControllerDictionary = nil;
@@ -1371,7 +1371,7 @@ menuBarItems = _menuBarItems;
                 return [[NSString stringWithFormat:@"%p", obj] isEqualToString:vcProAddress];
             }];
             Class founVcClass;
-            if (founVcIndex != NSNotFound) {
+            if (vcs && founVcIndex != NSNotFound) {
                 founVcClass = [[vcs objectAtIndex:founVcIndex] class];
                 if (founVcIndex > 0) {
                     UIViewController *targetVc = vcs[founVcIndex - 1];
@@ -1419,24 +1419,35 @@ menuBarItems = _menuBarItems;
 
 - (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc animated:(BOOL)animated {
     return ^(BOOL finished) {
-        if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
-            [[self topViewController].navigationController showViewController:vc sender:self];
-        } else {
-            [[self topViewController].navigationController pushViewController:vc animated:animated];
+        if ([self topViewController].navigationController == 0x0) {
+            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
+                [[self topViewController] showDetailViewController:vc sender:self];
+            }
+            else {
+                [[self topViewController] presentViewController:vc animated:animated completion:NULL];
+            }
         }
-        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
-        CGRect menuFrame =  menuWindow.frame;
-        menuFrame.size = CGSizeZero;
-        menuWindow.frame = menuFrame;
-        _isDismiss = YES;
-        _isShow = NO;
-        [self _dismissCompetion];
-        // 存
-        NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
-        if (!btnTag) {
-            return;
+        else {
+            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
+                [[self topViewController].navigationController showViewController:vc sender:self];
+            } else {
+                [[self topViewController].navigationController pushViewController:vc animated:animated];
+            }
+            UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+            CGRect menuFrame =  menuWindow.frame;
+            menuFrame.size = CGSizeZero;
+            menuWindow.frame = menuFrame;
+            _isDismiss = YES;
+            _isShow = NO;
+            [self _dismissCompetion];
+            // 存
+            NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+            if (!btnTag) {
+                return;
+            }
+            self.testPushViewControllerDictionary = @{btnTag: [NSString stringWithFormat:@"%p", vc]};
         }
-        self.testPushViewControllerDictionary = @{btnTag: [NSString stringWithFormat:@"%p", vc]};
+        
     };
 }
 
@@ -2296,7 +2307,7 @@ menuBarItems = _menuBarItems;
 
 - (UIViewController *)topViewController {
     UIViewController *resultVC;
-    resultVC = [self _topViewController:[[UIApplication sharedApplication].keyWindow rootViewController]];
+    resultVC = [self _topViewController:[[UIApplication sharedApplication].delegate.window rootViewController]];
     while (resultVC.presentedViewController) {
         resultVC = [self _topViewController:resultVC.presentedViewController];
     }
