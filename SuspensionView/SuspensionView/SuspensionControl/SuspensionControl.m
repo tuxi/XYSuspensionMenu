@@ -1030,33 +1030,39 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 @implementation UIResponder (SuspensionView)
 
 - (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame {
-    BOOL result = [self isKindOfClass:[UIViewController class]] || [self isKindOfClass:[UIView class]];
-    if (!result) {
-        NSAssert(result, @"当前类应为UIViewController或UIView或他们的子类");
+    
+    UIView *view = [self getSelfView];
+    if (!view) {
         return nil;
     }
     if (!self.suspensionView && !self.suspensionView.superview) {
-        SuspensionView *sv = [[SuspensionView alloc] initWithFrame:frame];
-        sv.clipsToBounds = YES;
-        if ([self isKindOfClass:[UIViewController class]]) {
-            UIViewController *vc = (UIViewController *)self;
-            [vc.view addSubview:sv];
-        }
-        if ([self isKindOfClass:[UIView class]]) {
-            UIView *v = (UIView *)self;
-            [v addSubview:sv];
-        }
-        self.suspensionView = sv;
+        SuspensionView *suspensionView = [[SuspensionView alloc] initWithFrame:frame];
+        self.suspensionView = suspensionView;
+        self.suspensionView.clipsToBounds = YES;
+        [view addSubview:suspensionView];
     }
-    if ([self isKindOfClass:[UIViewController class]]) {
-        UIViewController *vc = (UIViewController *)self;
-        [vc.view bringSubviewToFront:self.suspensionView];
-    } else if ([self isKindOfClass:[UIView class]]) {
-        UIView *v = (UIView *)self;
-        [v bringSubviewToFront:self.suspensionView];
+    else if (self.suspensionView && !self.suspensionView.superview) {
+        [view addSubview:self.suspensionView];
     }
     
+    [view bringSubviewToFront:self.suspensionView];
     return self.suspensionView;
+}
+
+- (UIView *)getSelfView {
+    BOOL result = [self isKindOfClass:[UIViewController class]] || [self isKindOfClass:[UIView class]];
+    if (!result) {
+        NSAssert(result, @"Error: The current class should be UIViewController or UIView or their subclass");
+        return nil;
+    }
+    UIView *view = nil;
+    if ([self isKindOfClass:[UIViewController class]]) {
+        UIViewController *vc = (UIViewController *)self;
+        view = vc.view;
+    } else if ([self isKindOfClass:[UIView class]]) {
+        view = (UIView *)self;
+    }
+    return view;
 }
 
 
