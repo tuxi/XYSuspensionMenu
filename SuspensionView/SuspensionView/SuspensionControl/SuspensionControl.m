@@ -1244,14 +1244,18 @@ menuBarItems = _menuBarItems;
 #pragma mark - Public Methods
 ////////////////////////////////////////////////////////////////////////
 
-
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
+- (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
+    if (self = [super initWithFrame:frame]) {
         [self _suspensionMenuViewSetup];
+        [self setItemSize:itemSize];
     }
     return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    NSAssert(NO, @"use - initWithFrame:itemSize:");
+    @throw nil;
+
 }
 
 - (instancetype)initWithCoder:(NSCoder *)coder
@@ -1279,18 +1283,12 @@ menuBarItems = _menuBarItems;
     [_menuBarItems addObject:action];
 }
 
-- (void)presentWithActionSize:(CGSize)size showCompetion:(void (^ _Nullable)(void))competion {
-    [self setMenuBarItems:self.menuBarItems itemSize:size];
+- (void)presentWithCompetion:(void (^ _Nullable)(void))competion {
+    [self setMenuBarItems:self.menuBarItems itemSize:self.itemSize];
     self.showCompletion = competion;
     
 }
 
-- (void)presentWithCenterButton:(SuspensionView * _Nonnull (^)(SuspensionView * _Nonnull))centerButton
-                     ActionSize:(CGSize)size
-                  showCompetion:(void (^)(void))competion {
-    [self presentWithActionSize:size showCompetion:competion];
-    self.centerButton = centerButton(self.centerButton);
-}
 
 - (void)setItemSize:(CGSize)itemSize {
     
@@ -2373,15 +2371,15 @@ menuBarItems = _menuBarItems;
 #pragma mark - initialize
 ////////////////////////////////////////////////////////////////////////
 
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    if (self = [super initWithFrame:frame]) {
+- (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
+    if (self = [super initWithFrame:frame itemSize:itemSize]) {
         [self setAlpha:1.0];
         self.isOnce = YES;
         self.shouldShowWhenViewWillAppear = YES;
     }
     return self;
 }
+
 
 - (void)setItemSize:(CGSize)itemSize {
     [super setItemSize:itemSize];

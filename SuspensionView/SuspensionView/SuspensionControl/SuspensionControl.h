@@ -150,13 +150,14 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenShow;
 @property (nonatomic, assign) BOOL shouldDismissWhenDeviceOrientationDidChange;
 
-- (instancetype)initWithFrame:(CGRect)frame;
+- (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize NS_DESIGNATED_INITIALIZER;
 
-- (void)presentWithCenterButton:(SuspensionView * (^)(SuspensionView *centerButton))centerButton
-                     ActionSize:(CGSize)size
-                  showCompetion:(void (^ __nullable)(void))competion;
-- (void)show;
-- (void)dismiss;
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
+
+- (void)presentWithCompetion:(void (^ _Nullable)(void))competion;
+
 - (void)addAction:(HypotenuseAction *)action;
 
 - (void)testPushViewController:(UIViewController *)viewController
@@ -170,7 +171,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
 
-- (instancetype)initWithFrame:(CGRect)frame;
 - (void)removeFromSuperview;
 + (void)releaseAll;
 

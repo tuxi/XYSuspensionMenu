@@ -25,8 +25,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    [self sample1ForDelegate];
-    //    [self sample2ForBlock];
+//    [self sample1ForDelegate];
+    [self sample2ForBlock];
     
 }
 
@@ -34,7 +34,7 @@
 /// 第二种创建方法，按钮的点击事件由block处理
 - (void)sample2ForBlock {
     
-    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
+    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     menuView.isOnce = YES;
     menuView.shouldShowWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenShow = YES;
@@ -289,11 +289,12 @@
         i--;
     }
     
-    
-    [menuView presentWithCenterButton:^SuspensionView * _Nonnull(SuspensionView * _Nonnull centerButton) {
-        [centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-        return centerButton;
-    } ActionSize:CGSizeMake(50, 50) showCompetion:nil];
+    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+    [menuView presentWithCompetion:NULL];
+//    [menuView presentWithCenterButton:^SuspensionView * _Nonnull(SuspensionView * _Nonnull centerButton) {
+//        [centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+//        return centerButton;
+//    } ActionSize:CGSizeMake(50, 50) showCompetion:nil];
     
     
     
@@ -304,7 +305,7 @@
 /// 第一种创建方式，按钮的点击事件由代理回调处理
 - (void)sample1ForDelegate {
     
-    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300)];
+    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     menuView.isOnce = YES;
     menuView.shouldShowWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenShow = YES;
@@ -454,11 +455,8 @@
         [menuView addAction:item];
         i++;
     }
-    
-    [menuView presentWithCenterButton:^SuspensionView * _Nonnull(SuspensionView * _Nonnull centerButton) {
-        [centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-        return centerButton;
-    } ActionSize:CGSizeMake(50, 50) showCompetion:nil];
+    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+    [menuView presentWithCompetion:NULL];
 
     
     
