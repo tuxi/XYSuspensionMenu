@@ -35,6 +35,7 @@
 - (void)sample2ForBlock {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     menuView.isOnce = YES;
     menuView.shouldShowWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenShow = YES;
@@ -289,16 +290,9 @@
         i--;
     }
     
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+    
     [menuView presentWithCompetion:NULL];
-//    [menuView presentWithCenterButton:^SuspensionView * _Nonnull(SuspensionView * _Nonnull centerButton) {
-//        [centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-//        return centerButton;
-//    } ActionSize:CGSizeMake(50, 50) showCompetion:nil];
-    
-    
-    
-    
+
 }
 
 
