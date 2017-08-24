@@ -157,7 +157,7 @@
 				TargetAttributes = {
 					18A504CE1E61DE4000EE96E8 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = NKW67GFDHM;
+						DevelopmentTeam = H3Q63DY2LV;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -323,11 +323,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = NKW67GFDHM;
+				DEVELOPMENT_TEAM = H3Q63DY2LV;
 				INFOPLIST_FILE = SuspensionView/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sey.SuspensionView;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ossey.SuspensionView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -336,11 +336,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = NKW67GFDHM;
+				DEVELOPMENT_TEAM = H3Q63DY2LV;
 				INFOPLIST_FILE = SuspensionView/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.sey.SuspensionView;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ossey.SuspensionView;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

@@ -808,21 +808,28 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 ////////////////////////////////////////////////////////////////////////
 
 - (void)_locationChange:(UIPanGestureRecognizer *)p {
+    // 获取到的是手指点击屏幕实时的坐标点, 此种获取坐标更新suspension的center会导致，开始移动时suspension会跳动一下
+    // CGPoint translatedCenter = [p locationInView:[UIApplication sharedApplication].delegate.window];
     
-    CGPoint panPoint = [p locationInView:[UIApplication sharedApplication].delegate.window];
+    // 获取到的是手指移动后，在相对坐标中的偏移量，此种情况完美
+    CGPoint translation = [p translationInView:[UIApplication sharedApplication].delegate.window];
+    CGPoint panViewCenter = [self convertPoint:p.view.center toView:[UIApplication sharedApplication].delegate.window];
+    CGPoint translatedCenter = CGPointMake(panViewCenter.x + translation.x, panViewCenter.y + translation.y);
+    // 重置偏移量
+    [p setTranslation:CGPointZero inView:[UIApplication sharedApplication].delegate.window];
     
-    if(p.state == UIGestureRecognizerStateBegan) {
+    if (p.state == UIGestureRecognizerStateBegan) {
         
-    }else if(p.state == UIGestureRecognizerStateChanged) {
-        [self movingWithPoint:panPoint];
+    } else if(p.state == UIGestureRecognizerStateChanged) {
+        [self movingWithPoint:translatedCenter];
         
-    }else if(p.state == UIGestureRecognizerStateEnded
+    } else if(p.state == UIGestureRecognizerStateEnded
              || p.state == UIGestureRecognizerStateCancelled) {
         
         if (!self.isAutoLeanEdge) {
             return;
         }
-        CGPoint newTargetPoint = [self _checkTargetPosition:panPoint];
+        CGPoint newTargetPoint = [self _checkTargetPosition:translatedCenter];
         [self autoLeanToTargetPosition:newTargetPoint];
     }
     
@@ -832,7 +839,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     }
     
     if (self.locationChange) {
-        self.locationChange(panPoint);
+        self.locationChange(translatedCenter);
     }
 }
 
