@@ -809,11 +809,18 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (void)_locationChange:(UIPanGestureRecognizer *)p {
     // 获取到的是手指点击屏幕实时的坐标点, 此种获取坐标更新suspension的center会导致，开始移动时suspension会跳动一下
-    // CGPoint translatedCenter = [p locationInView:[UIApplication sharedApplication].delegate.window];
+    //     CGPoint translatedCenter = [p locationInView:[UIApplication sharedApplication].delegate.window];
+    
+    UIWindow *w = [SuspensionControl windowForKey:self.key];
+    UIView *targetView = p.view;
+    // 在没有window时坐标转换错误，导致无法移动, 此处需要判断
+    if (w) {
+        targetView = [UIApplication sharedApplication].delegate.window;
+    }
     
     // 获取到的是手指移动后，在相对坐标中的偏移量，此种情况完美
     CGPoint translation = [p translationInView:[UIApplication sharedApplication].delegate.window];
-    CGPoint panViewCenter = [self convertPoint:p.view.center toView:[UIApplication sharedApplication].delegate.window];
+    CGPoint panViewCenter = [self convertPoint:p.view.center toView:targetView];
     CGPoint translatedCenter = CGPointMake(panViewCenter.x + translation.x, panViewCenter.y + translation.y);
     // 重置偏移量
     [p setTranslation:CGPointZero inView:[UIApplication sharedApplication].delegate.window];
@@ -824,7 +831,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         [self movingWithPoint:translatedCenter];
         
     } else if(p.state == UIGestureRecognizerStateEnded
-             || p.state == UIGestureRecognizerStateCancelled) {
+              || p.state == UIGestureRecognizerStateCancelled) {
         
         if (!self.isAutoLeanEdge) {
             return;
@@ -846,7 +853,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 /// 手指移动时，移动视图
 - (void)movingWithPoint:(CGPoint)point {
-    [SuspensionControl windowForKey:self.key].center = CGPointMake(point.x, point.y);
+    
     UIWindow *w = [SuspensionControl windowForKey:self.key];
     if (w) {
         w.center = CGPointMake(point.x, point.y);
@@ -1264,7 +1271,7 @@ menuBarItems = _menuBarItems;
 - (instancetype)initWithFrame:(CGRect)frame {
     NSAssert(NO, @"use - initWithFrame:itemSize:");
     @throw nil;
-
+    
 }
 
 - (instancetype)initWithCoder:(NSCoder *)coder
@@ -1792,9 +1799,9 @@ menuBarItems = _menuBarItems;
     // 计算menu 上 按钮的 原始 frame 当dismiss 时 回到原始位置
     CGFloat originX = (_viewFlags._menuWindowSize.width - _viewFlags._centerWindowSize.width) * 0.5;
     _viewFlags._memuBarButtonOriginFrame = CGRectMake(originX,
-                                           originX,
-                                           _viewFlags._centerWindowSize.width,
-                                           _viewFlags._centerWindowSize.height);
+                                                      originX,
+                                                      _viewFlags._centerWindowSize.width,
+                                                      _viewFlags._centerWindowSize.height);
     [self setNeedsLayout];
 }
 
@@ -2734,3 +2741,5 @@ menuBarItems = _menuBarItems;
 }
 
 @end
+
+
