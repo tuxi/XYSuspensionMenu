@@ -162,7 +162,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 - (void)testPushViewController:(UIViewController *)viewController
                       animated:(BOOL)animated;
-
+- (void)didmiss;
 @end
 
 #pragma mark *** SuspensionMenuWindow ***
