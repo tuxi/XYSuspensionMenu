@@ -2,7 +2,7 @@
 
 In your [profile]
 ```
-pod 'SuspensionControl', '~> 0.0.1'
+pod 'SuspensionControl', '~> 0.0.2'
 ```
 
 类似 iOS AssistiveTouch 悬浮窗
