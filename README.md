@@ -5,7 +5,7 @@
 # 使用方式
 1. 通过cocoaPods导入，在你的profile中添加
 ```
-pod 'SuspensionControl', '~> 0.0.2'
+pod 'SuspensionControl', '~> 0.1'
 ```
  或者直接将'SuspensionControl' 添加到您的项目中
  
