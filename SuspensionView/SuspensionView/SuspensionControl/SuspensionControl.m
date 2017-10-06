@@ -1479,7 +1479,7 @@ menuBarItems = _menuBarItems;
     }
     
     if (_shouldLeanToScreenCenterWhenShow) {
-        [self.centerButton moveToScreentCenter];
+//        [self.centerButton moveToScreentCenter];
     }
     
     [self centerButton];
@@ -2039,16 +2039,22 @@ menuBarItems = _menuBarItems;
         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
         menuWindow.rootViewController.view.frame =  menuWindow.bounds;
         UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
-        
+
         CGRect centerFrame =  centerWindow.frame;
         if (!self.shouldHiddenCenterButtonWhenShow) {
             centerFrame.size = CGSizeMake(_viewFlags._centerWindowSize.width,
                                           _viewFlags._centerWindowSize.height);
         }
-        CGFloat centerX = (kSCREENT_WIDTH - _viewFlags._centerWindowSize.width)*0.5;
-        CGFloat centerY = (kSCREENT_HEIGHT - _viewFlags._centerWindowSize.height)*0.5;
-        centerFrame.origin = CGPointMake(centerX,
-                                         centerY);
+        CGFloat centerWindowX = (kSCREENT_WIDTH - _viewFlags._centerWindowSize.width)*0.5;
+        // CGFloat centerY = (kSCREENT_HEIGHT - _viewFlags._centerWindowSize.height)*0.5;
+        
+        // 通过设置centerWindow的frame确定最终menuWindow的frame，以x轴居中，y轴最大偏移量不能超出屏幕
+        CGFloat centerWindowMinY = (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5;
+        CGFloat centerWindowMaxY = kSCREENT_HEIGHT - (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5;
+        CGFloat currentCenterWindowY = centerFrame.origin.y;
+        CGFloat centerWindowY = MIN(centerWindowMaxY, MAX(currentCenterWindowY, centerWindowMinY));
+        centerFrame.origin = CGPointMake(centerWindowX,
+                                         centerWindowY);
         centerWindow.frame = centerFrame;
         
         
@@ -2068,6 +2074,10 @@ menuBarItems = _menuBarItems;
             }
         }
     }
+}
+
+- (void)setCenter:(CGPoint)center {
+    [super setCenter:center];
 }
 
 /// 设置按钮的 位置
@@ -2300,11 +2310,9 @@ menuBarItems = _menuBarItems;
         [pointList addObject:pointValue8];
     }
     
-    if (pointList.count) {
-        [pointList enumerateObjectsUsingBlock:^(NSValue * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [self _setButton:hypotenuseItems[idx].hypotenuseButton origin:[obj CGPointValue]];
-        }];
-    }
+    [pointList enumerateObjectsUsingBlock:^(NSValue * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self _setButton:hypotenuseItems[idx].hypotenuseButton origin:[obj CGPointValue]];
+    }];
 }
 
 ////////////////////////////////////////////////////////////////////////
