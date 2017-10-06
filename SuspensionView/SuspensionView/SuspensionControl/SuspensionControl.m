@@ -2049,8 +2049,9 @@ menuBarItems = _menuBarItems;
         // CGFloat centerY = (kSCREENT_HEIGHT - _viewFlags._centerWindowSize.height)*0.5;
         
         // 通过设置centerWindow的frame确定最终menuWindow的frame，以x轴居中，y轴最大偏移量不能超出屏幕
-        CGFloat centerWindowMinY = (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5;
-        CGFloat centerWindowMaxY = kSCREENT_HEIGHT - (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5;
+        CGFloat margin = 10.0;
+        CGFloat centerWindowMinY = (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5 + margin;
+        CGFloat centerWindowMaxY = kSCREENT_HEIGHT - (_viewFlags._menuWindowSize.height + _viewFlags._centerWindowSize.height) * 0.5 - margin;
         CGFloat currentCenterWindowY = centerFrame.origin.y;
         CGFloat centerWindowY = MIN(centerWindowMaxY, MAX(currentCenterWindowY, centerWindowMinY));
         centerFrame.origin = CGPointMake(centerWindowX,
