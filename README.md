@@ -10,8 +10,7 @@ pod 'SuspensionControl', '~> 0.0.2'
  或者直接将'SuspensionControl' 添加到您的项目中
  
  2. 代码示例:
- '''
- 
+ ```
  - (void)sample {
  
  SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
@@ -275,7 +274,7 @@ pod 'SuspensionControl', '~> 0.0.2'
  [menuView showWithCompetion:NULL];
  
  }
- '''
+ ```
 
 
 
