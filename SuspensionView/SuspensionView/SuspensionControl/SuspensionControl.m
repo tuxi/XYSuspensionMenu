@@ -1297,7 +1297,7 @@ menuBarItems = _menuBarItems;
     [_menuBarItems addObject:action];
 }
 
-- (void)presentWithCompetion:(void (^ _Nullable)(void))competion {
+- (void)showWithCompetion:(void (^ _Nullable)(void))competion {
     [self setMenuBarItems:self.menuBarItems itemSize:self.itemSize];
     self.openCompletion = competion;
     

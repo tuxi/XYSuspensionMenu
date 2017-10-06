@@ -42,6 +42,7 @@
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
+    menuView.delegate = self;
     
     NSMutableArray *types = [NSMutableArray array];
     NSMutableArray *images = [NSMutableArray array];
@@ -291,7 +292,7 @@
     }
     
     
-    [menuView presentWithCompetion:NULL];
+    [menuView showWithCompetion:NULL];
 
 }
 
@@ -451,7 +452,7 @@
         i++;
     }
     
-    [menuView presentWithCompetion:NULL];
+    [menuView showWithCompetion:NULL];
 
 
 }

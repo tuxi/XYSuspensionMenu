@@ -156,7 +156,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 
-- (void)presentWithCompetion:(void (^ _Nullable)(void))competion;
+- (void)showWithCompetion:(void (^ _Nullable)(void))competion;
 
 - (void)addAction:(HypotenuseAction *)action;
 
