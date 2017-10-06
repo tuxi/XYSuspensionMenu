@@ -7,7 +7,6 @@
 //
 
 #import "SuspensionControl.h"
-#import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
@@ -897,7 +896,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     CGFloat minSpace = 0;
     if (self.leanEdgeType == SuspensionViewLeanEdgeTypeHorizontal) {
         minSpace = MIN(left, right);
-    }else if (self.leanEdgeType == SuspensionViewLeanEdgeTypeEachSide) {
+    }
+    else if (self.leanEdgeType == SuspensionViewLeanEdgeTypeEachSide) {
         minSpace = MIN(MIN(MIN(top, left), bottom), right);
     }
     CGPoint newTargetPoint = CGPointZero;
@@ -905,9 +905,11 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     
     if (panPoint.y < self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top) {
         targetY = self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top;
-    }else if (panPoint.y > (screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom)) {
+    }
+    else if (panPoint.y > (screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom)) {
         targetY = screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom;
-    }else{
+    }
+    else{
         targetY = panPoint.y;
     }
     
@@ -937,8 +939,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 /// 移动移动到屏幕中心位置
 - (void)moveToScreentCenter {
-    
-    //    CGPoint screenCenter = CGPointMake((kSCREENT_WIDTH - [SuspensionControl windowForKey:self.key].bounds.size.width)*0.5, (kSCREENT_HEIGHT - [SuspensionControl windowForKey:self.key].bounds.size.height)*0.5);
     
     [self autoLeanToTargetPosition:[UIApplication sharedApplication].delegate.window.center];
 }
@@ -1508,7 +1508,7 @@ menuBarItems = _menuBarItems;
                           delay:0.0
          usingSpringWithDamping:usingSpringWithDamping
           initialSpringVelocity:initialSpringVelocity
-                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                        options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionAllowUserInteraction
                      animations:[self showAnimationsBlockWithNeedCurveEaseInOut:isCurveEaseInOut]
                      completion:showCompletionBlock];
 }
@@ -2357,9 +2357,7 @@ menuBarItems = _menuBarItems;
     return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : [super key];
 }
 
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     if (self.currentDisplayMoreItem.moreHypotenusItems.count) {
         [self dismissMoreButtonsWithItem:self.currentDisplayMoreItem animationCompletion:^{
             if (self.stackDisplayedItems.count) {
@@ -2382,6 +2380,8 @@ menuBarItems = _menuBarItems;
     if (!self.currentDisplayMoreItem) {
         [self dismiss];
     }
+    
+    [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
 
@@ -2621,8 +2621,12 @@ menuBarItems = _menuBarItems;
 
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    
-    [self.menuView dismiss];
+    CGPoint touchPoint = [touches.anyObject locationInView:self.view];
+    // 拿到在self.view上但同时在menuView上的点
+    touchPoint = [self.menuView.layer convertPoint:touchPoint fromLayer:self.view.layer];
+    if (![self.menuView.layer containsPoint:touchPoint]) {
+        [self.menuView dismiss];
+    }
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
@@ -2726,7 +2730,7 @@ menuBarItems = _menuBarItems;
 - (NSString *)key {
     NSString *key = objc_getAssociatedObject(self, @selector(key));
     if (!key.length) {
-        self.key = (key = [self md5:self.description]);
+        self.key = (key = self.description);
     }
     return key;
 }
@@ -2735,19 +2739,6 @@ menuBarItems = _menuBarItems;
     return [self.key stringByAppendingString:identifier];
 }
 
-- (NSString *)md5:(NSString *)str {
-    const char * cStr = [str UTF8String];
-    unsigned char result[16];
-    
-    CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
-    
-    return [NSString stringWithFormat:
-            @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-            result[0], result[1], result[2], result[3], result[4],
-            result[5], result[6], result[7], result[8], result[9],
-            result[10], result[11], result[12], result[13],
-            result[14], result[15]];
-}
 
 @end
 
