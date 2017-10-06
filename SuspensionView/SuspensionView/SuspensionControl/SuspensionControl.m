@@ -1217,11 +1217,9 @@ static const NSUInteger moreBarButtonBaseTag = 200;
         CGFloat _maxBounceOfTriangleHypotenuse; // 当显示时要展开的三角斜边
         CGFloat _maxTriangleHypotenuse; // 最大三角斜边，当第一次刚出现时三角斜边
         CGRect  _memuBarButtonOriginFrame; // 每一个菜单上按钮的原始frame 除中心的按钮 关闭时也可使用,重叠
-        BOOL _isInProcessing; // 是否正在执行显示或消失
-        BOOL _isShow;  // 是否已经显示
-        BOOL _isDismiss; // 是否已经消失
-        BOOL _isFiristShow;      // 是否第一次显示
-        BOOL _isFiristDismiss;   // 是否第一次消失
+        BOOL _isOpened;  // 是否已经显示
+        BOOL _isClosed; // 是否已经消失
+        BOOL _isFiristOpened;      // 是否第一次显示
         CGSize _menuWindowSize;
         CGSize _centerWindowSize;
     } _viewFlags;
@@ -1363,7 +1361,7 @@ menuBarItems = _menuBarItems;
     viewController.hidesBottomBarWhenPushed = YES;
     if ([[self topViewController] isMemberOfClass:[viewController class]]) {
         [[self topViewController].navigationController popViewControllerAnimated:YES];
-        [self dismiss];
+        [self close];
         self.testPushViewControllerDictionary = nil;
         return;
     } else {
@@ -1376,7 +1374,7 @@ menuBarItems = _menuBarItems;
             UIViewController *targetVc = vcs[founVcIndex];
             [[self topViewController].navigationController popToViewController:targetVc animated:YES];
             self.testPushViewControllerDictionary = nil;
-            [self dismiss];
+            [self close];
             return;
         }
     }
@@ -1399,7 +1397,7 @@ menuBarItems = _menuBarItems;
                     [[self topViewController].navigationController popToRootViewControllerAnimated:animated];
                 }
                 self.testPushViewControllerDictionary = nil;
-                [self dismiss];
+                [self close];
                 if (founVcClass == [viewController class]) {
                     return;
                 }
@@ -1456,8 +1454,8 @@ menuBarItems = _menuBarItems;
             CGRect menuFrame =  menuWindow.frame;
             menuFrame.size = CGSizeZero;
             menuWindow.frame = menuFrame;
-            _viewFlags._isDismiss = YES;
-            _viewFlags._isShow = NO;
+            _viewFlags._isClosed = YES;
+            _viewFlags._isOpened = NO;
             [self _dismissCompetion];
             // 存
             NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
@@ -1470,11 +1468,11 @@ menuBarItems = _menuBarItems;
     };
 }
 
-- (void)_showWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
-    if (_viewFlags._isShow) return;
+- (void)_openWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
+    if (_viewFlags._isOpened) return;
     self.centerButton.usingSpringWithDamping = 0.8;
     self.centerButton.initialSpringVelocity = 20;
-    if (_viewFlags._isFiristShow) {
+    if (_viewFlags._isFiristOpened) {
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._maxTriangleHypotenuse hypotenuseItems:self.menuBarItems];
     }
     
@@ -1484,8 +1482,6 @@ menuBarItems = _menuBarItems;
     
     [self centerButton];
     [self _updateMenuViewCenterWithIsShow:YES];
-    
-    _viewFlags._isInProcessing = YES;
     
     if (self.shouldHiddenCenterButtonWhenShow) {
         UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
@@ -1513,8 +1509,8 @@ menuBarItems = _menuBarItems;
                      completion:showCompletionBlock];
 }
 
-- (void)show {
-    [self _showWithNeedCurveEaseInOut:YES];
+- (void)open {
+    [self _openWithNeedCurveEaseInOut:YES];
     
 }
 
@@ -1535,7 +1531,7 @@ menuBarItems = _menuBarItems;
         if (!isCurveEaseInOut) {
             triangleHypotenuse = _viewFlags._defaultTriangleHypotenuse;
         } else {
-            if (_viewFlags._isFiristShow) {
+            if (_viewFlags._isFiristOpened) {
                 triangleHypotenuse = _viewFlags._minBounceOfTriangleHypotenuse;
             } else {
                 triangleHypotenuse = _viewFlags._maxBounceOfTriangleHypotenuse;
@@ -1563,10 +1559,9 @@ menuBarItems = _menuBarItems;
                              [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._defaultTriangleHypotenuse hypotenuseItems:self.menuBarItems];
                          }
                          completion:^(BOOL finished) {
-                             _viewFlags._isShow = YES;
-                             _viewFlags._isDismiss = NO;
-                             _viewFlags._isInProcessing = NO;
-                             _viewFlags._isFiristShow = NO;
+                             _viewFlags._isOpened = YES;
+                             _viewFlags._isClosed = NO;
+                             _viewFlags._isFiristOpened = NO;
                              [self _showCompetion];
                              if (self.menuBarItems) {
                                  for (HypotenuseAction *item in self.menuBarItems) {
@@ -1577,8 +1572,8 @@ menuBarItems = _menuBarItems;
     };
 }
 
-- (void)dismiss {
-    [self _dismissWithTriggerPanGesture:NO];
+- (void)close {
+    [self _closeWithTriggerPanGesture:NO];
 }
 
 - (void)_showCompetion {
@@ -1594,18 +1589,11 @@ menuBarItems = _menuBarItems;
 }
 
 /// 执行dismiss，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
-- (void)_dismissWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
+- (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
     
-    if (_viewFlags._isDismiss)
+    if (_viewFlags._isClosed)
         return;
     
-    //    if (_isFiristDismiss) {
-    //        // 检测边缘
-    //        [self.centerButton checkTargetPosition];
-    //    }
-    //
-    
-    _viewFlags._isInProcessing = YES;
     self.centerButton.usingSpringWithDamping = 0.5;
     self.centerButton.initialSpringVelocity = 10;
     if (self.shouldHiddenCenterButtonWhenShow) {
@@ -1653,10 +1641,8 @@ menuBarItems = _menuBarItems;
             CGRect menuFrame =  menuWindow.frame;
             menuFrame.size = CGSizeZero;
             menuWindow.frame = menuFrame;
-            _viewFlags._isDismiss = YES;
-            _viewFlags._isShow  = NO;
-            _viewFlags._isInProcessing = NO;
-            _viewFlags._isFiristDismiss = NO;
+            _viewFlags._isClosed = YES;
+            _viewFlags._isOpened  = NO;
             [self _dismissCompetion];
         } ];
         
@@ -1763,11 +1749,9 @@ menuBarItems = _menuBarItems;
 
 - (void)_suspensionMenuViewSetup {
     
-    _viewFlags._isInProcessing = NO;
-    _viewFlags._isShow  = NO;
-    _viewFlags._isDismiss = YES;
-    _viewFlags._isFiristShow = YES;
-    _viewFlags._isFiristDismiss = YES;
+    _viewFlags._isOpened  = NO;
+    _viewFlags._isClosed = YES;
+    _viewFlags._isFiristOpened = YES;
     _shouldLeanToScreenCenterWhenShow = YES;
     _usingSpringWithDamping = 0.6;
     _initialSpringVelocity = 0.0;
@@ -1820,7 +1804,7 @@ menuBarItems = _menuBarItems;
 
 // 中心 button 点击事件
 - (void)centerBarButtonClick:(id)senter {
-    _viewFlags._isDismiss ? [self show] : [self dismiss];
+    _viewFlags._isClosed ? [self open] : [self close];
 }
 
 // 斜边的 button 点击事件 button tag 如下图:
@@ -1887,12 +1871,11 @@ menuBarItems = _menuBarItems;
 }
 
 - (void)moreButtonClickWithHypotenuseItem:(HypotenuseAction *)item {
-    if (_viewFlags._isDismiss) {
+    if (_viewFlags._isClosed) {
         return;
     }
     
     // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
-    _viewFlags._isInProcessing = YES;
     [UIView animateWithDuration:0.3
                           delay:0.0
          usingSpringWithDamping:self.usingSpringWithDamping
@@ -1926,7 +1909,6 @@ menuBarItems = _menuBarItems;
     return ^(BOOL finished) {
         
         [self showMoreButtonsWithItem:item];
-        _viewFlags._isInProcessing = NO;
     };
 }
 
@@ -1993,12 +1975,12 @@ menuBarItems = _menuBarItems;
 
 - (void)orientationDidChange:(NSNotification *)note {
     if (self.shouldDismissWhenDeviceOrientationDidChange) {
-        _viewFlags._isDismiss = NO;
-        [self _dismissWithTriggerPanGesture:YES];
+        _viewFlags._isClosed = NO;
+        [self _closeWithTriggerPanGesture:YES];
         [self.centerButton checkTargetPosition];
         return;
     }
-    [self _updateMenuViewCenterWithIsShow:_viewFlags._isShow];
+    [self _updateMenuViewCenterWithIsShow:_viewFlags._isOpened];
     
 }
 ////////////////////////////////////////////////////////////////////////
@@ -2020,7 +2002,7 @@ menuBarItems = _menuBarItems;
         [suspensionView moveToPreviousLeanPosition];
     }
     if (pan.state == UIGestureRecognizerStateBegan) {
-        [self _dismissWithTriggerPanGesture:YES];
+        [self _closeWithTriggerPanGesture:YES];
     }
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:centerButtonLocationChange:)]) {
         [self.delegate suspensionMenuView:self centerButtonLocationChange:pan];
@@ -2363,12 +2345,11 @@ menuBarItems = _menuBarItems;
             if (self.stackDisplayedItems.count) {
                 [self.stackDisplayedItems removeObject:self.currentDisplayMoreItem];
                 // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
-                _viewFlags._isInProcessing = YES;
                 if (self.stackDisplayedItems.count) {
                     [self showMoreButtonsWithItem:self.stackDisplayedItems.lastObject];
                 } else {
-                    _viewFlags._isShow = NO;
-                    [self _showWithNeedCurveEaseInOut:NO];
+                    _viewFlags._isOpened = NO;
+                    [self _openWithNeedCurveEaseInOut:NO];
                     
                     _currentDisplayMoreItem = nil;
                 }
@@ -2378,7 +2359,7 @@ menuBarItems = _menuBarItems;
     }
     
     if (!self.currentDisplayMoreItem) {
-        [self dismiss];
+        [self close];
     }
     
     [self.nextResponder touchesEnded:touches withEvent:event];
@@ -2625,7 +2606,7 @@ menuBarItems = _menuBarItems;
     // 拿到在self.view上但同时在menuView上的点
     touchPoint = [self.menuView.layer convertPoint:touchPoint fromLayer:self.view.layer];
     if (![self.menuView.layer containsPoint:touchPoint]) {
-        [self.menuView dismiss];
+        [self.menuView close];
     }
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
