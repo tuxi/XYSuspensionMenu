@@ -37,9 +37,9 @@
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     menuView.isOnce = YES;
-    menuView.shouldShowWhenViewWillAppear = NO;
-    menuView.shouldHiddenCenterButtonWhenShow = YES;
-    menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
+    menuView.shouldOpenWhenViewWillAppear = NO;
+    menuView.shouldHiddenCenterButtonWhenOpen = YES;
+    menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
     
@@ -301,12 +301,13 @@
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     menuView.isOnce = YES;
-    menuView.shouldShowWhenViewWillAppear = NO;
-    menuView.shouldHiddenCenterButtonWhenShow = YES;
-    menuView.shouldDismissWhenDeviceOrientationDidChange = YES;
+    menuView.shouldOpenWhenViewWillAppear = NO;
+    menuView.shouldHiddenCenterButtonWhenOpen = YES;
+    menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
     menuView.delegate = self;
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
+    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     
     int i = 0;
     
@@ -449,24 +450,10 @@
         [menuView addAction:item];
         i++;
     }
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+    
     [menuView presentWithCompetion:NULL];
 
-    
-    
-    /*
-     __block __weak typeof(menuView) weakMenuView = menuView;
-     menuView.menuBarClickBlock = ^(NSInteger index) {
-     
-     if (index < 3) {
-     
-     UIViewController *vc = [UIViewController new];
-     vc.view.backgroundColor = [UIColor whiteColor];
-     [weakMenuView testPushViewController:vc];
-     }
-     };
-     
-     */
+
 }
 
 

@@ -40,8 +40,8 @@ typedef NS_ENUM(NSInteger, OSButtonType) {
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex;
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(HypotenuseAction *)hypotenuseItem;
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedCenterButton:(SuspensionView *)centerButton;
-- (void)suspensionMenuViewDidShow:(SuspensionMenuView *)suspensionMenuView;
-- (void)suspensionMenuViewDidDismiss:(SuspensionMenuView *)suspensionMenuView;
+- (void)suspensionMenuViewDidOpened:(SuspensionMenuView *)suspensionMenuView;
+- (void)suspensionMenuViewDidClose:(SuspensionMenuView *)suspensionMenuView;
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView centerButtonLocationChange:(UIPanGestureRecognizer *)pan;
 
 
@@ -141,14 +141,14 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) BOOL isOnce;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
 @property (nonatomic, copy) void (^ _Nullable moreButtonClickBlock)(NSInteger index);
-@property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenShow;
+@property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenOpened;
 @property (nonatomic, strong, readonly) NSArray<HypotenuseAction *> *menuBarItems;
 @property (nonatomic, weak, readonly) SuspensionView *centerButton;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
-@property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenShow;
-@property (nonatomic, assign) BOOL shouldDismissWhenDeviceOrientationDidChange;
+@property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenOpen;
+@property (nonatomic, assign) BOOL shouldCloseWhenDeviceOrientationDidChange;
 
 - (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize NS_DESIGNATED_INITIALIZER;
 
@@ -170,7 +170,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface SuspensionMenuWindow : SuspensionMenuView
 
-@property (nonatomic, assign) BOOL shouldShowWhenViewWillAppear;
+@property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
 
 - (void)removeFromSuperview;
 + (void)releaseAll;

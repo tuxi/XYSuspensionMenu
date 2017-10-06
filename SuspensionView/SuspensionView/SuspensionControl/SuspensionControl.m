@@ -1238,8 +1238,8 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
 @property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
-@property (nonatomic, copy) void (^ _Nullable showCompletion)();
-@property (nonatomic, copy) void (^ _Nullable dismissCompletion)();
+@property (nonatomic, copy) void (^ _Nullable openCompletion)();
+@property (nonatomic, copy) void (^ _Nullable closeCompletion)();
 
 @end
 
@@ -1299,7 +1299,7 @@ menuBarItems = _menuBarItems;
 
 - (void)presentWithCompetion:(void (^ _Nullable)(void))competion {
     [self setMenuBarItems:self.menuBarItems itemSize:self.itemSize];
-    self.showCompletion = competion;
+    self.openCompletion = competion;
     
 }
 
@@ -1416,7 +1416,7 @@ menuBarItems = _menuBarItems;
 
 - (void (^)())pushAnimationsBlock {
     return ^ {
-        if (self.shouldHiddenCenterButtonWhenShow) {
+        if (self.shouldHiddenCenterButtonWhenOpen) {
             UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
             CGRect centerFrame =  centerWindow.frame;
             centerFrame.size = _viewFlags._centerWindowSize;
@@ -1456,7 +1456,7 @@ menuBarItems = _menuBarItems;
             menuWindow.frame = menuFrame;
             _viewFlags._isClosed = YES;
             _viewFlags._isOpened = NO;
-            [self _dismissCompetion];
+            [self _closeCompetion];
             // 存
             NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
             if (!btnTag) {
@@ -1476,14 +1476,14 @@ menuBarItems = _menuBarItems;
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._maxTriangleHypotenuse hypotenuseItems:self.menuBarItems];
     }
     
-    if (_shouldLeanToScreenCenterWhenShow) {
-//        [self.centerButton moveToScreentCenter];
+    if (_shouldLeanToScreenCenterWhenOpened) {
+        [self.centerButton moveToScreentCenter];
     }
     
     [self centerButton];
-    [self _updateMenuViewCenterWithIsShow:YES];
+    [self _updateMenuViewCenterWithIsOpened:YES];
     
-    if (self.shouldHiddenCenterButtonWhenShow) {
+    if (self.shouldHiddenCenterButtonWhenOpen) {
         UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
         CGRect centerFrame =  centerWindow.frame;
         centerFrame.size = CGSizeZero;
@@ -1491,22 +1491,22 @@ menuBarItems = _menuBarItems;
         centerWindow.alpha = 0.0;
     }
     
-    void (^showCompletionBlock)(BOOL finished) = [self showCompletionBlock];
+    void (^openCompletionBlock)(BOOL finished) = [self openCompletionBlock];
     NSTimeInterval usingSpringWithDamping = self.usingSpringWithDamping;
     NSTimeInterval initialSpringVelocity = self.initialSpringVelocity;
     if (!isCurveEaseInOut) {
-        showCompletionBlock = nil;
-        usingSpringWithDamping = 1.0;
-        initialSpringVelocity = 10.0;
+        openCompletionBlock = nil;
+        usingSpringWithDamping = 0.65;
+        initialSpringVelocity = 2.0;
     }
     
     [UIView animateWithDuration:0.4
                           delay:0.0
          usingSpringWithDamping:usingSpringWithDamping
           initialSpringVelocity:initialSpringVelocity
-                        options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self showAnimationsBlockWithNeedCurveEaseInOut:isCurveEaseInOut]
-                     completion:showCompletionBlock];
+                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                     animations:[self openAnimationsBlockWithNeedCurveEaseInOut:isCurveEaseInOut]
+                     completion:openCompletionBlock];
 }
 
 - (void)open {
@@ -1514,7 +1514,7 @@ menuBarItems = _menuBarItems;
     
 }
 
-- (void (^)())showAnimationsBlockWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
+- (void (^)())openAnimationsBlockWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
     return ^ {
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         [menuWindow setAlpha:1.0];
@@ -1543,14 +1543,14 @@ menuBarItems = _menuBarItems;
     
 }
 
-- (void (^)(BOOL finished))showCompletionBlock {
+- (void (^)(BOOL finished))openCompletionBlock {
     
     return ^(BOOL finished) {
         // 此处动画结束时,menuWindow的bounds为CGRectZero了,原因是动画时间相错
         //                         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
         //                         if (menuWindow.frame.size.width == 0 || menuWindow.frame.size.height == 0) {
         //                             NSLog(@"为0了");
-        //                             [self _updateMenuViewCenterWithIsShow:YES];
+        //                             [self _updateMenuViewCenterWithIsOpened:YES];
         //                         }
         [UIView animateWithDuration:0.1
                               delay:0.0
@@ -1562,7 +1562,7 @@ menuBarItems = _menuBarItems;
                              _viewFlags._isOpened = YES;
                              _viewFlags._isClosed = NO;
                              _viewFlags._isFiristOpened = NO;
-                             [self _showCompetion];
+                             [self _openCompetion];
                              if (self.menuBarItems) {
                                  for (HypotenuseAction *item in self.menuBarItems) {
                                      item.orginRect = item.hypotenuseButton.frame;
@@ -1576,19 +1576,19 @@ menuBarItems = _menuBarItems;
     [self _closeWithTriggerPanGesture:NO];
 }
 
-- (void)_showCompetion {
+- (void)_openCompetion {
     
-    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidShow:)]) {
-        [self.delegate suspensionMenuViewDidShow:self];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidOpened:)]) {
+        [self.delegate suspensionMenuViewDidOpened:self];
         return;
     }
     
-    if (self.showCompletion) {
-        self.showCompletion();
+    if (self.openCompletion) {
+        self.openCompletion();
     }
 }
 
-/// 执行dismiss，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
+/// 执行close，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
 - (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
     
     if (_viewFlags._isClosed)
@@ -1596,7 +1596,7 @@ menuBarItems = _menuBarItems;
     
     self.centerButton.usingSpringWithDamping = 0.5;
     self.centerButton.initialSpringVelocity = 10;
-    if (self.shouldHiddenCenterButtonWhenShow) {
+    if (self.shouldHiddenCenterButtonWhenOpen) {
         UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
         CGRect centerFrame =  centerWindow.frame;
         centerFrame.size = _viewFlags._centerWindowSize;
@@ -1608,11 +1608,11 @@ menuBarItems = _menuBarItems;
          usingSpringWithDamping:self.usingSpringWithDamping
           initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self dismissAnimationsBlockWityIsTriggerPanGesture:isTriggerPanGesture]
-                     completion:[self dismissCompletionBlock]];
+                     animations:[self closeAnimationsBlockWityIsTriggerPanGesture:isTriggerPanGesture]
+                     completion:[self closeCompletionBlock]];
 }
 
-- (void (^)())dismissAnimationsBlockWityIsTriggerPanGesture:(BOOL)isTriggerPanGesture {
+- (void (^)())closeAnimationsBlockWityIsTriggerPanGesture:(BOOL)isTriggerPanGesture {
     return ^ {
         
         [self setAlpha:0.0];
@@ -1630,7 +1630,7 @@ menuBarItems = _menuBarItems;
     };
 }
 
-- (void (^)(BOOL finished))dismissCompletionBlock {
+- (void (^)(BOOL finished))closeCompletionBlock {
     return ^(BOOL finished) {
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         
@@ -1643,21 +1643,21 @@ menuBarItems = _menuBarItems;
             menuWindow.frame = menuFrame;
             _viewFlags._isClosed = YES;
             _viewFlags._isOpened  = NO;
-            [self _dismissCompetion];
+            [self _closeCompetion];
         } ];
         
     };
 }
 
-- (void)_dismissCompetion {
+- (void)_closeCompetion {
     
     [self removeAllMoreButtons];
-    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidDismiss:)]) {
-        [self.delegate suspensionMenuViewDidDismiss:self];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidClose:)]) {
+        [self.delegate suspensionMenuViewDidClose:self];
         return;
     }
-    if (self.dismissCompletion) {
-        self.dismissCompletion();
+    if (self.closeCompletion) {
+        self.closeCompletion();
     }
 }
 
@@ -1752,11 +1752,11 @@ menuBarItems = _menuBarItems;
     _viewFlags._isOpened  = NO;
     _viewFlags._isClosed = YES;
     _viewFlags._isFiristOpened = YES;
-    _shouldLeanToScreenCenterWhenShow = YES;
+    _shouldLeanToScreenCenterWhenOpened = NO;
     _usingSpringWithDamping = 0.6;
     _initialSpringVelocity = 0.0;
-    _shouldHiddenCenterButtonWhenShow = NO;
-    _shouldDismissWhenDeviceOrientationDidChange = NO;
+    _shouldHiddenCenterButtonWhenOpen = NO;
+    _shouldCloseWhenDeviceOrientationDidChange = NO;
     _menuBarItems = [NSMutableArray array];
     
     self.autoresizingMask = UIViewAutoresizingNone;
@@ -1780,7 +1780,7 @@ menuBarItems = _menuBarItems;
     _viewFlags._maxBounceOfTriangleHypotenuse = _viewFlags._defaultTriangleHypotenuse + 12.0;
     _viewFlags._maxTriangleHypotenuse = kSCREENT_HEIGHT * 0.5;
     
-    // 计算menu 上 按钮的 原始 frame 当dismiss 时 回到原始位置
+    // 计算menu 上 按钮的 原始 frame 当close 时 回到原始位置
     CGFloat originX = (_viewFlags._menuWindowSize.width - _viewFlags._centerWindowSize.width) * 0.5;
     _viewFlags._memuBarButtonOriginFrame = CGRectMake(originX,
                                                       originX,
@@ -1881,12 +1881,12 @@ menuBarItems = _menuBarItems;
          usingSpringWithDamping:self.usingSpringWithDamping
           initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self dismissCurrentDisplayButtonAnimationsBlock]
-                     completion:[self showMoreButtonAnimationsBlockWithItem:item]];
+                     animations:[self closeCurrentDisplayButtonAnimationsBlock]
+                     completion:[self openMoreButtonAnimationsBlockWithItem:item]];
 }
 
 /// 隐藏当前显示着的button，显示需要展示的more button
-- (void (^)())dismissCurrentDisplayButtonAnimationsBlock {
+- (void (^)())closeCurrentDisplayButtonAnimationsBlock {
     return ^ {
         
         for (HypotenuseAction *item in self.currentDisplayMoreItem.moreHypotenusItems) {
@@ -1905,10 +1905,10 @@ menuBarItems = _menuBarItems;
 }
 
 
-- (void (^)(BOOL finished))showMoreButtonAnimationsBlockWithItem:(HypotenuseAction *)item {
+- (void (^)(BOOL finished))openMoreButtonAnimationsBlockWithItem:(HypotenuseAction *)item {
     return ^(BOOL finished) {
         
-        [self showMoreButtonsWithItem:item];
+        [self openMoreButtonsWithItem:item];
     };
 }
 
@@ -1917,7 +1917,7 @@ menuBarItems = _menuBarItems;
 
 #pragma mark *** More button animation ***
 
-- (void)showMoreButtonsWithItem:(HypotenuseAction *)item {
+- (void)openMoreButtonsWithItem:(HypotenuseAction *)item {
     
     self.currentDisplayMoreItem = item;
     [UIView animateWithDuration:0.3
@@ -1944,7 +1944,7 @@ menuBarItems = _menuBarItems;
 
 
 
-- (void)dismissMoreButtonsWithItem:(HypotenuseAction *)item animationCompletion:(void (^)())completion {
+- (void)closeMoreButtonsWithItem:(HypotenuseAction *)item animationCompletion:(void (^)())completion {
     
     [UIView animateWithDuration:0.2
                           delay:0.0
@@ -1974,13 +1974,13 @@ menuBarItems = _menuBarItems;
 
 
 - (void)orientationDidChange:(NSNotification *)note {
-    if (self.shouldDismissWhenDeviceOrientationDidChange) {
+    if (self.shouldCloseWhenDeviceOrientationDidChange) {
         _viewFlags._isClosed = NO;
         [self _closeWithTriggerPanGesture:YES];
         [self.centerButton checkTargetPosition];
         return;
     }
-    [self _updateMenuViewCenterWithIsShow:_viewFlags._isOpened];
+    [self _updateMenuViewCenterWithIsOpened:_viewFlags._isOpened];
     
 }
 ////////////////////////////////////////////////////////////////////////
@@ -2014,47 +2014,49 @@ menuBarItems = _menuBarItems;
 ////////////////////////////////////////////////////////////////////////
 
 
-- (void)_updateMenuViewCenterWithIsShow:(BOOL)isShow {
-    if (isShow) {
-        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
-        menuWindow.frame = [UIScreen mainScreen].bounds;
-        NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
-        menuWindow.rootViewController.view.frame =  menuWindow.bounds;
-        UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
-
-        CGRect centerFrame =  centerWindow.frame;
-        if (!self.shouldHiddenCenterButtonWhenShow) {
-            centerFrame.size = CGSizeMake(_viewFlags._centerWindowSize.width,
-                                          _viewFlags._centerWindowSize.height);
-        }
-        CGFloat centerWindowX = (kSCREENT_WIDTH - _viewFlags._centerWindowSize.width)*0.5;
-        // CGFloat centerY = (kSCREENT_HEIGHT - _viewFlags._centerWindowSize.height)*0.5;
-        
-        // 通过设置centerWindow的frame确定最终menuWindow的frame，以x轴居中，y轴最大偏移量不能超出屏幕
-        CGFloat margin = 10.0;
-        CGFloat centerWindowMinY = (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5 + margin;
-        CGFloat centerWindowMaxY = kSCREENT_HEIGHT - (_viewFlags._menuWindowSize.height + _viewFlags._centerWindowSize.height) * 0.5 - margin;
-        CGFloat currentCenterWindowY = centerFrame.origin.y;
-        CGFloat centerWindowY = MIN(centerWindowMaxY, MAX(currentCenterWindowY, centerWindowMinY));
-        centerFrame.origin = CGPointMake(centerWindowX,
-                                         centerWindowY);
-        centerWindow.frame = centerFrame;
-        
-        
-        CGPoint newCenter = [centerWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
-        self.center = newCenter;
-        
-        if (_backgroundImageView) {
-            self.backgroundImageView.frame = self.bounds;
-            if (_visualEffectView) {
-                [self insertSubview:_visualEffectView aboveSubview:_backgroundImageView];
-            }
-        }
+- (void)_updateMenuViewCenterWithIsOpened:(BOOL)isOpened {
+    if (!isOpened) {
+        return;
+    }
+    
+    UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+    menuWindow.frame = [UIScreen mainScreen].bounds;
+    NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
+    menuWindow.rootViewController.view.frame =  menuWindow.bounds;
+    UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+    
+    CGRect centerFrame =  centerWindow.frame;
+    if (!self.shouldHiddenCenterButtonWhenOpen) {
+        centerFrame.size = CGSizeMake(_viewFlags._centerWindowSize.width,
+                                      _viewFlags._centerWindowSize.height);
+    }
+    CGFloat centerWindowX = (kSCREENT_WIDTH - _viewFlags._centerWindowSize.width)*0.5;
+    // CGFloat centerY = (kSCREENT_HEIGHT - _viewFlags._centerWindowSize.height)*0.5;
+    
+    // 通过设置centerWindow的frame确定最终menuWindow的frame，以x轴居中，y轴最大偏移量不能超出屏幕
+    CGFloat margin = 10.0;
+    CGFloat centerWindowMinY = (_viewFlags._menuWindowSize.height - _viewFlags._centerWindowSize.height) * 0.5 + margin;
+    CGFloat centerWindowMaxY = kSCREENT_HEIGHT - (_viewFlags._menuWindowSize.height + _viewFlags._centerWindowSize.height) * 0.5 - margin;
+    CGFloat currentCenterWindowY = centerFrame.origin.y;
+    CGFloat centerWindowY = MIN(centerWindowMaxY, MAX(currentCenterWindowY, centerWindowMinY));
+    centerFrame.origin = CGPointMake(centerWindowX,
+                                     centerWindowY);
+    centerWindow.frame = centerFrame;
+    
+    
+    CGPoint newCenter = [centerWindow convertPoint:self.centerButton.center toView:[UIApplication sharedApplication].delegate.window];
+    self.center = newCenter;
+    
+    if (_backgroundImageView) {
+        self.backgroundImageView.frame = self.bounds;
         if (_visualEffectView) {
-            self.visualEffectView.frame = self.bounds;
-            if (!_backgroundImageView) {
-                [self insertSubview:_visualEffectView atIndex:0];
-            }
+            [self insertSubview:_visualEffectView aboveSubview:_backgroundImageView];
+        }
+    }
+    if (_visualEffectView) {
+        self.visualEffectView.frame = self.bounds;
+        if (!_backgroundImageView) {
+            [self insertSubview:_visualEffectView atIndex:0];
         }
     }
 }
@@ -2074,7 +2076,7 @@ menuBarItems = _menuBarItems;
     }
 }
 
-// https://github.com/Kjuly/KYCircleMenu
+// 斜边的button frame计算来自:https://github.com/Kjuly/KYCircleMenu
 - (void)updateMenuBarButtonLayoutWithTriangleHypotenuse:(CGFloat)triangleHypotenuse hypotenuseItems:(NSArray<HypotenuseAction *> *)hypotenuseItems {
     //
     //  Triangle Values for Buttons' Position
@@ -2309,8 +2311,8 @@ menuBarItems = _menuBarItems;
         [_menuBarItems makeObjectsPerformSelector:@selector(removeFromSuperview)];
         _menuBarItems = nil;
     }
-    _showCompletion = nil;
-    _dismissCompletion = nil;
+    _openCompletion = nil;
+    _closeCompletion = nil;
     _testPushViewControllerDictionary = nil;
     _currentDisplayMoreItem = nil;
 }
@@ -2341,12 +2343,12 @@ menuBarItems = _menuBarItems;
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     if (self.currentDisplayMoreItem.moreHypotenusItems.count) {
-        [self dismissMoreButtonsWithItem:self.currentDisplayMoreItem animationCompletion:^{
+        [self closeMoreButtonsWithItem:self.currentDisplayMoreItem animationCompletion:^{
             if (self.stackDisplayedItems.count) {
                 [self.stackDisplayedItems removeObject:self.currentDisplayMoreItem];
                 // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
                 if (self.stackDisplayedItems.count) {
-                    [self showMoreButtonsWithItem:self.stackDisplayedItems.lastObject];
+                    [self openMoreButtonsWithItem:self.stackDisplayedItems.lastObject];
                 } else {
                     _viewFlags._isOpened = NO;
                     [self _openWithNeedCurveEaseInOut:NO];
@@ -2380,7 +2382,7 @@ menuBarItems = _menuBarItems;
     if (self = [super initWithFrame:frame itemSize:itemSize]) {
         [self setAlpha:1.0];
         self.isOnce = YES;
-        self.shouldShowWhenViewWillAppear = YES;
+        self.shouldOpenWhenViewWillAppear = YES;
     }
     return self;
 }
@@ -2390,7 +2392,7 @@ menuBarItems = _menuBarItems;
     [super setItemSize:itemSize];
     [self _moveToSuperview];
     
-    if (!self.shouldShowWhenViewWillAppear) {
+    if (!self.shouldOpenWhenViewWillAppear) {
         [self.centerButton checkTargetPosition];
     }
 }
@@ -2422,7 +2424,7 @@ menuBarItems = _menuBarItems;
 - (void)_moveToSuperview {
     
     CGRect menuWindowBounds = [UIScreen mainScreen].bounds;
-    if (!_shouldShowWhenViewWillAppear) {
+    if (!_shouldOpenWhenViewWillAppear) {
         menuWindowBounds = CGRectZero;
     }
     
@@ -2593,8 +2595,8 @@ menuBarItems = _menuBarItems;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    if (_menuView.shouldShowWhenViewWillAppear) {
-        [self.menuView performSelector:@selector(show)
+    if (_menuView.shouldOpenWhenViewWillAppear) {
+        [self.menuView performSelector:@selector(open)
                             withObject:nil
                             afterDelay:0.3];
     }
