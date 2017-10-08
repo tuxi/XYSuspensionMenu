@@ -535,24 +535,60 @@ imageView = _imageView;
 
 - (void)setSelected:(BOOL)selected {
     [super setSelected:selected];
-    
+    dispatch_block_t fadeInBlock = ^{
+        if (self.contentAnimateColor) {
+            self.titleContentView.backgroundColor = self.contentAnimateColor;
+            self.detailContentView.backgroundColor = self.contentAnimateColor;
+            self.imageContentView.backgroundColor = self.contentAnimateColor;
+        }
+        
+        if (self.borderAnimateColor && self.foregroundAnimateColor && self.borderAnimateColor == self.foregroundAnimateColor) {
+            _backgroundColorCache = self.backgroundColor;
+            self.foregroundView.backgroundColor = [UIColor clearColor];
+            self.backgroundColor = self.borderAnimateColor;
+            return;
+        }
+        
+        if (self.borderAnimateColor) {
+            self.layer.borderColor = self.borderAnimateColor.CGColor;
+        }
+        
+        if (self.foregroundAnimateColor) {
+            self.foregroundView.backgroundColor = self.foregroundAnimateColor;
+        }
+    };
     if (self.fadeInOutOnDisplay) {
+        
+        dispatch_block_t fadeInBlock = ^ {
+            self.titleContentView.backgroundColor = self.contentColor;
+            self.detailContentView.backgroundColor = self.contentColor;
+            self.imageContentView.backgroundColor = self.contentColor;
+            
+            if (self.borderAnimateColor && self.foregroundAnimateColor && self.borderAnimateColor == self.foregroundAnimateColor) {
+                self.foregroundView.backgroundColor = self.foregroundColor;
+                self.backgroundColor = _backgroundColorCache;
+                _backgroundColorCache = nil;
+            }
+            
+            self.foregroundView.backgroundColor = self.foregroundColor;
+            self.layer.borderColor = self.borderColor.CGColor;
+        };
         if (selected) {
             [UIView animateWithDuration:0.3 delay:0.0
                                 options:UIViewAnimationOptionAllowUserInteraction
-                             animations:[self fadeInBlock]
+                             animations:fadeInBlock
                              completion:nil];
         } else {
             [UIView animateWithDuration:0.3 delay:0.0
                                 options:UIViewAnimationOptionAllowUserInteraction
-                             animations:[self fadeOutBlock]
+                             animations:fadeInBlock
                              completion:nil];
         }
     } else {
         if (selected) {
-            [self fadeInBlock]();
+            fadeInBlock();
         } else {
-            [self fadeOutBlock]();
+            fadeInBlock();
         }
     }
 }
@@ -654,53 +690,6 @@ imageView = _imageView;
     }
     self.trackingInside = NO;
     [super cancelTrackingWithEvent:event];
-}
-
-////////////////////////////////////////////////////////////////////////
-#pragma mark - Animate
-////////////////////////////////////////////////////////////////////////
-
-- (void (^)())fadeInBlock {
-    return ^ {
-        if (self.contentAnimateColor) {
-            self.titleContentView.backgroundColor = self.contentAnimateColor;
-            self.detailContentView.backgroundColor = self.contentAnimateColor;
-            self.imageContentView.backgroundColor = self.contentAnimateColor;
-        }
-        
-        if (self.borderAnimateColor && self.foregroundAnimateColor && self.borderAnimateColor == self.foregroundAnimateColor) {
-            _backgroundColorCache = self.backgroundColor;
-            self.foregroundView.backgroundColor = [UIColor clearColor];
-            self.backgroundColor = self.borderAnimateColor;
-            return;
-        }
-        
-        if (self.borderAnimateColor) {
-            self.layer.borderColor = self.borderAnimateColor.CGColor;
-        }
-        
-        if (self.foregroundAnimateColor) {
-            self.foregroundView.backgroundColor = self.foregroundAnimateColor;
-        }
-    };
-    
-}
-
-- (void (^)())fadeOutBlock {
-    return ^ {
-        self.titleContentView.backgroundColor = self.contentColor;
-        self.detailContentView.backgroundColor = self.contentColor;
-        self.imageContentView.backgroundColor = self.contentColor;
-        
-        if (self.borderAnimateColor && self.foregroundAnimateColor && self.borderAnimateColor == self.foregroundAnimateColor) {
-            self.foregroundView.backgroundColor = self.foregroundColor;
-            self.backgroundColor = _backgroundColorCache;
-            _backgroundColorCache = nil;
-        }
-        
-        self.foregroundView.backgroundColor = self.foregroundColor;
-        self.layer.borderColor = self.borderColor.CGColor;
-    };
 }
 
 
@@ -1080,7 +1069,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 }
 
 
-- (void)dismissSuspensionView:(void (^)())block {
+- (void)dismissSuspensionView:(void (^)(void))block {
     
     [self.suspensionView removeFromSuperview];
     self.suspensionView = nil;
@@ -1238,8 +1227,8 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
 @property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
-@property (nonatomic, copy) void (^ _Nullable openCompletion)();
-@property (nonatomic, copy) void (^ _Nullable closeCompletion)();
+@property (nonatomic, copy) void (^ _Nullable openCompletion)(void);
+@property (nonatomic, copy) void (^ _Nullable closeCompletion)(void);
 
 @end
 
@@ -1405,17 +1394,39 @@ menuBarItems = _menuBarItems;
         }
         
     }
-    [UIView animateWithDuration:0.3
-                          delay:0.0
-         usingSpringWithDamping:0.8
-          initialSpringVelocity:0.5
-                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self pushAnimationsBlock]
-                     completion:[self pushAnimationsCompetionsBlockForViewController:viewController animated:animated]];
-}
-
-- (void (^)())pushAnimationsBlock {
-    return ^ {
+    
+    void(^pushAnimationsCompetionsBlockForViewController)(BOOL isFinished) = ^(BOOL isFinished) {
+        if ([self topViewController].navigationController == 0x0) {
+            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
+                [[self topViewController] showDetailViewController:viewController sender:self];
+            }
+            else {
+                [[self topViewController] presentViewController:viewController animated:animated completion:NULL];
+            }
+        }
+        else {
+            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
+                [[self topViewController].navigationController showViewController:viewController sender:self];
+            } else {
+                [[self topViewController].navigationController pushViewController:viewController animated:animated];
+            }
+            UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+            CGRect menuFrame =  menuWindow.frame;
+            menuFrame.size = CGSizeZero;
+            menuWindow.frame = menuFrame;
+            _viewFlags._isClosed = YES;
+            _viewFlags._isOpened = NO;
+            [self _closeCompetion];
+            // 存
+            NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+            if (!btnTag) {
+                return;
+            }
+            self.testPushViewControllerDictionary = @{btnTag: [NSString stringWithFormat:@"%p", viewController]};
+        }
+    };
+    
+    void (^pushAnimationsBlock)(void) = ^ {
         if (self.shouldHiddenCenterButtonWhenOpen) {
             UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
             CGRect centerFrame =  centerWindow.frame;
@@ -1432,41 +1443,17 @@ menuBarItems = _menuBarItems;
         }
         [self.centerButton moveToPreviousLeanPosition];
     };
+    
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+         usingSpringWithDamping:0.8
+          initialSpringVelocity:0.5
+                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                     animations:pushAnimationsBlock
+                     completion:pushAnimationsCompetionsBlockForViewController];
 }
 
-- (void (^)(BOOL finished))pushAnimationsCompetionsBlockForViewController:(UIViewController *)vc animated:(BOOL)animated {
-    return ^(BOOL finished) {
-        if ([self topViewController].navigationController == 0x0) {
-            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
-                [[self topViewController] showDetailViewController:vc sender:self];
-            }
-            else {
-                [[self topViewController] presentViewController:vc animated:animated completion:NULL];
-            }
-        }
-        else {
-            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
-                [[self topViewController].navigationController showViewController:vc sender:self];
-            } else {
-                [[self topViewController].navigationController pushViewController:vc animated:animated];
-            }
-            UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
-            CGRect menuFrame =  menuWindow.frame;
-            menuFrame.size = CGSizeZero;
-            menuWindow.frame = menuFrame;
-            _viewFlags._isClosed = YES;
-            _viewFlags._isOpened = NO;
-            [self _closeCompetion];
-            // 存
-            NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
-            if (!btnTag) {
-                return;
-            }
-            self.testPushViewControllerDictionary = @{btnTag: [NSString stringWithFormat:@"%p", vc]};
-        }
-        
-    };
-}
+
 
 - (void)_openWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
     if (_viewFlags._isOpened) return;
@@ -1491,7 +1478,31 @@ menuBarItems = _menuBarItems;
         centerWindow.alpha = 0.0;
     }
     
-    void (^openCompletionBlock)(BOOL finished) = [self openCompletionBlock];
+    void (^openCompletionBlock)(BOOL finished) = ^(BOOL finished) {
+        // 此处动画结束时,menuWindow的bounds为CGRectZero了,原因是动画时间相错
+        //                         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
+        //                         if (menuWindow.frame.size.width == 0 || menuWindow.frame.size.height == 0) {
+        //                             NSLog(@"为0了");
+        //                             [self _updateMenuViewCenterWithIsOpened:YES];
+        //                         }
+        [UIView animateWithDuration:0.1
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                         animations:^{
+                             [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._defaultTriangleHypotenuse hypotenuseItems:self.menuBarItems];
+                         }
+                         completion:^(BOOL finished) {
+                             _viewFlags._isOpened = YES;
+                             _viewFlags._isClosed = NO;
+                             _viewFlags._isFiristOpened = NO;
+                             [self _openCompetion];
+                             if (self.menuBarItems) {
+                                 for (HypotenuseAction *item in self.menuBarItems) {
+                                     item.orginRect = item.hypotenuseButton.frame;
+                                 }
+                             }
+                         }];
+    };
     NSTimeInterval usingSpringWithDamping = self.usingSpringWithDamping;
     NSTimeInterval initialSpringVelocity = self.initialSpringVelocity;
     if (!isCurveEaseInOut) {
@@ -1500,22 +1511,7 @@ menuBarItems = _menuBarItems;
         initialSpringVelocity = 2.0;
     }
     
-    [UIView animateWithDuration:0.4
-                          delay:0.0
-         usingSpringWithDamping:usingSpringWithDamping
-          initialSpringVelocity:initialSpringVelocity
-                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self openAnimationsBlockWithNeedCurveEaseInOut:isCurveEaseInOut]
-                     completion:openCompletionBlock];
-}
-
-- (void)open {
-    [self _openWithNeedCurveEaseInOut:YES];
-    
-}
-
-- (void (^)())openAnimationsBlockWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
-    return ^ {
+    void(^openAnimationsBlockWithNeedCurveEaseInOut)(void) = ^ {
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         [menuWindow setAlpha:1.0];
         [self setAlpha:1.0];
@@ -1541,35 +1537,18 @@ menuBarItems = _menuBarItems;
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:triangleHypotenuse hypotenuseItems:self.menuBarItems];
     };
     
+    [UIView animateWithDuration:0.4
+                          delay:0.0
+         usingSpringWithDamping:usingSpringWithDamping
+          initialSpringVelocity:initialSpringVelocity
+                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
+                     animations:openAnimationsBlockWithNeedCurveEaseInOut
+                     completion:openCompletionBlock];
 }
 
-- (void (^)(BOOL finished))openCompletionBlock {
+- (void)open {
+    [self _openWithNeedCurveEaseInOut:YES];
     
-    return ^(BOOL finished) {
-        // 此处动画结束时,menuWindow的bounds为CGRectZero了,原因是动画时间相错
-        //                         NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
-        //                         if (menuWindow.frame.size.width == 0 || menuWindow.frame.size.height == 0) {
-        //                             NSLog(@"为0了");
-        //                             [self _updateMenuViewCenterWithIsOpened:YES];
-        //                         }
-        [UIView animateWithDuration:0.1
-                              delay:0.0
-                            options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                         animations:^{
-                             [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._defaultTriangleHypotenuse hypotenuseItems:self.menuBarItems];
-                         }
-                         completion:^(BOOL finished) {
-                             _viewFlags._isOpened = YES;
-                             _viewFlags._isClosed = NO;
-                             _viewFlags._isFiristOpened = NO;
-                             [self _openCompetion];
-                             if (self.menuBarItems) {
-                                 for (HypotenuseAction *item in self.menuBarItems) {
-                                     item.orginRect = item.hypotenuseButton.frame;
-                                 }
-                             }
-                         }];
-    };
 }
 
 - (void)close {
@@ -1603,18 +1582,8 @@ menuBarItems = _menuBarItems;
         centerWindow.frame = centerFrame;
         centerWindow.alpha = 1.0;
     }
-    [UIView animateWithDuration:0.3
-                          delay:0.0
-         usingSpringWithDamping:self.usingSpringWithDamping
-          initialSpringVelocity:self.initialSpringVelocity
-                        options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self closeAnimationsBlockWityIsTriggerPanGesture:isTriggerPanGesture]
-                     completion:[self closeCompletionBlock]];
-}
-
-- (void (^)())closeAnimationsBlockWityIsTriggerPanGesture:(BOOL)isTriggerPanGesture {
-    return ^ {
-        
+    
+    void (^closeAnimationsBlockWityIsTriggerPanGesture)(void) = ^ {
         [self setAlpha:0.0];
         for (UIView *view in self.subviews) {
             [view setFrame:_viewFlags._memuBarButtonOriginFrame];
@@ -1626,12 +1595,9 @@ menuBarItems = _menuBarItems;
         if (!isTriggerPanGesture) {
             [self.centerButton moveToPreviousLeanPosition];
         }
-        
     };
-}
-
-- (void (^)(BOOL finished))closeCompletionBlock {
-    return ^(BOOL finished) {
+    
+    void (^closeCompletionBlock)(BOOL finished) = ^(BOOL finished) {
         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
         
         [UIView animateWithDuration:0.1 animations:^{
@@ -1645,9 +1611,18 @@ menuBarItems = _menuBarItems;
             _viewFlags._isOpened  = NO;
             [self _closeCompetion];
         } ];
-        
     };
+    
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+         usingSpringWithDamping:self.usingSpringWithDamping
+          initialSpringVelocity:self.initialSpringVelocity
+                        options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
+                     animations:closeAnimationsBlockWityIsTriggerPanGesture
+                     completion:closeCompletionBlock];
 }
+
+
 
 - (void)_closeCompetion {
     
@@ -1875,20 +1850,8 @@ menuBarItems = _menuBarItems;
         return;
     }
     
-    // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
-    [UIView animateWithDuration:0.3
-                          delay:0.0
-         usingSpringWithDamping:self.usingSpringWithDamping
-          initialSpringVelocity:self.initialSpringVelocity
-                        options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
-                     animations:[self closeCurrentDisplayButtonAnimationsBlock]
-                     completion:[self openMoreButtonAnimationsBlockWithItem:item]];
-}
-
-/// 隐藏当前显示着的button，显示需要展示的more button
-- (void (^)())closeCurrentDisplayButtonAnimationsBlock {
-    return ^ {
-        
+    /// 隐藏当前显示着的button，显示需要展示的more button
+    void (^closeCurrentDisplayButtonAnimationsBlock)(void) = ^ {
         for (HypotenuseAction *item in self.currentDisplayMoreItem.moreHypotenusItems) {
             item.orginRect = item.hypotenuseButton.frame;
         }
@@ -1901,16 +1864,20 @@ menuBarItems = _menuBarItems;
         
     };
     
-    
-}
-
-
-- (void (^)(BOOL finished))openMoreButtonAnimationsBlockWithItem:(HypotenuseAction *)item {
-    return ^(BOOL finished) {
-        
+    void (^openMoreButtonAnimationsBlockWithItem)(BOOL finished) = ^(BOOL finished) {
         [self openMoreButtonsWithItem:item];
     };
+    
+    // 将当前在显示的斜边按钮隐藏掉，展示moreButton需要展示的按钮
+    [UIView animateWithDuration:0.3
+                          delay:0.0
+         usingSpringWithDamping:self.usingSpringWithDamping
+          initialSpringVelocity:self.initialSpringVelocity
+                        options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
+                     animations:closeCurrentDisplayButtonAnimationsBlock
+                     completion:openMoreButtonAnimationsBlockWithItem];
 }
+
 
 
 
@@ -1944,7 +1911,7 @@ menuBarItems = _menuBarItems;
 
 
 
-- (void)closeMoreButtonsWithItem:(HypotenuseAction *)item animationCompletion:(void (^)())completion {
+- (void)closeMoreButtonsWithItem:(HypotenuseAction *)item animationCompletion:(void (^)(void))completion {
     
     [UIView animateWithDuration:0.2
                           delay:0.0
