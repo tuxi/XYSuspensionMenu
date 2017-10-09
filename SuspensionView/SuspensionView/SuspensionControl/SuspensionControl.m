@@ -8,6 +8,7 @@
 
 #import "SuspensionControl.h"
 #import <objc/runtime.h>
+#import <CommonCrypto/CommonDigest.h>
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 
@@ -2595,16 +2596,27 @@ menuBarItems = _menuBarItems;
 @dynamic shareInstance;
 
 + (UIWindow *)windowForKey:(NSString *)key {
-    return [[SuspensionControl shareInstance].windows objectForKey:key];
+    NSMutableDictionary *windows = [SuspensionControl shareInstance].windows;
+    if ([windows isKindOfClass:[NSDictionary class]]) {
+        return [windows objectForKey:key];
+    }
+    return nil;
 }
 
 + (void)setWindow:(UIWindow *)window forKey:(NSString *)key {
-    [[SuspensionControl shareInstance].windows setObject:window forKey:key];
+    NSMutableDictionary *windows = [SuspensionControl shareInstance].windows;
+    if (![windows isKindOfClass:[NSMutableDictionary class]] || !window) {
+        return;
+    }
+    [windows setObject:window forKey:key];
 }
 
 
 + (void)removeWindowForKey:(NSString *)key {
-    UIWindow *window = [[SuspensionControl shareInstance].windows objectForKey:key];
+    UIWindow *window = [self windowForKey:key];
+    if (!window) {
+        return;
+    }
     window.hidden = YES;
     if (window.rootViewController.presentedViewController) {
         [window.rootViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
@@ -2640,7 +2652,7 @@ menuBarItems = _menuBarItems;
     
 }
 
-+ (NSDictionary *)windows {
++ (NSMutableDictionary *)windows {
     return [SuspensionControl shareInstance].windows;
 }
 
@@ -2679,7 +2691,7 @@ menuBarItems = _menuBarItems;
 - (NSString *)key {
     NSString *key = objc_getAssociatedObject(self, @selector(key));
     if (!key.length) {
-        self.key = (key = self.description);
+        self.key = (key = [self md5:self.description]);
     }
     return key;
 }
@@ -2688,6 +2700,19 @@ menuBarItems = _menuBarItems;
     return [self.key stringByAppendingString:identifier];
 }
 
+- (NSString *)md5:(NSString *)str {
+    const char * cStr = [str UTF8String];
+    unsigned char result[16];
+    
+    CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
+    
+    return [NSString stringWithFormat:
+            @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+            result[0], result[1], result[2], result[3], result[4],
+            result[5], result[6], result[7], result[8], result[9],
+            result[10], result[11], result[12], result[13],
+            result[14], result[15]];
+}
 
 @end
 
