@@ -113,7 +113,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @interface UIResponder (SuspensionView)
 
 - (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame;
-- (void)dismissSuspensionView:(void (^)())block;
+- (void)dismissSuspensionView:(void (^)(void))block;
 - (void)setHiddenSuspension:(BOOL)flag;
 - (BOOL)isHiddenSuspension;
 - (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state;

@@ -9,6 +9,7 @@
 #import "SuspensionControl.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
+#import <CommonCrypto/CommonDigest.h>
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 
@@ -2596,16 +2597,27 @@ menuBarItems = _menuBarItems;
 @dynamic shareInstance;
 
 + (UIWindow *)windowForKey:(NSString *)key {
-    return [[SuspensionControl shareInstance].windows objectForKey:key];
+    NSMutableDictionary *windows = [SuspensionControl shareInstance].windows;
+    if ([windows isKindOfClass:[NSDictionary class]]) {
+        return [windows objectForKey:key];
+    }
+    return nil;
 }
 
 + (void)setWindow:(UIWindow *)window forKey:(NSString *)key {
-    [[SuspensionControl shareInstance].windows setObject:window forKey:key];
+    NSMutableDictionary *windows = [SuspensionControl shareInstance].windows;
+    if (![windows isKindOfClass:[NSMutableDictionary class]] || !window) {
+        return;
+    }
+    [windows setObject:window forKey:key];
 }
 
 
 + (void)removeWindowForKey:(NSString *)key {
-    UIWindow *window = [[SuspensionControl shareInstance].windows objectForKey:key];
+    UIWindow *window = [self windowForKey:key];
+    if (!window) {
+        return;
+    }
     window.hidden = YES;
     if (window.rootViewController.presentedViewController) {
         [window.rootViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
@@ -2641,7 +2653,7 @@ menuBarItems = _menuBarItems;
     
 }
 
-+ (NSDictionary *)windows {
++ (NSMutableDictionary *)windows {
     return [SuspensionControl shareInstance].windows;
 }
 
