@@ -7,6 +7,7 @@
 //
 
 #import "SuspensionControl.h"
+#import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
@@ -877,9 +878,9 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
     CGFloat screenHeight = [[UIScreen mainScreen] bounds].size.height;
     
-    CGFloat left = fabs(panPoint.x);
+    CGFloat left = MAX(self.leanEdgeInsets.left, MIN(fabs(panPoint.x), screenWidth - touchWidth - self.leanEdgeInsets.right));
     CGFloat right = fabs(screenWidth - left);
-    CGFloat top = fabs(panPoint.y);
+    CGFloat top = MAX(self.leanEdgeInsets.top, MIN(fabs(panPoint.y), screenHeight - touchHeight - self.leanEdgeInsets.bottom));
     CGFloat bottom = fabs(screenHeight - top);
     
     CGFloat minSpace = 0;
@@ -892,27 +893,27 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     CGPoint newTargetPoint = CGPointZero;
     CGFloat targetY = 0;
     
-    if (panPoint.y < self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top) {
-        targetY = self.leanEdgeInsets.top + touchHeight / 2.0 + self.leanEdgeInsets.top;
+    if (panPoint.y < self.leanEdgeInsets.top + touchHeight*0.5 + self.leanEdgeInsets.top) {
+        targetY = self.leanEdgeInsets.top + touchHeight*0.5 + self.leanEdgeInsets.top;
     }
-    else if (panPoint.y > (screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom)) {
-        targetY = screenHeight - touchHeight / 2.0 - self.leanEdgeInsets.bottom;
+    else if (panPoint.y > (screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom)) {
+        targetY = screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom;
     }
     else{
         targetY = panPoint.y;
     }
     
     if (minSpace == left) {
-        newTargetPoint = CGPointMake(touchWidth / 2 + self.leanEdgeInsets.left, targetY);
+        newTargetPoint = CGPointMake(touchWidth*0.5 + self.leanEdgeInsets.left, targetY);
     }
     if (minSpace == right) {
-        newTargetPoint = CGPointMake(screenWidth - touchWidth / 2 - self.leanEdgeInsets.right, targetY);
+        newTargetPoint = CGPointMake(screenWidth - touchWidth*0.5 - self.leanEdgeInsets.right, targetY);
     }
     if (minSpace == top) {
-        newTargetPoint = CGPointMake(panPoint.x, touchHeight / 2 + self.leanEdgeInsets.top);
+        newTargetPoint = CGPointMake(left, touchHeight*0.5 + self.leanEdgeInsets.top);
     }
     if (minSpace == bottom) {
-        newTargetPoint = CGPointMake(panPoint.x, screenHeight - touchHeight / 2 - self.leanEdgeInsets.bottom);
+        newTargetPoint = CGPointMake(left, screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom);
     }
     // 记录当前的center
     self.previousCenter = newTargetPoint;
@@ -934,7 +935,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 /// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
 - (void)autoLeanToTargetPosition:(CGPoint)point {
-    
+    point = [self _checkTargetPosition:point];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:willAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
     }
@@ -2679,7 +2680,7 @@ menuBarItems = _menuBarItems;
 - (NSString *)key {
     NSString *key = objc_getAssociatedObject(self, @selector(key));
     if (!key.length) {
-        self.key = (key = self.description);
+        self.key = (key = [self md5:self.description]);
     }
     return key;
 }
@@ -2688,6 +2689,19 @@ menuBarItems = _menuBarItems;
     return [self.key stringByAppendingString:identifier];
 }
 
+- (NSString *)md5:(NSString *)str {
+    const char * cStr = [str UTF8String];
+    unsigned char result[16];
+    
+    CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
+    
+    return [NSString stringWithFormat:
+            @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+            result[0], result[1], result[2], result[3], result[4],
+            result[5], result[6], result[7], result[8], result[9],
+            result[10], result[11], result[12], result[13],
+            result[14], result[15]];
+}
 
 @end
 
