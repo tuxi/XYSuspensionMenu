@@ -1,9 +1,9 @@
 //
 //  main.m
-//  SuspensionView
+//  XYSuspensionMenu
 //
-//  Created by mofeini on 17/2/25.
-//  Copyright © 2017年 com.test.demo. All rights reserved.
+//  Created by Swae on 2017/10/15.
+//  Copyright © 2017年 Ossey. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

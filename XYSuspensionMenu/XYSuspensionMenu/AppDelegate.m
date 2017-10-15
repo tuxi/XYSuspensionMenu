@@ -1,15 +1,12 @@
 //
 //  AppDelegate.m
-//  SuspensionView
+//  XYSuspensionMenu
 //
-//  Created by mofeini on 17/2/25.
-//  Copyright © 2017年 com.test.demo. All rights reserved.
+//  Created by Swae on 2017/10/15.
+//  Copyright © 2017年 Ossey. All rights reserved.
 //
 
 #import "AppDelegate.h"
-#import "XYSuspensionMenu.h"
-
-NSNotificationName const UIApplicationKeyWindowTouchesBeganNotification = @"UIApplicationKeyWindowTouchesBeganNotification";
 
 @interface AppDelegate ()
 
@@ -20,7 +17,6 @@ NSNotificationName const UIApplicationKeyWindowTouchesBeganNotification = @"UIAp
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
-    
     return YES;
 }
 
@@ -53,4 +49,3 @@ NSNotificationName const UIApplicationKeyWindowTouchesBeganNotification = @"UIAp
 
 
 @end
-
