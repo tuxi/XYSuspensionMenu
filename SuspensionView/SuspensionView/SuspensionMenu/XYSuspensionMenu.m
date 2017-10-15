@@ -6,12 +6,13 @@
 //  Copyright © 2017年 Ossey All rights reserved.
 //
 
-#import "SuspensionControl.h"
+#import "XYSuspensionMenu.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
 #import <CommonCrypto/CommonDigest.h>
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
+#pragma clang diagnostic ignored "-Wnonnull"
 
 #define kSCREENT_HEIGHT         [UIScreen mainScreen].bounds.size.height
 #define kSCREENT_WIDTH          [UIScreen mainScreen].bounds.size.width
@@ -383,15 +384,16 @@ imageView = _imageView;
 
 - (OSButtonStyle)buttonStyle {
     if ([self shouldDisplayImageView] && ![self shouldDisplayTitleLabel] && [self shouldDisplayDetailLabel]) {
-        return OSButtonStyleImageWithSubtitle;
+        _buttonStyle = OSButtonStyleImageWithSubtitle;
     } else if ([self shouldDisplayImageView] && ![self shouldDisplayTitleLabel] && ![self shouldDisplayDetailLabel]) {
-        return OSButtonStyleCentralImage;
+        _buttonStyle = OSButtonStyleCentralImage;
     } else if (![self shouldDisplayImageView] && [self shouldDisplayTitleLabel] && [self shouldDisplayDetailLabel]) {
-        return OSButtonStyleSubTitle;
+        _buttonStyle = OSButtonStyleSubTitle;
     } else if (![self shouldDisplayImageView] && [self shouldDisplayTitleLabel] && ![self shouldDisplayDetailLabel]) {
-        return OSButtonStyleDefault;
+        _buttonStyle = OSButtonStyleDefault;
     }
-    return OSButtonStyleDefault;
+    _buttonStyle = OSButtonStyleDefault;
+    return _buttonStyle;
 }
 
 - (CGRect)boxingRect {
@@ -697,6 +699,27 @@ imageView = _imageView;
 
 @end
 
+@implementation UIApplication (SuspensionWindowExtension)
+
+- (void)setXy_suspensionMenuWindow:(SuspensionMenuWindow *)suspensionMenuWindow {
+    objc_setAssociatedObject(self, @selector(suspensionMenuWindow), suspensionMenuWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (SuspensionMenuWindow *)xy_suspensionMenuWindow {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+@end
+
+@interface HypotenuseAction ()
+#if ! __has_feature(objc_arc)
+@property (nonatomic, assign, nullable) SuspensionMenuView *suspensionMenuView;
+#else
+@property (nonatomic, weak, nullable) SuspensionMenuView *suspensionMenuView;
+#endif
+@property (nullable, nonatomic, copy) void (^ actionHandler)(HypotenuseAction *action, SuspensionMenuView *menuView);
+@end
+
 #pragma mark *** SuspensionView ***
 
 static NSString * const PreviousCenterXKey = @"previousCenterX";
@@ -705,9 +728,13 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 @interface SuspensionView ()
 
 @property (nonatomic, assign) CGPoint previousCenter;
+#if ! __has_feature(objc_arc)
+@property (nonatomic, assign) UIPanGestureRecognizer *panGestureRecognizer;
+#else
 @property (nonatomic, weak) UIPanGestureRecognizer *panGestureRecognizer;
+#endif
 @property (nonatomic, assign) BOOL isMoving;
-
+@property (nonatomic, strong) UIWindow *xy_window;
 @end
 
 @implementation SuspensionView
@@ -754,6 +781,19 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     
 }
 
+- (void)xy_removeWindow {
+    UIWindow *window = self.xy_window;
+    if (!window) {
+        return;
+    }
+    window.hidden = YES;
+    if (window.rootViewController.presentedViewController) {
+        [window.rootViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
+    }
+    window.hidden = YES;
+    window.rootViewController = nil;
+    self.xy_window = nil;
+}
 
 - (void)addActions {
     
@@ -801,7 +841,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     // 获取到的是手指点击屏幕实时的坐标点, 此种获取坐标更新suspension的center会导致，开始移动时suspension会跳动一下
     //     CGPoint translatedCenter = [p locationInView:[UIApplication sharedApplication].delegate.window];
     
-    UIWindow *w = [SuspensionControl windowForKey:self.key];
+    UIWindow *w = self.xy_window;
     UIView *targetView = p.view;
     // 在没有window时坐标转换错误，导致无法移动, 此处需要判断
     if (w) {
@@ -844,7 +884,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 /// 手指移动时，移动视图
 - (void)movingWithPoint:(CGPoint)point {
     
-    UIWindow *w = [SuspensionControl windowForKey:self.key];
+    UIWindow *w = self.xy_window;
     if (w) {
         w.center = CGPointMake(point.x, point.y);
     } else {
@@ -947,7 +987,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
                         options:UIViewAnimationOptionCurveEaseIn |
      UIViewAnimationOptionAllowUserInteraction
                      animations:^{
-                         UIWindow *w = [SuspensionControl windowForKey:self.key];
+                         UIWindow *w = self.xy_window;
                          if (w) {
                              w.center = point;
                          } else {
@@ -1009,10 +1049,9 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     NSLog(@"%s", __func__);
-}
-
-- (NSString *)key {
-    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : [super key];
+#if ! __has_feature(objc_arc)
+    [super dealloc];
+#endif
 }
 
 - (void)setPreviousCenter:(CGPoint)previousCenter {
@@ -1025,12 +1064,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 @end
 
 #pragma mark *** UIResponder (SuspensionView) ***
-
-@interface UIResponder ()
-
-@property (nonatomic) SuspensionView *suspensionView;
-
-@end
 
 @implementation UIResponder (SuspensionView)
 
@@ -1120,7 +1153,11 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
 
+#if ! __has_feature(objc_arc)
+@property (nonatomic, assign) SuspensionMenuWindow *menuView;
+#else
 @property (nonatomic, weak) SuspensionMenuWindow *menuView;
+#endif
 
 @end
 
@@ -1133,12 +1170,11 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 ////////////////////////////////////////////////////////////////////////
 
 
-+ (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame {
++ (instancetype)showWithFrame:(CGRect)frame {
     
     SuspensionWindow *s = [[self alloc] initWithFrame:frame];
     s.leanEdgeType = SuspensionViewLeanEdgeTypeEachSide;
-    s.isOnce = isOnce;
-    [s _moveToSuperview];
+    [s __moveToSuperview];
     
     return s;
 }
@@ -1146,42 +1182,32 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 - (void)removeFromSuperview {
     self.clickCallBack = nil;
     self.leanFinishCallBack = nil;
-    [SuspensionControl removeWindowForKey:self.key];
+    [self xy_removeWindow];
     [super removeFromSuperview];
 }
 
-+ (void)releaseAll {
-    
-    NSDictionary *temp = [[SuspensionControl windows] mutableCopy];
-    [temp enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, UIWindow * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (obj.suspensionView && !obj.suspensionMenuView) {
-            [SuspensionControl removeWindow:obj];
-        }
-    }];
-    temp = nil;
-}
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - Private methods
 ////////////////////////////////////////////////////////////////////////
 
 
-- (void)_moveToSuperview {
+- (void)__moveToSuperview {
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
     
-#ifdef DEBUG
+//#ifdef DEBUG
     suspensionWindow.windowLevel = CGFLOAT_MAX+10;
-#else
-    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
-#endif
+//#else
+//    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
+//#endif
     
     UIViewController *vc = [UIViewController new];
     suspensionWindow.rootViewController = vc;
     
     [suspensionWindow.layer setMasksToBounds:YES];
     
-    [SuspensionControl setWindow:suspensionWindow forKey:self.key];
+    self.xy_window = suspensionWindow;
     self.frame = CGRectMake(0,
                             0,
                             self.frame.size.width,
@@ -1218,16 +1244,23 @@ static const NSUInteger moreBarButtonBaseTag = 200;
     
 }
 
-@property (nonatomic, weak) SuspensionView *centerButton;
+#if ! __has_feature(objc_arc)
+@property (nonatomic, assign) UIImageView *backgroundImageView;
+@property (nonatomic, assign) UIVisualEffectView *visualEffectView;
+@property (nonatomic, assign) HypotenuseAction *currentClickHypotenuseItem;
+#else
 @property (nonatomic, weak) UIImageView *backgroundImageView;
 @property (nonatomic, weak) UIVisualEffectView *visualEffectView;
+@property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
+#endif
+@property (nonatomic, strong) UIWindow *xy_window;
+@property (nonatomic, strong) SuspensionView *centerButton;
 @property (nonatomic, assign) CGSize itemSize;
 @property (nonatomic, strong) HypotenuseAction *currentDisplayMoreItem;
 /// 保证currentDisplayMoreItems在栈顶，menuBarItems在栈底
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *stackDisplayedItems;
 /// 存储的为调用testPushViewController时的HypotenuseAction和跳转的viewController，保证第二次点击时pop并从此字典中移除
 @property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
-@property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
 @property (nonatomic, copy) void (^ _Nullable openCompletion)(void);
 @property (nonatomic, copy) void (^ _Nullable closeCompletion)(void);
@@ -1272,6 +1305,20 @@ menuBarItems = _menuBarItems;
     return self;
 }
 
+- (void)xy_removeWindow {
+    UIWindow *window = self.xy_window;
+    if (!window) {
+        return;
+    }
+    window.hidden = YES;
+    if (window.rootViewController.presentedViewController) {
+        [window.rootViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
+    }
+    window.hidden = YES;
+    window.rootViewController = nil;
+    self.xy_window = nil;
+}
+
 
 - (void)setMenuBarItems:(NSArray<HypotenuseAction *> *)menuBarItems itemSize:(CGSize)itemSize {
     self.menuBarItems = [menuBarItems mutableCopy];
@@ -1282,6 +1329,7 @@ menuBarItems = _menuBarItems;
     if (!action) {
         return;
     }
+    action.suspensionMenuView = self;
     if (!_menuBarItems) {
         _menuBarItems = [NSMutableArray array];
     }
@@ -1412,7 +1460,7 @@ menuBarItems = _menuBarItems;
             } else {
                 [[self topViewController].navigationController pushViewController:viewController animated:animated];
             }
-            UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+            UIWindow *menuWindow = self.xy_window;
             CGRect menuFrame =  menuWindow.frame;
             menuFrame.size = CGSizeZero;
             menuWindow.frame = menuFrame;
@@ -1430,7 +1478,7 @@ menuBarItems = _menuBarItems;
     
     void (^pushAnimationsBlock)(void) = ^ {
         if (self.shouldHiddenCenterButtonWhenOpen) {
-            UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+            UIWindow *centerWindow = self.xy_window;
             CGRect centerFrame =  centerWindow.frame;
             centerFrame.size = _viewFlags._centerWindowSize;
             centerWindow.frame = centerFrame;
@@ -1473,7 +1521,7 @@ menuBarItems = _menuBarItems;
     [self _updateMenuViewCenterWithIsOpened:YES];
     
     if (self.shouldHiddenCenterButtonWhenOpen) {
-        UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+        UIWindow *centerWindow = self.centerButton.xy_window;
         CGRect centerFrame =  centerWindow.frame;
         centerFrame.size = CGSizeZero;
         centerWindow.frame = centerFrame;
@@ -1514,7 +1562,7 @@ menuBarItems = _menuBarItems;
     }
     
     void(^openAnimationsBlockWithNeedCurveEaseInOut)(void) = ^ {
-        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+        UIWindow *menuWindow = self.xy_window;
         [menuWindow setAlpha:1.0];
         [self setAlpha:1.0];
         
@@ -1578,7 +1626,7 @@ menuBarItems = _menuBarItems;
     self.centerButton.usingSpringWithDamping = 0.5;
     self.centerButton.initialSpringVelocity = 10;
     if (self.shouldHiddenCenterButtonWhenOpen) {
-        UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+        UIWindow *centerWindow = self.centerButton.xy_window;
         CGRect centerFrame =  centerWindow.frame;
         centerFrame.size = _viewFlags._centerWindowSize;
         centerWindow.frame = centerFrame;
@@ -1600,7 +1648,7 @@ menuBarItems = _menuBarItems;
     };
     
     void (^closeCompletionBlock)(BOOL finished) = ^(BOOL finished) {
-        UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+        UIWindow *menuWindow = self.xy_window;
         
         [UIView animateWithDuration:0.1 animations:^{
             [menuWindow setAlpha:0.0];
@@ -1665,7 +1713,7 @@ menuBarItems = _menuBarItems;
         
         CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
         
-        SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showOnce:YES frame:centerRec];
+        SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showWithFrame:centerRec];
         centerButton.autoLeanEdge = YES;
         centerButton.delegate = self;
         
@@ -1896,7 +1944,7 @@ menuBarItems = _menuBarItems;
                         options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
                      animations:^{
                          
-                         UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+                         UIWindow *menuWindow = self.xy_window;
                          [menuWindow setAlpha:1.0];
                          [self setAlpha:1.0];
                          
@@ -1988,11 +2036,11 @@ menuBarItems = _menuBarItems;
         return;
     }
     
-    UIWindow *menuWindow = [SuspensionControl windowForKey:self.key];
+    UIWindow *menuWindow = self.xy_window;
     menuWindow.frame = [UIScreen mainScreen].bounds;
     NSLog(@"%@", NSStringFromCGRect(menuWindow.frame));
     menuWindow.rootViewController.view.frame =  menuWindow.bounds;
-    UIWindow *centerWindow = [SuspensionControl windowForKey:self.centerButton.key];
+    UIWindow *centerWindow = self.centerButton.xy_window;
     
     CGRect centerFrame =  centerWindow.frame;
     if (!self.shouldHiddenCenterButtonWhenOpen) {
@@ -2283,6 +2331,9 @@ menuBarItems = _menuBarItems;
     _closeCompletion = nil;
     _testPushViewControllerDictionary = nil;
     _currentDisplayMoreItem = nil;
+#if ! __has_feature(objc_arc)
+    [super dealloc];
+#endif
 }
 
 - (UIViewController *)topViewController {
@@ -2305,9 +2356,6 @@ menuBarItems = _menuBarItems;
     return nil;
 }
 
-- (NSString *)key {
-    return _isOnce ? [[SuspensionControl shareInstance] keyWithIdentifier:NSStringFromClass([self class])] : [super key];
-}
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     if (self.currentDisplayMoreItem.moreHypotenusItems.count) {
@@ -2349,16 +2397,14 @@ menuBarItems = _menuBarItems;
 - (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
     if (self = [super initWithFrame:frame itemSize:itemSize]) {
         [self setAlpha:1.0];
-        self.isOnce = YES;
         self.shouldOpenWhenViewWillAppear = YES;
     }
     return self;
 }
 
-
 - (void)setItemSize:(CGSize)itemSize {
     [super setItemSize:itemSize];
-    [self _moveToSuperview];
+    [self __moveToSuperview];
     
     if (!self.shouldOpenWhenViewWillAppear) {
         [self.centerButton checkTargetPosition];
@@ -2368,20 +2414,8 @@ menuBarItems = _menuBarItems;
 
 - (void)removeFromSuperview {
     self.menuBarClickBlock = nil;
-    [SuspensionControl removeWindowForKey:self.key];
+    [self xy_removeWindow];
     [super removeFromSuperview];
-}
-
-+ (void)releaseAll {
-    
-    NSDictionary *temp = [[SuspensionControl windows] mutableCopy];
-    [temp enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, UIWindow * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (obj.suspensionMenuView && obj.suspensionView) {
-            [SuspensionControl removeWindow:obj];
-            [SuspensionControl removeWindowForKey:obj.suspensionView.key];
-        }
-    }];
-    temp = nil;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -2389,7 +2423,7 @@ menuBarItems = _menuBarItems;
 ////////////////////////////////////////////////////////////////////////
 
 
-- (void)_moveToSuperview {
+- (void)__moveToSuperview {
     
     CGRect menuWindowBounds = [UIScreen mainScreen].bounds;
     if (!_shouldOpenWhenViewWillAppear) {
@@ -2397,21 +2431,21 @@ menuBarItems = _menuBarItems;
     }
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:menuWindowBounds];
-#ifdef DEBUG
+//#ifdef DEBUG
     suspensionWindow.windowLevel = CGFLOAT_MAX;
     //    suspensionWindow.windowLevel = CGFLOAT_MAX+10;
     // iOS9前自定义的window设置下面，不会被键盘遮罩，iOS10不行了
     //    NSArray<UIWindow *> *widnows = [UIApplication sharedApplication].windows;
-#else
-    suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
-#endif
+//#else
+//    suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
+//#endif
     
     UIViewController *vc = [[SuspensionMenuController alloc] initWithMenuView:self];
     
     suspensionWindow.rootViewController = vc;
     [suspensionWindow.layer setMasksToBounds:YES];
     
-    [SuspensionControl setWindow:suspensionWindow forKey:self.key];
+    self.xy_window = suspensionWindow;
     self.frame = CGRectMake((kSCREENT_WIDTH - self.frame.size.width) * 0.5,
                             (kSCREENT_HEIGHT - self.frame.size.height) * 0.5,
                             self.frame.size.width,
@@ -2424,6 +2458,11 @@ menuBarItems = _menuBarItems;
     
     suspensionWindow.hidden = NO;
     
+}
+
+- (void)showWithCompetion:(void (^)(void))competion {
+    [super showWithCompetion:competion];
+    [UIApplication sharedApplication].xy_suspensionMenuWindow = self;
 }
 
 @end
@@ -2443,7 +2482,7 @@ menuBarItems = _menuBarItems;
     return self;
 }
 
-+ (instancetype)actionWithType:(OSButtonType)buttonType handler:(void (^)(HypotenuseAction * _Nonnull))handler {
++ (instancetype)actionWithType:(OSButtonType)buttonType handler:(void (^)(HypotenuseAction *action, SuspensionMenuView *menuView))handler {
     HypotenuseAction *action = [[HypotenuseAction alloc] initWithButtonType:buttonType];
     action.actionHandler = handler;
     return action;
@@ -2462,7 +2501,7 @@ menuBarItems = _menuBarItems;
 
 - (void)hypotenuseButtonClick:(id)sender {
     if (self.actionHandler) {
-        self.actionHandler(self);
+        self.actionHandler(self, self.suspensionMenuView);
     }
 }
 
@@ -2488,6 +2527,9 @@ menuBarItems = _menuBarItems;
     _moreHypotenusItems = nil;
     _hypotenuseButton = nil;
     _actionHandler = nil;
+#if ! __has_feature(objc_arc)
+    [super dealloc];
+#endif
 }
 
 @end
@@ -2581,139 +2623,6 @@ menuBarItems = _menuBarItems;
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
-
-@end
-
-#pragma mark *** SuspensionControl ***
-
-@interface SuspensionControl ()
-
-@property (nonatomic, strong) NSMutableDictionary<NSString *, UIWindow *> *windows;
-
-@end
-
-@implementation SuspensionControl
-
-@dynamic shareInstance;
-
-+ (UIWindow *)windowForKey:(NSString *)key {
-    NSMutableDictionary *windows = [SuspensionControl shareInstance].windows;
-    if ([windows isKindOfClass:[NSDictionary class]]) {
-        return [windows objectForKey:key];
-    }
-    return nil;
-}
-
-+ (void)setWindow:(UIWindow *)window forKey:(NSString *)key {
-    NSMutableDictionary *windows = [SuspensionControl shareInstance].windows;
-    if (![windows isKindOfClass:[NSMutableDictionary class]] || !window) {
-        return;
-    }
-    [windows setObject:window forKey:key];
-}
-
-
-+ (void)removeWindowForKey:(NSString *)key {
-    UIWindow *window = [self windowForKey:key];
-    if (!window) {
-        return;
-    }
-    window.hidden = YES;
-    if (window.rootViewController.presentedViewController) {
-        [window.rootViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
-    }
-    window.hidden = YES;
-    window.rootViewController = nil;
-    [[SuspensionControl shareInstance].windows removeObjectForKey:key];
-}
-
-
-+ (void)removeAllWindows {
-    for (UIWindow *window in [SuspensionControl shareInstance].windows.allValues) {
-        window.hidden = YES;
-        window.rootViewController = nil;
-    }
-    [[SuspensionControl shareInstance].windows removeAllObjects];
-    [[UIApplication sharedApplication].delegate.window makeKeyAndVisible];
-}
-
-+ (void)removeWindow:(UIWindow *)aWindow {
-    
-    if (!aWindow) {
-        return;
-    }
-    NSDictionary *temp = [[SuspensionControl shareInstance].windows mutableCopy];
-    [temp enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, UIWindow * _Nonnull obj, BOOL * _Nonnull stop) {
-        if (aWindow == obj) {
-            [SuspensionControl removeWindowForKey:key];
-        }
-        *stop = YES;
-    }];
-    temp = nil;
-    
-}
-
-+ (NSMutableDictionary *)windows {
-    return [SuspensionControl shareInstance].windows;
-}
-
-
-
-////////////////////////////////////////////////////////////////////////
-#pragma mark - setter \ getter
-////////////////////////////////////////////////////////////////////////
-- (NSMutableDictionary<NSString *, UIWindow *> *)windows {
-    if (!_windows) {
-        _windows = [NSMutableDictionary dictionary];
-    }
-    return _windows;
-}
-
-
-+ (instancetype)shareInstance {
-    
-    static SuspensionControl *_instance;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _instance = [[self alloc] init];
-    });
-    return _instance;
-}
-
-
-@end
-
-@implementation NSObject (SuspensionKey)
-
-- (void)setKey:(NSString *)key {
-    objc_setAssociatedObject(self, @selector(key), key, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (NSString *)key {
-    NSString *key = objc_getAssociatedObject(self, @selector(key));
-    if (!key.length) {
-        self.key = (key = [self md5:self.description]);
-    }
-    return key;
-}
-
-- (NSString *)keyWithIdentifier:(NSString *)identifier {
-    return [self.key stringByAppendingString:identifier];
-}
-
-- (NSString *)md5:(NSString *)str {
-    const char * cStr = [str UTF8String];
-    unsigned char result[16];
-    
-    CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
-    
-    return [NSString stringWithFormat:
-            @"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-            result[0], result[1], result[2], result[3], result[4],
-            result[5], result[6], result[7], result[8], result[9],
-            result[10], result[11], result[12], result[13],
-            result[14], result[15]];
-}
 
 @end
 

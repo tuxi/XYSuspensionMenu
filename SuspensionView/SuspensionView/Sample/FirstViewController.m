@@ -7,7 +7,7 @@
 //
 
 #import "FirstViewController.h"
-#import "SuspensionControl.h"
+#import "XYSuspensionMenu.h"
 #import "OSTestViewController.h"
 #import "ViewController.h"
 #import "SecondViewController.h"
@@ -34,8 +34,7 @@
 - (void)oneLevelMenuSample {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-    menuView.isOnce = YES;
+//    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
@@ -68,7 +67,7 @@
     i--;
     HypotenuseAction *item = nil;
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -80,7 +79,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -90,7 +89,7 @@
     
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -102,7 +101,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -111,7 +110,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -123,7 +122,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -135,7 +134,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -147,7 +146,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -169,8 +168,7 @@
 - (void)sample2ForBlock {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-    menuView.isOnce = YES;
+    [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
@@ -203,7 +201,7 @@
     i--;
     HypotenuseAction *item = nil;
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -215,7 +213,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -224,7 +222,7 @@
         {
             HypotenuseAction *itemM = nil;
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -232,7 +230,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -240,7 +238,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -253,7 +251,7 @@
     
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -265,7 +263,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -274,7 +272,7 @@
         {
             HypotenuseAction *itemM = nil;
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -282,7 +280,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -290,7 +288,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -298,7 +296,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -306,7 +304,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -314,7 +312,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -326,7 +324,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -338,7 +336,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -350,7 +348,7 @@
         {
             HypotenuseAction *itemM = nil;
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -358,7 +356,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -366,7 +364,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -374,7 +372,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -382,7 +380,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -390,7 +388,7 @@
             }
             
             {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
                     
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -402,7 +400,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -414,7 +412,7 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action) {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -435,7 +433,6 @@
 - (void)sample1ForDelegate {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
-    menuView.isOnce = YES;
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;

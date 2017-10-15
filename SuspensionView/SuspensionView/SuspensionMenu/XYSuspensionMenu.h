@@ -81,25 +81,33 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
     SuspensionViewLeanEdgeTypeEachSide
 };
 
+@protocol XYSuspensionWindowProtocol <NSObject>
+- (UIWindow *)xy_window;
+- (void)xy_removeWindow;
+@end
+
 #pragma mark *** SuspensionView ***
 
-@interface SuspensionView : OSCustomButton
+@interface SuspensionView : UIButton <XYSuspensionWindowProtocol>
 
-@property (nonatomic, weak) id<SuspensionViewDelegate> delegate;
-
-@property (nonatomic, assign) BOOL isOnce;
+#if ! __has_feature(objc_arc)
+@property (nonatomic, assign, nullable) id<SuspensionViewDelegate> delegate;
+@property (nonatomic, assign, readonly) UIPanGestureRecognizer *panGestureRecognizer;
+#else
+@property (nonatomic, weak, nullable) id<SuspensionViewDelegate> delegate;
+@property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
+#endif
 
 @property (nonatomic, assign) SuspensionViewLeanEdgeType leanEdgeType;
 @property (nonatomic, assign) UIEdgeInsets leanEdgeInsets;
 @property (nonatomic, assign) BOOL invalidHidden;
 @property (nonatomic, assign, readonly) BOOL isMoving;
-@property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 @property (nonatomic, copy, nullable) void (^locationChange)(CGPoint currentPoint);
 @property (nonatomic, copy, nullable) void (^ leanFinishCallBack)(CGPoint centerPoint);
 @property (nonatomic, assign, getter=isAutoLeanEdge) BOOL autoLeanEdge;
-@property (nonatomic, copy, nullable) void (^clickCallBack)();
+@property (nonatomic, copy, nullable) void (^clickCallBack)(void);
 @property (nonatomic, assign) BOOL shouldLeanToPreviousPositionWhenAppStart;
 
 - (void)moveToScreentCenter;
@@ -111,7 +119,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 #pragma mark *** UIResponder (SuspensionView) ***
 
 @interface UIResponder (SuspensionView)
-
+@property (nonatomic, nonnull) SuspensionView *suspensionView;
 - (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame;
 - (void)dismissSuspensionView:(void (^)(void))block;
 - (void)setHiddenSuspension:(BOOL)flag;
@@ -126,25 +134,26 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface SuspensionWindow : SuspensionView
 
-+ (instancetype)showOnce:(BOOL)isOnce frame:(CGRect)frame;
++ (instancetype)showWithFrame:(CGRect)frame;
 - (void)removeFromSuperview;
-+ (void)releaseAll;
 
 @end
 
 #pragma mark *** SuspensionMenuView ***
 
-@interface SuspensionMenuView : UIView
-
-@property (nonatomic, weak) id<SuspensionMenuViewDelegate> delegate;
-
-@property (nonatomic, assign) BOOL isOnce;
+@interface SuspensionMenuView : UIView <XYSuspensionWindowProtocol>
+#if ! __has_feature(objc_arc)
+@property (nonatomic, assign, nullable) id<SuspensionMenuViewDelegate> delegate;
+@property (nonatomic, assign, readonly) UIImageView *backgroundImageView;
+#else
+@property (nonatomic, weak, nullable) id<SuspensionMenuViewDelegate> delegate;
+@property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
+#endif
+@property (nonatomic, strong, readonly) SuspensionView *centerButton;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
 @property (nonatomic, copy) void (^ _Nullable moreButtonClickBlock)(NSInteger index);
 @property (nonatomic, assign) BOOL shouldLeanToScreenCenterWhenOpened;
 @property (nonatomic, strong, readonly) NSArray<HypotenuseAction *> *menuBarItems;
-@property (nonatomic, weak, readonly) SuspensionView *centerButton;
-@property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, assign) CGFloat usingSpringWithDamping;
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 @property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenOpen;
@@ -173,7 +182,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
 
 - (void)removeFromSuperview;
-+ (void)releaseAll;
 
 @end
 
@@ -184,10 +192,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, strong, readonly) OSCustomButton *hypotenuseButton;
 @property (nonatomic, strong, readonly) NSArray<HypotenuseAction *> *moreHypotenusItems;
 @property (nonatomic, assign) CGRect orginRect;
-@property (nullable, nonatomic, copy) void (^ actionHandler)(HypotenuseAction *action);
 - (instancetype)initWithButtonType:(OSButtonType)buttonType;
 + (instancetype)actionWithType:(OSButtonType)buttonType
-                       handler:(void (^__nullable)(HypotenuseAction *action))handler;
+                       handler:(void (^__nullable)(HypotenuseAction *action, SuspensionMenuView *menuView))handler;
 - (void)addMoreAction:(HypotenuseAction *)action;
 
 @end
@@ -196,36 +203,15 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface UIWindow (SuspensionWindow)
 
-@property (nonatomic, weak, nullable) SuspensionView *suspensionView;
-@property (nonatomic, weak, nullable) SuspensionMenuView *suspensionMenuView;
+@property (nonatomic, strong, nullable) SuspensionView *suspensionView;
+@property (nonatomic, strong, nullable) SuspensionMenuView *suspensionMenuView;
 
 @end
 
-#pragma mark *** SuspensionControl ***
+@interface UIApplication (SuspensionWindowExtension)
 
-@interface SuspensionControl : NSObject
-
-@property (nonatomic, strong, class, readonly) SuspensionControl *shareInstance;
-
-+ (NSDictionary<NSString *, UIWindow *> *)windows;
-
-+ (UIWindow *)windowForKey:(NSString *)key;
-+ (void)setWindow:(UIWindow *)window forKey:(NSString *)key;
-+ (void)removeWindowForKey:(NSString *)key;
-+ (void)removeWindow:(UIWindow *)aWindow;
-+ (void)removeAllWindows;
+- (SuspensionMenuWindow *)xy_suspensionMenuWindow;
 
 @end
-
-#pragma mark *** NSObject (SuspensionKey) ***
-
-@interface NSObject (SuspensionKey)
-
-@property (nonatomic, copy) NSString *key;
-
-- (NSString *)keyWithIdentifier:(NSString *)indetifier;
-
-@end
-
 
 NS_ASSUME_NONNULL_END

@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "SuspensionControl.h"
+#import "XYSuspensionMenu.h"
 
 NSNotificationName const UIApplicationKeyWindowTouchesBeganNotification = @"UIApplicationKeyWindowTouchesBeganNotification";
 
