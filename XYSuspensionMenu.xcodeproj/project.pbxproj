@@ -13,7 +13,7 @@
 		1810F1BB1F937C280052AB39 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1810F1B91F937C280052AB39 /* LaunchScreen.storyboard */; };
 		1810F1BE1F937C280052AB39 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1810F1BD1F937C280052AB39 /* main.m */; };
 		1810F1C91F937CB00052AB39 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1810F1C41F937CB00052AB39 /* FirstViewController.m */; };
-		1810F1CA1F937CB00052AB39 /* XYSuspensionMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 1810F1C81F937CB00052AB39 /* XYSuspensionMenu.m */; };
+		186F24FB1F9389A3005405E0 /* XYSuspensionMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 186F24F91F9389A3005405E0 /* XYSuspensionMenu.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,8 +27,8 @@
 		1810F1BD1F937C280052AB39 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		1810F1C41F937CB00052AB39 /* FirstViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FirstViewController.m; sourceTree = "<group>"; };
 		1810F1C51F937CB00052AB39 /* FirstViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirstViewController.h; sourceTree = "<group>"; };
-		1810F1C71F937CB00052AB39 /* XYSuspensionMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XYSuspensionMenu.h; sourceTree = "<group>"; };
-		1810F1C81F937CB00052AB39 /* XYSuspensionMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XYSuspensionMenu.m; sourceTree = "<group>"; };
+		186F24F91F9389A3005405E0 /* XYSuspensionMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XYSuspensionMenu.m; sourceTree = "<group>"; };
+		186F24FA1F9389A3005405E0 /* XYSuspensionMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XYSuspensionMenu.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,9 +61,9 @@
 		1810F1AD1F937C280052AB39 /* XYSuspensionMenu */ = {
 			isa = PBXGroup;
 			children = (
+				186F24FC1F9389B4005405E0 /* XYSuspensionMenu */,
 				1810F1C51F937CB00052AB39 /* FirstViewController.h */,
 				1810F1C41F937CB00052AB39 /* FirstViewController.m */,
-				1810F1C61F937CB00052AB39 /* SuspensionMenu */,
 				1810F1AE1F937C280052AB39 /* AppDelegate.h */,
 				1810F1AF1F937C280052AB39 /* AppDelegate.m */,
 				1810F1B41F937C280052AB39 /* Main.storyboard */,
@@ -75,13 +75,13 @@
 			path = XYSuspensionMenu;
 			sourceTree = "<group>";
 		};
-		1810F1C61F937CB00052AB39 /* SuspensionMenu */ = {
+		186F24FC1F9389B4005405E0 /* XYSuspensionMenu */ = {
 			isa = PBXGroup;
 			children = (
-				1810F1C71F937CB00052AB39 /* XYSuspensionMenu.h */,
-				1810F1C81F937CB00052AB39 /* XYSuspensionMenu.m */,
+				186F24FA1F9389A3005405E0 /* XYSuspensionMenu.h */,
+				186F24F91F9389A3005405E0 /* XYSuspensionMenu.m */,
 			);
-			path = SuspensionMenu;
+			name = XYSuspensionMenu;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -156,8 +156,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1810F1BE1F937C280052AB39 /* main.m in Sources */,
-				1810F1CA1F937CB00052AB39 /* XYSuspensionMenu.m in Sources */,
 				1810F1B01F937C280052AB39 /* AppDelegate.m in Sources */,
+				186F24FB1F9389A3005405E0 /* XYSuspensionMenu.m in Sources */,
 				1810F1C91F937CB00052AB39 /* FirstViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
