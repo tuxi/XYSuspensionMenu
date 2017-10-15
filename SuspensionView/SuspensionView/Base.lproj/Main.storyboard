@@ -70,10 +70,10 @@
             </objects>
             <point key="canvasLocation" x="327.19999999999999" y="84.107946026986511"/>
         </scene>
-        <!--View Controller-->
+        <!--Table View Controller-->
         <scene sceneID="txc-dR-D3j">
             <objects>
-                <tableViewController id="Jis-BV-0Zm" customClass="ViewController" sceneMemberID="viewController">
+                <tableViewController id="Jis-BV-0Zm" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="YqQ-5F-Itk">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

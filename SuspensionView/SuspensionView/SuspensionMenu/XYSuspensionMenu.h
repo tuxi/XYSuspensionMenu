@@ -11,6 +11,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
+    SuspensionViewLeanEdgeTypeHorizontal = 1,
+    SuspensionViewLeanEdgeTypeEachSide
+};
+
 @class SuspensionView, SuspensionMenuView, MenuBarHypotenuseButton, HypotenuseAction;
 
 #pragma mark *** Protocol ***
@@ -39,13 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-
-
-typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
-    SuspensionViewLeanEdgeTypeHorizontal = 1,
-    SuspensionViewLeanEdgeTypeEachSide
-};
-
 @protocol XYSuspensionWindowProtocol <NSObject>
 - (UIWindow *)xy_window;
 - (void)xy_removeWindow;
@@ -59,8 +57,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign, nullable) id<SuspensionViewDelegate> delegate;
 @property (nonatomic, assign, readonly) UIPanGestureRecognizer *panGestureRecognizer;
 #else
-@property (nonatomic, weak, nullable) id<SuspensionViewDelegate> delegate;
 @property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
+@property (nonatomic, weak, nullable) id<SuspensionViewDelegate> delegate;
 #endif
 
 @property (nonatomic, assign) SuspensionViewLeanEdgeType leanEdgeType;
@@ -134,10 +132,10 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 - (void)addAction:(HypotenuseAction *)action;
 
-- (void)testPushViewController:(UIViewController *)viewController
-                      animated:(BOOL)animated;
-- (void)close;
+- (void)testPushViewController:(UIViewController *)viewController animated:(BOOL)animated;
+
 - (void)open;
+- (void)close;
 @end
 
 #pragma mark *** SuspensionMenuWindow ***

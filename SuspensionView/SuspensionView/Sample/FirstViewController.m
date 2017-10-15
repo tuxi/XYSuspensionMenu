@@ -8,9 +8,6 @@
 
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
-#import "OSTestViewController.h"
-#import "ViewController.h"
-#import "SecondViewController.h"
 
 #pragma mark *** Sample ***
 
@@ -25,7 +22,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    [self sample2Block];
+//    [self oneLevelMenuSample];
+    [self sample];
     
 }
 
@@ -56,6 +54,7 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setTitle:@"Google" forState:UIControlStateNormal];
+        item.hypotenuseButton.titleLabel.adjustsFontSizeToFitWidth = YES;
     }
 
     
@@ -67,7 +66,7 @@
 
 
 /// 多级菜单使用
-- (void)sample2Block {
+- (void)sample {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
@@ -342,12 +341,12 @@
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedHypotenuseButtonAtIndex:(NSInteger)buttonIndex {
     if (buttonIndex == 3) {
         
-        OSTestViewController *vc = [OSTestViewController new];
+        UIViewController *vc = [UIViewController new];
         [suspensionMenuView testPushViewController:vc animated:YES];
     }
     if (buttonIndex == 4) {
         
-        ViewController *vc = [ViewController new];
+        UITableViewController *vc = [UITableViewController new];
         [suspensionMenuView testPushViewController:vc animated:YES];
     }
 }
@@ -355,7 +354,7 @@
 
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(HypotenuseAction *)hypotenuseItem {
     if (buttonIndex < 2) {
-        SecondViewController *vc = [SecondViewController new];
+        UIViewController *vc = [UIViewController new];
         [suspensionMenuView testPushViewController:vc animated:YES];
     }
 }
@@ -365,14 +364,5 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
- #pragma mark - Navigation
- 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
 
 @end
