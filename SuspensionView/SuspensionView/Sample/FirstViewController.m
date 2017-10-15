@@ -25,137 +25,39 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-//    [self sample1ForDelegate];
-    [self sample2ForBlock];
+    [self sample2Block];
     
 }
 
-/// 一级菜单使用:添加主菜单上的按钮
+/// 一级菜单使用
 - (void)oneLevelMenuSample {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
-//    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
+    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
     menuView.delegate = self;
-    
-    NSMutableArray *types = [NSMutableArray array];
-    NSMutableArray *images = [NSMutableArray array];
-    int i = 0;
-    while (i <= 7) {
-        OSButtonType type = OSButtonType3;
-        NSString *imageNamed = @"aws-icon";
-        if (i == 1) {
-            type = OSButtonType1;
-            imageNamed = @"apple-icon";
-        }
-        if (i == 2) {
-            type = OSButtonType2;
-            imageNamed = @"blip-icon";
-        }
-        if (i == 4) {
-            type = OSButtonType4;
-            imageNamed = @"dropbox-icon";
-        }
-        [types addObject:@(type)];
-        [images addObject:imageNamed];
-        i++;
-    }
-    i--;
     HypotenuseAction *item = nil;
     {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+        item = [HypotenuseAction actionWithType:UIButtonTypeCustom handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
+        [item.hypotenuseButton setImage:[UIImage imageNamed:@"apple-icon"] forState:UIControlStateNormal];
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+        item = [HypotenuseAction actionWithType:UIButtonTypeCustom handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
-        [item.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-        i--;
+        [item.hypotenuseButton setTitle:@"Google" forState:UIControlStateNormal];
     }
-    
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setTitle:@"sample" forState:UIControlStateNormal];
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
+
     
     
     [menuView showWithCompetion:NULL];
@@ -164,8 +66,8 @@
 
 
 
-/// 第二种创建方法，按钮的点击事件由block处理
-- (void)sample2ForBlock {
+/// 多级菜单使用
+- (void)sample2Block {
     
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
@@ -174,24 +76,23 @@
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
     UIImage *image = [UIImage imageNamed:@"mm.jpg"];
     menuView.backgroundImageView.image = image;
-    menuView.delegate = self;
     
     NSMutableArray *types = [NSMutableArray array];
     NSMutableArray *images = [NSMutableArray array];
     int i = 0;
     while (i <= 7) {
-        OSButtonType type = OSButtonType3;
+        UIButtonType type = UIButtonTypeCustom;
         NSString *imageNamed = @"aws-icon";
         if (i == 1) {
-            type = OSButtonType1;
+            type = UIButtonTypeCustom;
             imageNamed = @"apple-icon";
         }
         if (i == 2) {
-            type = OSButtonType2;
+            type = UIButtonTypeSystem;
             imageNamed = @"blip-icon";
         }
         if (i == 4) {
-            type = OSButtonType4;
+            type = UIButtonTypeSystem;
             imageNamed = @"dropbox-icon";
         }
         [types addObject:@(type)];
@@ -206,14 +107,14 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeSystem) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
         }
         i--;
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+        item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -256,14 +157,14 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeSystem) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
         }
         i--;
     }
     
     {
-        item = [HypotenuseAction actionWithType:OSButtonType1 handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+        item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
             
         }];
         [menuView addAction:item];
@@ -329,8 +230,8 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeSystem) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
         }
         i--;
     }
@@ -341,8 +242,8 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeSystem) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
         }
         
         {
@@ -405,8 +306,8 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeSystem) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
         }
         i--;
     }
@@ -417,8 +318,8 @@
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeCustom) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
         }
         i--;
     }
@@ -428,165 +329,6 @@
 
 }
 
-
-/// 第一种创建方式，按钮的点击事件由代理回调处理
-- (void)sample1ForDelegate {
-    
-    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
-    menuView.shouldOpenWhenViewWillAppear = NO;
-    menuView.shouldHiddenCenterButtonWhenOpen = YES;
-    menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
-    menuView.delegate = self;
-    UIImage *image = [UIImage imageNamed:@"mm.jpg"];
-    menuView.backgroundImageView.image = image;
-    [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
-    
-    int i = 0;
-    
-    while (i <= 7) {
-        OSButtonType type = OSButtonType3;
-        NSString *imageNamed = @"aws-icon";
-        if (i == 1) {
-            type = OSButtonType1;
-            imageNamed = @"apple-icon";
-        }
-        if (i == 2) {
-            type = OSButtonType2;
-            imageNamed = @"blip-icon";
-        }
-        if (i == 4) {
-            type = OSButtonType4;
-            imageNamed = @"dropbox-icon";
-        }
-        HypotenuseAction *item = [[HypotenuseAction alloc] initWithButtonType:type];
-        if (i == 1) {
-            NSInteger j = 0;
-            while (j <= 4) {
-                HypotenuseAction *itemM = [[HypotenuseAction alloc] initWithButtonType:type];
-                [itemM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                [item addMoreAction:itemM];
-                [item.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                if (j == 1) {
-                    NSInteger k = 0;
-                    while (k <= 5) {
-                        HypotenuseAction *itemMM = [[HypotenuseAction alloc] initWithButtonType:type];
-                        [itemMM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                        [itemM addMoreAction:itemMM];
-                        [itemM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                        if (k == 1) {
-                            NSInteger l = 0;
-                            while (l <= 7) {
-                                HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
-                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM addMoreAction:iteml];
-                                [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                
-                                
-                                if (l == 1) {
-                                    NSInteger s = 0;
-                                    while (s <= 7) {
-                                        HypotenuseAction *items = [[HypotenuseAction alloc] initWithButtonType:type];
-                                        [items.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                        [iteml addMoreAction:items];
-                                        [iteml.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                        s++;
-                                    }
-                                    
-                                }
-                                
-                                l++;
-                            }
-                            
-                        }
-                        if (k == 2) {
-                            NSInteger l = 0;
-                            while (l <= 7) {
-                                HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
-                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM addMoreAction:iteml];
-                                [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                l++;
-                            }
-                            
-                        }
-                        if (k == 4) {
-                            NSInteger l = 0;
-                            while (l <= 7) {
-                                HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
-                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM addMoreAction:iteml];
-                                [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                l++;
-                            }
-                            
-                        }
-                        
-                        k++;
-                    }
-                }
-                
-                if (j == 3) {
-                    NSInteger k = 0;
-                    while (k <= 5) {
-                        HypotenuseAction *itemMM = [[HypotenuseAction alloc] initWithButtonType:type];
-                        [itemMM.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                        [itemM addMoreAction:itemMM];
-                        [itemM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                        if (k == 1) {
-                            NSInteger l = 0;
-                            while (l <= 7) {
-                                HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
-                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM addMoreAction:iteml];
-                                [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                l++;
-                            }
-                            
-                        }
-                        if (k == 3) {
-                            NSInteger l = 0;
-                            while (l <= 7) {
-                                HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
-                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM addMoreAction:iteml];
-                                [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                l++;
-                            }
-                            
-                        }
-                        if (k == 5) {
-                            NSInteger l = 0;
-                            while (l <= 7) {
-                                HypotenuseAction *iteml = [[HypotenuseAction alloc] initWithButtonType:type];
-                                [iteml.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-                                [itemMM addMoreAction:iteml];
-                                [itemMM.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-                                l++;
-                            }
-                            
-                        }
-                        
-                        k++;
-                    }
-                }
-                
-                j++;
-            }
-            
-        }
-        [item.hypotenuseButton setImage:[UIImage imageNamed:imageNamed] forState:UIControlStateNormal];
-        if (type == OSButtonType1) {
-            [item.hypotenuseButton setSubtitle:@"Apple" forState:UIControlStateNormal];
-        }
-        
-        [menuView addAction:item];
-        i++;
-    }
-    
-    [menuView showWithCompetion:NULL];
-
-
-}
 
 
 ////////////////////////////////////////////////////////////////////////
