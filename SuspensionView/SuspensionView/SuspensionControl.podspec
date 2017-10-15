@@ -15,16 +15,16 @@ Pod::Spec.new do |s|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  s.name         = "SuspensionControl"
-  s.version      = "0.1"
-  s.summary      = "iOS 屏幕滑动控件, 类似 AssistiveTouch 悬浮窗."
+  s.name         = "XYSuspensionMenu"
+  s.version      = "1.0"
+  s.summary      = "XYSuspensionMenu 是iOS 的一个第三方屏幕滑动控件, 类似 AssistiveTouch 悬浮窗."
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
   #   * Try to keep it short, snappy and to the point.
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
-  s.description  = "类似 iOS AssistiveTouch 悬浮窗"
+  s.description  = "XYSuspensionMenu类似 iOS AssistiveTouch 悬浮窗"
                 
 
   s.homepage     = "https://github.com/Ossey/SuspensionControl"
