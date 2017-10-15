@@ -3,11 +3,8 @@
 ![image](https://github.com/Ossey/SuspensionControl/blob/master/SuspensionView/SuspensionView/2017-07-16%2022_03_44.gif)
 
 # 使用方式
-1. 通过cocoaPods导入，在你的profile中添加
-```
-pod 'XYSuspensionMenu', '~> 1.0.1'
-```
- 或者直接将'SuspensionControl' 添加到您的项目中
+
+ 1. 直接将'XYSuspensionMenu' 添加到您的项目中，导入'XYSuspensionMenu.h'
  
  2. 代码示例:
  
