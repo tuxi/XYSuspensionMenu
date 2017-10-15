@@ -1196,11 +1196,11 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
     
-//#ifdef DEBUG
+    //#ifdef DEBUG
     suspensionWindow.windowLevel = CGFLOAT_MAX+10;
-//#else
-//    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
-//#endif
+    //#else
+    //    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
+    //#endif
     
     UIViewController *vc = [UIViewController new];
     suspensionWindow.rootViewController = vc;
@@ -2431,14 +2431,14 @@ menuBarItems = _menuBarItems;
     }
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:menuWindowBounds];
-//#ifdef DEBUG
+    //#ifdef DEBUG
     suspensionWindow.windowLevel = CGFLOAT_MAX;
     //    suspensionWindow.windowLevel = CGFLOAT_MAX+10;
     // iOS9前自定义的window设置下面，不会被键盘遮罩，iOS10不行了
     //    NSArray<UIWindow *> *widnows = [UIApplication sharedApplication].windows;
-//#else
-//    suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
-//#endif
+    //#else
+    //    suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
+    //#endif
     
     UIViewController *vc = [[SuspensionMenuController alloc] initWithMenuView:self];
     
@@ -2482,7 +2482,7 @@ menuBarItems = _menuBarItems;
     return self;
 }
 
-+ (instancetype)actionWithType:(OSButtonType)buttonType handler:(void (^)(HypotenuseAction *action, SuspensionMenuView *menuView))handler {
++ (instancetype)actionWithType:(OSButtonType)buttonType handler:(void (^ __nullable)(HypotenuseAction *action, SuspensionMenuView *menuView))handler {
     HypotenuseAction *action = [[HypotenuseAction alloc] initWithButtonType:buttonType];
     action.actionHandler = handler;
     return action;
