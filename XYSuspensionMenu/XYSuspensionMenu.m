@@ -311,7 +311,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 }
 
 /// 移动移动到屏幕中心位置
-- (void)moveToScreentCenter {
+- (void)moveToDisplayCenter {
     
     [self autoLeanToTargetPosition:[UIApplication sharedApplication].delegate.window.center];
 }
@@ -869,7 +869,7 @@ menuBarItems = _menuBarItems;
     }
     
     if (_shouldLeanToScreenCenterWhenOpened) {
-        [self.centerButton moveToScreentCenter];
+        [self.centerButton moveToDisplayCenter];
     }
     
     [self centerButton];

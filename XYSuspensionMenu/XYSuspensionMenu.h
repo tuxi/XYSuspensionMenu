@@ -73,7 +73,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, copy, nullable) void (^clickCallBack)(void);
 @property (nonatomic, assign) BOOL shouldLeanToPreviousPositionWhenAppStart;
 
-- (void)moveToScreentCenter;
+- (void)moveToDisplayCenter;
 - (void)moveToPreviousLeanPosition;
 - (void)checkTargetPosition;
 
@@ -98,7 +98,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @interface SuspensionWindow : SuspensionView
 
 + (instancetype)showWithFrame:(CGRect)frame;
-- (void)removeFromSuperview;
 
 @end
 
@@ -143,8 +142,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @interface SuspensionMenuWindow : SuspensionMenuView
 
 @property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
-
-- (void)removeFromSuperview;
 
 @end
 
