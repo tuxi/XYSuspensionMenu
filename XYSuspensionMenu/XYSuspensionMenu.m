@@ -610,7 +610,7 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 /// 保证currentDisplayMoreItems在栈顶，menuBarItems在栈底
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *stackDisplayedItems;
 /// 存储的为调用showViewController时的HypotenuseAction和跳转的viewController，保证第二次点击时pop并从此字典中移除
-@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSString *> *showViewControllerDictionary;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSMutableArray<NSString *> *> *showViewControllerDictionary;
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
 @property (nonatomic, copy) void (^ _Nullable openCompletion)(void);
 @property (nonatomic, copy) void (^ _Nullable closeCompletion)(void);
@@ -754,14 +754,22 @@ menuBarItems = _menuBarItems;
     NSParameterAssert(viewController);
     viewController.hidesBottomBarWhenPushed = YES;
     UIViewController *topVc = [self topViewController];
-     NSNumber *vcKey = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+    NSNumber *vcKey = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+    NSMutableArray *currentClickVcAddress = [self.showViewControllerDictionary objectForKey:vcKey];
+    if (!currentClickVcAddress) {
+        currentClickVcAddress = [NSMutableArray array];
+        [self.showViewControllerDictionary setObject:currentClickVcAddress forKey:vcKey];
+    }
     //////////////////// 防止控制器重复push或present的处理 ////////////////////
     // 判断当前点击的btn，是否已经保存了控制器的内存地址，如果保存了，就移除，并return
     if (_currentClickHypotenuseItem && viewController) {
         // 取出当前点击按钮保存的控制器的内存地址
-        NSString *currentClickVcAddress = [self.showViewControllerDictionary objectForKey:vcKey];
+        
         NSMutableArray *vcs = [topVc.navigationController.viewControllers mutableCopy];
-        if ([[NSString stringWithFormat:@"%p", topVc] isEqualToString:currentClickVcAddress]) {
+        NSUInteger foundArressIdx = [currentClickVcAddress indexOfObjectWithOptions:NSEnumerationReverse passingTest:^BOOL(NSString *  _Nonnull address, NSUInteger idx, BOOL * _Nonnull stop) {
+            return [[NSString stringWithFormat:@"%p", topVc] isEqualToString:address];
+        }];
+        if (currentClickVcAddress && foundArressIdx != NSNotFound) {
             if (topVc.navigationController.viewControllers.count > 1 && [topVc.navigationController.viewControllers lastObject] == topVc) {
                 NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     return topVc == obj;
@@ -776,28 +784,31 @@ menuBarItems = _menuBarItems;
             } else {
                 [topVc dismissViewControllerAnimated:animated completion:NULL];
             }
-            [self.showViewControllerDictionary removeObjectForKey:vcKey];
+            [currentClickVcAddress removeObjectAtIndex:foundArressIdx];
             [self close];
             return;
         }
         else {
-            if (topVc.navigationController) {
-                NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    return [[NSString stringWithFormat:@"%p", obj] isEqualToString:currentClickVcAddress];
-                }];
-                // 当topViewController 不是当前按钮点击后保存的控制器，那么就返回到topViewController
-                if (vcs && founVcIndex != NSNotFound) {
-                    UIViewController *targetVc = vcs[founVcIndex];
-                    [topVc.navigationController popToViewController:targetVc animated:animated];
-                    [self.showViewControllerDictionary removeObjectForKey:vcKey];
-                    [self close];
-                    return;
+            if (topVc.navigationController && vcs.count) {
+                for (UIViewController *vc in vcs) {
+                    NSUInteger founVcIndex = [currentClickVcAddress indexOfObjectPassingTest:^BOOL(NSString *  _Nonnull address, NSUInteger idx, BOOL * _Nonnull stop) {
+                        return [[NSString stringWithFormat:@"%p", vc] isEqualToString:address];
+                    }];
+                    
+                    // 当topViewController 不是当前按钮点击后保存的控制器，那么就返回到topViewController
+                    if (founVcIndex != NSNotFound) {
+                        UIViewController *targetVc = vcs[founVcIndex];
+                        [topVc.navigationController popToViewController:targetVc animated:animated];
+                        [currentClickVcAddress removeObjectAtIndex:founVcIndex];
+                        [self close];
+                        return;
+                    }
                 }
             }
-            else if ([[NSString stringWithFormat:@"%p", topVc.presentedViewController] isEqualToString:currentClickVcAddress] || topVc.presentingViewController) {
+            else if (topVc.presentingViewController) {
                 // 如果存在modal，就dismiss，但是这里不return，后续还要将viewController进行present(注意此时的topVc已经被dismiss释放，后面的present要使用它的上一级控制器，也就是topVc.presentingViewController才可以)
                 [topVc dismissViewControllerAnimated:animated completion:NULL];
-                [self.showViewControllerDictionary removeObjectForKey:vcKey];
+                [currentClickVcAddress removeObject:[NSString stringWithFormat:@"%p", topVc.presentingViewController]];
                 topVc = topVc.presentingViewController;
             }
         }
@@ -807,7 +818,7 @@ menuBarItems = _menuBarItems;
     
     //////////////////// 对控制器需要push或present的处理 ////////////////////
     void(^pushAnimationsCompetionsBlockForViewController)(BOOL isFinished) = ^(BOOL isFinished) {
-        if (topVc.navigationController == 0x0) {
+        if (topVc.navigationController == 0x0 || [viewController isKindOfClass:[UINavigationController class]]) {
             // 当执行完dismissViewControllerAnimated后再执行showDetailViewController:报错如下:
             //Error: hose view is not in the window hierarchy,
             // 使用presentViewController:解决
@@ -830,7 +841,8 @@ menuBarItems = _menuBarItems;
         }
         // 存
         if (vcKey) {
-            [self.showViewControllerDictionary setObject:[NSString stringWithFormat:@"%p", viewController] forKey:vcKey];
+            [currentClickVcAddress addObject:[NSString stringWithFormat:@"%p", viewController]];
+            [self.showViewControllerDictionary setObject:currentClickVcAddress forKey:vcKey];
         }
     };
     
@@ -842,7 +854,7 @@ menuBarItems = _menuBarItems;
     
     // 执行close并显示viewController
     [self _closeWithTriggerPanGesture:NO animationBlock:pushAnimationsBlock closeCompletion:pushAnimationsCompetionsBlockForViewController];
-
+    
 }
 
 
@@ -1120,7 +1132,7 @@ menuBarItems = _menuBarItems;
     return _stackDisplayedItems;
 }
 
-- (NSMutableDictionary<NSNumber *, NSString*> *)showViewControllerDictionary {
+- (NSMutableDictionary<NSNumber *, NSMutableArray<NSString *> *> *)showViewControllerDictionary {
     if (!_showViewControllerDictionary) {
         _showViewControllerDictionary = [NSMutableDictionary dictionary];
     }
@@ -1832,6 +1844,7 @@ menuBarItems = _menuBarItems;
     [super showWithCompetion:competion];
     [UIApplication sharedApplication].xy_suspensionMenuWindow = self;
 }
+
 
 @end
 
