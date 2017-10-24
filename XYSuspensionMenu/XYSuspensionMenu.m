@@ -7,9 +7,7 @@
 //
 
 #import "XYSuspensionMenu.h"
-#import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
-#import <CommonCrypto/CommonDigest.h>
 
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 #pragma clang diagnostic ignored "-Wnonnull"
