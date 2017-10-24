@@ -68,6 +68,9 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 #endif
 @property (nonatomic, assign) BOOL isMoving;
 @property (nonatomic, strong) UIWindow *xy_window;
+/// 当屏幕旋转时反转坐标
+@property (nonatomic, assign) BOOL needReversePoint;
+
 @end
 
 @implementation SuspensionView
@@ -237,12 +240,12 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (void)checkTargetPosition {
     
-    if (self.shouldLeanToPreviousPositionWhenAppStart) {
+    if (self.shouldLeanToPreviousPositionWhenAppStart && !self.needReversePoint) {
         CGPoint newTargetPoint = [self _checkTargetPosition:self.previousCenter];
         [self autoLeanToTargetPosition:newTargetPoint];
     } else {
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
-        CGPoint newTargetPoint = [self _checkTargetPosition:currentPoint];
+        CGPoint newTargetPoint = [self _checkTargetPosition:CGPointMake(currentPoint.y, currentPoint.x)];
         [self autoLeanToTargetPosition:newTargetPoint];
     }
     
@@ -260,11 +263,10 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     CGFloat touchHeight = self.frame.size.height;
     CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
     CGFloat screenHeight = [[UIScreen mainScreen] bounds].size.height;
-    
-    CGFloat left = MAX(self.leanEdgeInsets.left, MIN(fabs(panPoint.x), screenWidth - touchWidth - self.leanEdgeInsets.right));
-    CGFloat right = fabs(screenWidth - left);
-    CGFloat top = MAX(self.leanEdgeInsets.top, MIN(fabs(panPoint.y), screenHeight - touchHeight - self.leanEdgeInsets.bottom));
-    CGFloat bottom = fabs(screenHeight - top);
+    CGFloat left = MAX(self.leanEdgeInsets.left, MIN(panPoint.x, screenWidth - touchWidth - self.leanEdgeInsets.right));
+    CGFloat right = screenWidth - left;
+    CGFloat top = MAX(self.leanEdgeInsets.top, MIN(panPoint.y, screenHeight - touchHeight - self.leanEdgeInsets.bottom));
+    CGFloat bottom = screenHeight - top;
     
     CGFloat minSpace = 0;
     if (self.leanEdgeType == SuspensionViewLeanEdgeTypeHorizontal) {
@@ -330,7 +332,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
     }
     [UIView animateWithDuration:0.3
-                          delay:0.1
+                          delay:0.05
          usingSpringWithDamping:self.usingSpringWithDamping
           initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationOptionCurveEaseIn |
@@ -1359,7 +1361,9 @@ menuBarItems = _menuBarItems;
     if (self.shouldCloseWhenDeviceOrientationDidChange) {
         _viewFlags._isClosed = NO;
         [self _closeWithTriggerPanGesture:YES];
+        self.centerButton.needReversePoint = YES;
         [self.centerButton checkTargetPosition];
+        self.centerButton.needReversePoint = NO;
         return;
     }
     [self _updateMenuViewCenterWithIsOpened:_viewFlags._isOpened];
