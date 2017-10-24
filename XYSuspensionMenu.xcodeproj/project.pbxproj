@@ -15,6 +15,7 @@
 		1810F1C91F937CB00052AB39 /* FirstViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1810F1C41F937CB00052AB39 /* FirstViewController.m */; };
 		186F25071F939D30005405E0 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 186F25061F939D30005405E0 /* README.md */; };
 		186F250A1F939F79005405E0 /* XYSuspensionMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 186F25081F939F79005405E0 /* XYSuspensionMenu.m */; };
+		187170EE1F9FA93000E6B67A /* 2017-10-25 00_54_57.gif in Resources */ = {isa = PBXBuildFile; fileRef = 187170ED1F9FA93000E6B67A /* 2017-10-25 00_54_57.gif */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		186F25061F939D30005405E0 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		186F25081F939F79005405E0 /* XYSuspensionMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XYSuspensionMenu.m; sourceTree = "<group>"; };
 		186F25091F939F79005405E0 /* XYSuspensionMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XYSuspensionMenu.h; sourceTree = "<group>"; };
+		187170ED1F9FA93000E6B67A /* 2017-10-25 00_54_57.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2017-10-25 00_54_57.gif"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +71,7 @@
 				1810F1C41F937CB00052AB39 /* FirstViewController.m */,
 				1810F1AE1F937C280052AB39 /* AppDelegate.h */,
 				1810F1AF1F937C280052AB39 /* AppDelegate.m */,
+				187170ED1F9FA93000E6B67A /* 2017-10-25 00_54_57.gif */,
 				1810F1B41F937C280052AB39 /* Main.storyboard */,
 				1810F1B71F937C280052AB39 /* Assets.xcassets */,
 				1810F1B91F937C280052AB39 /* LaunchScreen.storyboard */,
@@ -146,6 +149,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1810F1BB1F937C280052AB39 /* LaunchScreen.storyboard in Resources */,
+				187170EE1F9FA93000E6B67A /* 2017-10-25 00_54_57.gif in Resources */,
 				1810F1B81F937C280052AB39 /* Assets.xcassets in Resources */,
 				186F25071F939D30005405E0 /* README.md in Resources */,
 				1810F1B61F937C280052AB39 /* Main.storyboard in Resources */,
