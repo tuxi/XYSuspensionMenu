@@ -719,6 +719,7 @@ menuBarItems = _menuBarItems;
         [item.hypotenuseButton removeTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton addTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton setAlpha:0.0];
+        item.suspensionMenuView = self;
         [self addSubview:item.hypotenuseButton];
         [item.hypotenuseButton setFrame:_viewFlags._memuBarButtonOriginFrame];
         idx++;
@@ -741,6 +742,7 @@ menuBarItems = _menuBarItems;
         [item.hypotenuseButton removeTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton setAlpha:0.0];
+        item.suspensionMenuView = self;
         [self addSubview:item.hypotenuseButton];
         [item.hypotenuseButton setFrame:_viewFlags._memuBarButtonOriginFrame];
         idx++;
@@ -1901,9 +1903,11 @@ menuBarItems = _menuBarItems;
     return self;
 }
 - (void)_setup {
-    //    [self.titleLabel setFont:[UIFont systemFontOfSize:12 weight:1.0]];
-    //    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    //    self.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.minimumScaleFactor = 0.6;
+    self.titleLabel.numberOfLines = 2;
 }
 @end
 
@@ -1972,7 +1976,17 @@ menuBarItems = _menuBarItems;
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
+////////////////////////////////////////////////////////////////////////
+#pragma mark - 屏幕方向
+////////////////////////////////////////////////////////////////////////
+- (BOOL)shouldAutorotate {
+    return YES;
+}
 
+// 支持的方向 只需要支持竖屏
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskPortrait;
+}
 @end
 
 
