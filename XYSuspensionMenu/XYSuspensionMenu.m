@@ -199,8 +199,17 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         if (!self.isAutoLeanEdge) {
             return;
         }
-        CGPoint newTargetPoint = [self _checkTargetPosition:translatedCenter];
-        [self autoLeanToTargetPosition:newTargetPoint];
+        // 计算速度向量的长度，当他小于200时，滑行会很短
+        CGPoint velocity = [p velocityInView:[UIApplication sharedApplication].delegate.window];
+        // 计算速度向量的长度
+        CGFloat magnitude = sqrtf((velocity.x * velocity.x) + (velocity.y * velocity.y));
+        CGFloat slideMult = magnitude / 200;
+        // 基于速度和速度因素计算一个终点
+        float slideFactor = 0.1 * slideMult;
+        CGPoint finalPoint = CGPointMake(panViewCenter.x + (velocity.x * slideFactor),  panViewCenter.y + (velocity.y * slideFactor));
+        CGPoint newTargetPoint = [self _checkTargetPosition:finalPoint];
+        // 滑行到终点
+        [self autoLeanToTargetPosition:newTargetPoint slideFactor:slideFactor*2];
     }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:locationChange:)]) {
@@ -307,8 +316,15 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     [self autoLeanToTargetPosition:[UIApplication sharedApplication].delegate.window.center];
 }
 
+
 /// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
 - (void)autoLeanToTargetPosition:(CGPoint)point {
+    [self autoLeanToTargetPosition:point slideFactor:0.0];
+}
+
+
+/// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
+- (void)autoLeanToTargetPosition:(CGPoint)point slideFactor:(CGFloat)slideFactor {
     point = [self _checkTargetPosition:point];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:willAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
@@ -336,6 +352,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
                      }];
 }
 
+
+
 - (void)autoLeanToTargetPositionCompletion:(CGPoint)currentPosition {
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:didAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self didAutoLeanToTargetPosition:currentPosition];
@@ -350,7 +368,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     if (self.isAutoLeanEdge) {
         /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
-        
         [self _checkTargetPosition:currentPoint];
     }
 }
