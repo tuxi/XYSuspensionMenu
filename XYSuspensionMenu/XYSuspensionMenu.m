@@ -716,6 +716,7 @@ menuBarItems = _menuBarItems;
     for (HypotenuseAction *item in currentDisplayMoreItem.moreHypotenusItems) {
         [item.hypotenuseButton setOpaque:NO];
         [item.hypotenuseButton setTag:moreBarButtonBaseTag + idx];
+        [item.hypotenuseButton removeTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton addTarget:self action:@selector(moreBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton setAlpha:0.0];
         [self addSubview:item.hypotenuseButton];
@@ -737,6 +738,7 @@ menuBarItems = _menuBarItems;
     for (HypotenuseAction *item in menuBarItems) {
         [item.hypotenuseButton setOpaque:NO];
         [item.hypotenuseButton setTag:menuBarButtonBaseTag+idx];
+        [item.hypotenuseButton removeTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton addTarget:self action:@selector(menuBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [item.hypotenuseButton setAlpha:0.0];
         [self addSubview:item.hypotenuseButton];
@@ -828,16 +830,17 @@ menuBarItems = _menuBarItems;
     
     void (^pushAnimationsBlock)(void) = ^ {
         if (self.shouldHiddenCenterButtonWhenOpen) {
-            UIWindow *centerWindow = self.xy_window;
+            UIWindow *centerWindow = self.centerButton.xy_window;
             CGRect centerFrame =  centerWindow.frame;
             centerFrame.size = _viewFlags._centerWindowSize;
             centerWindow.frame = centerFrame;
             centerWindow.alpha = 1.0;
+            centerWindow.frame = centerFrame;
         }
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._maxTriangleHypotenuse hypotenuseItems:self.menuBarItems];
         [self setAlpha:0.0];
         for (UIControl *btn in self.subviews) {
-            if ([btn isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+            if ([btn isKindOfClass:[MenuBarHypotenuseButton class]]) {
                 [btn setAlpha:0.0];
             }
         }
@@ -917,7 +920,7 @@ menuBarItems = _menuBarItems;
         [self setAlpha:1.0];
         
         for (UIView *view in self.subviews) {
-            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+            if ([view isKindOfClass:[MenuBarHypotenuseButton class]]) {
                 [view setAlpha:1.0];
             }
         }
@@ -987,7 +990,7 @@ menuBarItems = _menuBarItems;
         [self setAlpha:0.0];
         for (UIView *view in self.subviews) {
             [view setFrame:_viewFlags._memuBarButtonOriginFrame];
-            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+            if ([view isKindOfClass:[MenuBarHypotenuseButton class]]) {
                 [view setAlpha:0.0];
             }
         }
@@ -1038,7 +1041,7 @@ menuBarItems = _menuBarItems;
 
 - (void)removeAllMoreButtons {
     for (UIView *view in self.subviews) {
-        if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+        if ([view isKindOfClass:[MenuBarHypotenuseButton class]]) {
             if (view.tag >= moreBarButtonBaseTag) {
                 [view removeFromSuperview];
             }
@@ -1207,6 +1210,11 @@ menuBarItems = _menuBarItems;
         [self moreButtonClickWithHypotenuseItem:item];
         return;
     }
+    else {
+        if (item.actionHandler) {
+            item.actionHandler(item, self);
+        }
+    }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedHypotenuseButtonAtIndex:)]) {
         [self.delegate suspensionMenuView:self clickedHypotenuseButtonAtIndex:foundMenuButtonIdx];
@@ -1236,6 +1244,11 @@ menuBarItems = _menuBarItems;
         [self moreButtonClickWithHypotenuseItem:item];
         return;
     }
+    else {
+        if (item.actionHandler) {
+            item.actionHandler(item, self);
+        }
+    }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedMoreButtonAtIndex:fromHypotenuseItem:)]) {
         [self.delegate suspensionMenuView:self clickedMoreButtonAtIndex:foundMoreButtonIdx fromHypotenuseItem:item];
@@ -1256,7 +1269,7 @@ menuBarItems = _menuBarItems;
             item.orginRect = item.hypotenuseButton.frame;
         }
         for (UIView *view in self.subviews) {
-            if ([view isKindOfClass:NSClassFromString(@"MenuBarHypotenuseButton")]) {
+            if ([view isKindOfClass:[MenuBarHypotenuseButton class]]) {
                 [view setAlpha:0.0];
                 [view setFrame:CGRectZero];
             }
@@ -1829,7 +1842,8 @@ menuBarItems = _menuBarItems;
 - (instancetype)initWithButtonType:(UIButtonType)buttonType {
     if (self = [self init]) {
         self.hypotenuseButton = [MenuBarHypotenuseButton buttonWithType:buttonType];
-        [self.hypotenuseButton addTarget:self action:@selector(hypotenuseButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+        self.hypotenuseButton.layer.cornerRadius = 5.0;
+        self.hypotenuseButton.layer.masksToBounds = YES;
     }
     return self;
 }
@@ -1838,13 +1852,6 @@ menuBarItems = _menuBarItems;
     HypotenuseAction *action = [[HypotenuseAction alloc] initWithButtonType:buttonType];
     action.actionHandler = handler;
     return action;
-    
-}
-
-- (void)hypotenuseButtonClick:(id)sender {
-    if (self.actionHandler) {
-        self.actionHandler(self, self.suspensionMenuView);
-    }
 }
 
 - (void)removeFromSuperview {
