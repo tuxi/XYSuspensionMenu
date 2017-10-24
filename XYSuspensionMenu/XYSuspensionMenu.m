@@ -611,8 +611,8 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 @property (nonatomic, strong) HypotenuseAction *currentDisplayMoreItem;
 /// 保证currentDisplayMoreItems在栈顶，menuBarItems在栈底
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *stackDisplayedItems;
-/// 存储的为调用testPushViewController时的HypotenuseAction和跳转的viewController，保证第二次点击时pop并从此字典中移除
-@property (nonatomic, strong) NSDictionary<NSNumber *, NSString *> *testPushViewControllerDictionary;
+/// 存储的为调用showViewController时的HypotenuseAction和跳转的viewController，保证第二次点击时pop并从此字典中移除
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSString *> *showViewControllerDictionary;
 @property (nonatomic, strong) NSMutableArray<HypotenuseAction *> *menuBarItems;
 @property (nonatomic, copy) void (^ _Nullable openCompletion)(void);
 @property (nonatomic, copy) void (^ _Nullable closeCompletion)(void);
@@ -751,113 +751,100 @@ menuBarItems = _menuBarItems;
     }
 }
 
-- (void)testPushViewController:(UIViewController *)viewController animated:(BOOL)animated {
+/// 显示viewController，对push或present进行处理，并处理viewController重复show的问题，显示完成后关闭mennWindow
+- (void)showViewController:(UIViewController *)viewController animated:(BOOL)animated {
     NSParameterAssert(viewController);
     viewController.hidesBottomBarWhenPushed = YES;
-    if ([[self topViewController] isMemberOfClass:[viewController class]]) {
-        [[self topViewController].navigationController popViewControllerAnimated:YES];
-        [self close];
-        self.testPushViewControllerDictionary = nil;
-        return;
-    } else {
-        
-        NSMutableArray *vcs = [[self topViewController].navigationController.viewControllers mutableCopy];
-        NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            return [obj class] == [viewController class];
-        }];
-        if (vcs && founVcIndex != NSNotFound) {
-            UIViewController *targetVc = vcs[founVcIndex];
-            [[self topViewController].navigationController popToViewController:targetVc animated:YES];
-            self.testPushViewControllerDictionary = nil;
+    UIViewController *topVc = [self topViewController];
+     NSNumber *vcKey = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+    //////////////////// 防止控制器重复push或present的处理 ////////////////////
+    // 判断当前点击的btn，是否已经保存了控制器的内存地址，如果保存了，就移除，并return
+    if (_currentClickHypotenuseItem && viewController) {
+        // 取出当前点击按钮保存的控制器的内存地址
+        NSString *currentClickVcAddress = [self.showViewControllerDictionary objectForKey:vcKey];
+        NSMutableArray *vcs = [topVc.navigationController.viewControllers mutableCopy];
+        if ([[NSString stringWithFormat:@"%p", topVc] isEqualToString:currentClickVcAddress]) {
+            if (topVc.navigationController.viewControllers.count > 1 && [topVc.navigationController.viewControllers lastObject] == topVc) {
+                NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    return topVc == obj;
+                }];
+                // 当topViewController 就是当前按钮点击后保存的控制器，那么就返回到topViewController的上一级
+                if (founVcIndex > 0) {
+                    UIViewController *targetVc = vcs[founVcIndex - 1];
+                    [topVc.navigationController popToViewController:targetVc animated:animated];
+                } else {
+                    [topVc.navigationController popToRootViewControllerAnimated:animated];
+                }
+            } else {
+                [topVc dismissViewControllerAnimated:animated completion:NULL];
+            }
+            [self.showViewControllerDictionary removeObjectForKey:vcKey];
             [self close];
             return;
         }
-    }
-    
-    if (_currentClickHypotenuseItem && viewController) {
-        // 取
-        NSString *vcProAddress = self.testPushViewControllerDictionary.allValues.lastObject;
-        if (vcProAddress.length) {
-            NSMutableArray *vcs = [[self topViewController].navigationController.viewControllers mutableCopy];
-            NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                return [[NSString stringWithFormat:@"%p", obj] isEqualToString:vcProAddress];
-            }];
-            Class founVcClass;
-            if (vcs && founVcIndex != NSNotFound) {
-                founVcClass = [[vcs objectAtIndex:founVcIndex] class];
-                if (founVcIndex > 0) {
-                    UIViewController *targetVc = vcs[founVcIndex - 1];
-                    [[self topViewController].navigationController popToViewController:targetVc animated:animated];
-                } else {
-                    [[self topViewController].navigationController popToRootViewControllerAnimated:animated];
-                }
-                self.testPushViewControllerDictionary = nil;
-                [self close];
-                if (founVcClass == [viewController class]) {
+        else {
+            if (topVc.navigationController) {
+                NSUInteger founVcIndex = [vcs indexOfObjectPassingTest:^BOOL(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    return [[NSString stringWithFormat:@"%p", obj] isEqualToString:currentClickVcAddress];
+                }];
+                // 当topViewController 不是当前按钮点击后保存的控制器，那么就返回到topViewController
+                if (vcs && founVcIndex != NSNotFound) {
+                    UIViewController *targetVc = vcs[founVcIndex];
+                    [topVc.navigationController popToViewController:targetVc animated:animated];
+                    [self.showViewControllerDictionary removeObjectForKey:vcKey];
+                    [self close];
                     return;
                 }
+            }
+            else if ([[NSString stringWithFormat:@"%p", topVc.presentedViewController] isEqualToString:currentClickVcAddress] || topVc.presentingViewController) {
+                // 如果存在modal，就dismiss，但是这里不return，后续还要将viewController进行present(注意此时的topVc已经被dismiss释放，后面的present要使用它的上一级控制器，也就是topVc.presentingViewController才可以)
+                [topVc dismissViewControllerAnimated:animated completion:NULL];
+                [self.showViewControllerDictionary removeObjectForKey:vcKey];
+                topVc = topVc.presentingViewController;
             }
         }
         
     }
     
+    
+    //////////////////// 对控制器需要push或present的处理 ////////////////////
     void(^pushAnimationsCompetionsBlockForViewController)(BOOL isFinished) = ^(BOOL isFinished) {
-        if ([self topViewController].navigationController == 0x0) {
-            if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
-                [[self topViewController] showDetailViewController:viewController sender:self];
-            }
-            else {
-                [[self topViewController] presentViewController:viewController animated:animated completion:NULL];
-            }
+        if (topVc.navigationController == 0x0) {
+            // 当执行完dismissViewControllerAnimated后再执行showDetailViewController:报错如下:
+            //Error: hose view is not in the window hierarchy,
+            // 使用presentViewController:解决
+            /*
+             if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
+             [topVc showDetailViewController:viewController sender:topVc];
+             }
+             else {
+             [topVc presentViewController:viewController animated:animated completion:NULL];
+             }
+             */
+            [topVc presentViewController:viewController animated:animated completion:NULL];
         }
         else {
             if (floor(NSFoundationVersionNumber) > NSFoundationVersionNumber_iOS_7_1 && animated) {
-                [[self topViewController].navigationController showViewController:viewController sender:self];
+                [topVc.navigationController showViewController:viewController sender:topVc];
             } else {
-                [[self topViewController].navigationController pushViewController:viewController animated:animated];
+                [topVc.navigationController pushViewController:viewController animated:animated];
             }
-            UIWindow *menuWindow = self.xy_window;
-            CGRect menuFrame =  menuWindow.frame;
-            menuFrame.size = CGSizeZero;
-            menuWindow.frame = menuFrame;
-            _viewFlags._isClosed = YES;
-            _viewFlags._isOpened = NO;
-            [self _closeCompetion];
-            // 存
-            NSNumber *btnTag = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
-            if (!btnTag) {
-                return;
-            }
-            self.testPushViewControllerDictionary = @{btnTag: [NSString stringWithFormat:@"%p", viewController]};
+        }
+        // 存
+        if (vcKey) {
+            [self.showViewControllerDictionary setObject:[NSString stringWithFormat:@"%p", viewController] forKey:vcKey];
         }
     };
     
+    
+    //////////////////// push或present之前的布局更新 ////////////////////
     void (^pushAnimationsBlock)(void) = ^ {
-        if (self.shouldHiddenCenterButtonWhenOpen) {
-            UIWindow *centerWindow = self.centerButton.xy_window;
-            CGRect centerFrame =  centerWindow.frame;
-            centerFrame.size = _viewFlags._centerWindowSize;
-            centerWindow.frame = centerFrame;
-            centerWindow.alpha = 1.0;
-            centerWindow.frame = centerFrame;
-        }
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._maxTriangleHypotenuse hypotenuseItems:self.menuBarItems];
-        [self setAlpha:0.0];
-        for (UIControl *btn in self.subviews) {
-            if ([btn isKindOfClass:[MenuBarHypotenuseButton class]]) {
-                [btn setAlpha:0.0];
-            }
-        }
-        [self.centerButton moveToPreviousLeanPosition];
     };
     
-    [UIView animateWithDuration:0.3
-                          delay:0.0
-         usingSpringWithDamping:0.8
-          initialSpringVelocity:0.5
-                        options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:pushAnimationsBlock
-                     completion:pushAnimationsCompetionsBlockForViewController];
+    // 执行close并显示viewController
+    [self _closeWithTriggerPanGesture:NO animationBlock:pushAnimationsBlock closeCompletion:pushAnimationsCompetionsBlockForViewController];
+
 }
 
 
@@ -974,15 +961,15 @@ menuBarItems = _menuBarItems;
     }
 }
 
-/// 执行close，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
-- (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
-    
+- (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture animationBlock:(void (^)(void))animationBlock closeCompletion:(void (^)(BOOL finished))closeCompletion {
     if (_viewFlags._isClosed)
         return;
     
     self.centerButton.usingSpringWithDamping = 0.5;
     self.centerButton.initialSpringVelocity = 10;
+    
     if (self.shouldHiddenCenterButtonWhenOpen) {
+        // 显示centerWindow
         UIWindow *centerWindow = self.centerButton.xy_window;
         CGRect centerFrame =  centerWindow.frame;
         centerFrame.size = _viewFlags._centerWindowSize;
@@ -990,11 +977,16 @@ menuBarItems = _menuBarItems;
         centerWindow.alpha = 1.0;
     }
     
+    UIWindow *menuWindow = self.xy_window;
+    
     void (^closeAnimationsBlockWityIsTriggerPanGesture)(void) = ^ {
         [self setAlpha:0.0];
+        [menuWindow setAlpha:0.0];
+        
+        // 隐藏menuWindow，并让MenuBarHypotenuseButton全部恢复到原始位置
         for (UIView *view in self.subviews) {
-            [view setFrame:_viewFlags._memuBarButtonOriginFrame];
             if ([view isKindOfClass:[MenuBarHypotenuseButton class]]) {
+                [view setFrame:_viewFlags._memuBarButtonOriginFrame];
                 [view setAlpha:0.0];
             }
         }
@@ -1002,31 +994,40 @@ menuBarItems = _menuBarItems;
         if (!isTriggerPanGesture) {
             [self.centerButton moveToPreviousLeanPosition];
         }
+        if (animationBlock) {
+            animationBlock();
+        }
     };
     
     void (^closeCompletionBlock)(BOOL finished) = ^(BOOL finished) {
-        UIWindow *menuWindow = self.xy_window;
         
-        [UIView animateWithDuration:0.1 animations:^{
-            [menuWindow setAlpha:0.0];
+        [UIView animateWithDuration:0.1 delay:0 options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction animations:^{
             // 让其frame为zero，为了防止其隐藏后所在的位置无法响应事件
-        } completion:^(BOOL finished) {
             CGRect menuFrame =  menuWindow.frame;
             menuFrame.size = CGSizeZero;
             menuWindow.frame = menuFrame;
+        } completion:^(BOOL finished) {
+            if (closeCompletion) {
+                closeCompletion(finished);
+            }
             _viewFlags._isClosed = YES;
             _viewFlags._isOpened  = NO;
             [self _closeCompetion];
-        } ];
+        }];
     };
     
     [UIView animateWithDuration:0.3
                           delay:0.0
          usingSpringWithDamping:self.usingSpringWithDamping
           initialSpringVelocity:self.initialSpringVelocity
-                        options:UIViewAnimationCurveEaseIn | UIViewAnimationOptionAllowUserInteraction
+                        options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction
                      animations:closeAnimationsBlockWityIsTriggerPanGesture
                      completion:closeCompletionBlock];
+}
+
+/// 执行close，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
+- (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
+    [self _closeWithTriggerPanGesture:isTriggerPanGesture animationBlock:NULL closeCompletion:NULL];
 }
 
 
@@ -1121,11 +1122,11 @@ menuBarItems = _menuBarItems;
     return _stackDisplayedItems;
 }
 
-- (NSDictionary<NSNumber *, NSString*> *)testPushViewControllerDictionary {
-    if (!_testPushViewControllerDictionary) {
-        _testPushViewControllerDictionary = [NSMutableDictionary dictionary];
+- (NSMutableDictionary<NSNumber *, NSString*> *)showViewControllerDictionary {
+    if (!_showViewControllerDictionary) {
+        _showViewControllerDictionary = [NSMutableDictionary dictionary];
     }
-    return _testPushViewControllerDictionary;
+    return _showViewControllerDictionary;
 }
 
 
@@ -1698,7 +1699,7 @@ menuBarItems = _menuBarItems;
     }
     _openCompletion = nil;
     _closeCompletion = nil;
-    _testPushViewControllerDictionary = nil;
+    _showViewControllerDictionary = nil;
     _currentDisplayMoreItem = nil;
 #if ! __has_feature(objc_arc)
     [super dealloc];
@@ -1975,22 +1976,11 @@ menuBarItems = _menuBarItems;
     // 拿到在self.view上但同时在menuView上的点
     touchPoint = [self.menuView.layer convertPoint:touchPoint fromLayer:self.view.layer];
     if (![self.menuView.layer containsPoint:touchPoint]) {
-        [self.menuView close];
+        [self.menuView centerBarButtonClick:nil];
     }
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
 
-////////////////////////////////////////////////////////////////////////
-#pragma mark - 屏幕方向
-////////////////////////////////////////////////////////////////////////
-- (BOOL)shouldAutorotate {
-    return YES;
-}
-
-// 支持的方向 只需要支持竖屏
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskPortrait;
-}
 @end
 
 

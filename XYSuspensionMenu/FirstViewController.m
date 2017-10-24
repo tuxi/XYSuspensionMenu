@@ -102,7 +102,7 @@
     HypotenuseAction *item = nil;
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            [menuView showViewController:getViewController() animated:YES];
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -113,9 +113,54 @@
     }
     
     {
-        item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+        item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:NULL];
+        [menuView addAction:item];
+        [item.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
+        {
+            HypotenuseAction *itemM = nil;
+            {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+                    [menuView showViewController:getViewController() animated:YES];
+                }];
+                [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
+                [item addMoreAction:itemM];
+            }
             
+            {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+                    [menuView showViewController:getViewController() animated:YES];
+                }];
+                [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
+                [item addMoreAction:itemM];
+            }
+            
+            {
+                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+                    [menuView showViewController:getViewController() animated:YES];
+                }];
+                [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
+                [item addMoreAction:itemM];
+            }
+            
+        }
+        i--;
+    }
+    
+    
+    {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+            [menuView showViewController:getViewController() animated:YES];
         }];
+        [menuView addAction:item];
+        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
+        if ([types[i] integerValue] == UIButtonTypeSystem) {
+            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
+        }
+        i--;
+    }
+    
+    {
+        item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:NULL];
         [menuView addAction:item];
         [item.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
         
@@ -123,7 +168,7 @@
             HypotenuseAction *itemM = nil;
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -131,7 +176,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -139,41 +184,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
-                }];
-                [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item addMoreAction:itemM];
-            }
-            
-        }
-        i--;
-    }
-    
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == UIButtonTypeSystem) {
-            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setTitle:@"more" forState:UIControlStateNormal];
-        
-        {
-            HypotenuseAction *itemM = nil;
-            {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -181,7 +192,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -189,7 +200,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -197,23 +208,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
-                }];
-                [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item addMoreAction:itemM];
-            }
-            
-            {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
-                }];
-                [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-                [item addMoreAction:itemM];
-            }
-            
-            {
-                itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -225,7 +220,7 @@
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            [menuView showViewController:getViewController() animated:YES];
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -237,7 +232,7 @@
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            [menuView showViewController:getViewController() animated:YES];
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -249,7 +244,7 @@
             HypotenuseAction *itemM = nil;
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -257,7 +252,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -265,7 +260,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -273,7 +268,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -281,7 +276,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -289,7 +284,7 @@
             
             {
                 itemM  = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-                    
+                    [menuView showViewController:getViewController() animated:YES];
                 }];
                 [itemM.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
                 [item addMoreAction:itemM];
@@ -301,7 +296,7 @@
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            [menuView showViewController:getViewController() animated:YES];
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -313,7 +308,7 @@
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            [menuView showViewController:getViewController() animated:YES];
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
@@ -328,7 +323,11 @@
 
 }
 
-
+NS_INLINE UIViewController *getViewController() {
+    UIViewController *vc = [UIViewController new];
+    vc.view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0];
+    return vc;
+}
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - SuspensionMenuViewDelegate
@@ -342,12 +341,12 @@
     if (buttonIndex == 3) {
         
         UIViewController *vc = [UIViewController new];
-        [suspensionMenuView testPushViewController:vc animated:YES];
+        [suspensionMenuView showViewController:vc animated:YES];
     }
     if (buttonIndex == 4) {
         
         UITableViewController *vc = [UITableViewController new];
-        [suspensionMenuView testPushViewController:vc animated:YES];
+        [suspensionMenuView showViewController:vc animated:YES];
     }
 }
 
@@ -355,7 +354,7 @@
 - (void)suspensionMenuView:(SuspensionMenuView *)suspensionMenuView clickedMoreButtonAtIndex:(NSInteger)buttonIndex fromHypotenuseItem:(HypotenuseAction *)hypotenuseItem {
     if (buttonIndex < 2) {
         UIViewController *vc = [UIViewController new];
-        [suspensionMenuView testPushViewController:vc animated:YES];
+        [suspensionMenuView showViewController:vc animated:YES];
     }
 }
 

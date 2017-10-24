@@ -131,7 +131,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 - (void)addAction:(HypotenuseAction *)action;
 
-- (void)testPushViewController:(UIViewController *)viewController animated:(BOOL)animated;
+- (void)showViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 - (void)open;
 - (void)close;
