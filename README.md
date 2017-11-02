@@ -1,15 +1,35 @@
 # iOS 屏幕滑动控件, 类似 AssistiveTouch 悬浮窗
 
-![image](https://github.com/Ossey/XYSuspensionMenu/blob/master/XYSuspensionMenu/2017-10-25%2000_54_57.gif)
+[![Version](https://img.shields.io/cocoapods/v/XYSuspensionMenu.svg?style=flat)](http://cocoapods.org/pods/XYSuspensionMenu)
+[![Platform](https://img.shields.io/cocoapods/p/XYSuspensionMenu.svg?style=flat)](http://cocoapods.org/pods/XYSuspensionMenu)
+[![License](https://img.shields.io/cocoapods/l/XYSuspensionMenu.svg?style=flat)](http://cocoapods.org/pods/XYSuspensionMenu)
+
+![image](https://github.com/Ossey/XYSuspensionMenu/blob/master/XYSuspensionMenuDemo/2017-10-25%2000_54_57.gif)
 
 # 使用方式
 
- 1. 直接将'XYSuspensionMenu' 添加到您的项目中，导入'XYSuspensionMenu.h'
+1. 将下面添加到你项目的` Podfile` 中:
+
+```sh
+pod 'XYSuspensionMenu', '~>1.0.3'
+```
+
+然后打开终端运行:
+
+```ruby
+pod install
+```
+
  
  2. 代码示例:
  
  - 一级菜单使用: 如果只需要在SuspensionMenuView上展示一级菜单，添加以下代码即可:
- ```
+ 
+ Objective C:
+ ```objective-c
+ #import <XYSuspensionMenu.h>
+ 
+ 
  /// 一级菜单使用:添加主菜单上的按钮
  - (void)oneLevelMenuSample {
  
@@ -48,7 +68,7 @@
  
  - 多级菜单: 给对应的Action添加MoreAction，如下示例:
  
- ```
+ ```objective-c
  - (void)sample {
  
     SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
@@ -311,6 +331,8 @@
  
  }
  ```
+ ## License
 
+ MIT
 
 
