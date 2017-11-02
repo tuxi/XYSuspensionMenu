@@ -1,9 +1,9 @@
 //
 //  AppDelegate.m
-//  XYSuspensionMenu
+//  XYSuspensionMenuDemo
 //
-//  Created by Swae on 2017/10/15.
-//  Copyright © 2017年 Ossey. All rights reserved.
+//  Created by xiaoyuan on 02/11/2017.
+//  Copyright © 2017 xiaoyuan. All rights reserved.
 //
 
 #import "AppDelegate.h"
