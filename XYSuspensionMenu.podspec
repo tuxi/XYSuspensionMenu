@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "XYSuspensionMenu"
-  s.version      = "1.0.3"
+  s.version      = "1.0.4"
   s.summary      = "XYSuspensionMenu 是iOS 的一个第三方屏幕滑动控件"
   s.description  = "XYSuspensionMenu 是iOS 的一个第三方屏幕滑动控件, 模仿 iOS AssistiveTouch 悬浮窗，可用它在DEBUG开发阶段开启多级菜单，很方便的添加多个调试功能."
   s.homepage     = "https://github.com/Ossey/XYSuspensionMenu"

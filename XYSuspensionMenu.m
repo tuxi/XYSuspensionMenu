@@ -1783,6 +1783,7 @@ menuBarItems = _menuBarItems;
         sw = [[SuspensionMenuWindow alloc] initWithFrame:frame itemSize:itemSize];
     }
     else {
+        [sw close];
         [sw commonInit];
     }
     return sw;
