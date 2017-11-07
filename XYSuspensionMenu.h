@@ -143,6 +143,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
 
++ (instancetype)menuWindowWithFrame:(CGRect)frame itemSize:(CGSize)itemSize;
+
 @end
 
 #pragma mark *** HypotenuseAction ***
@@ -169,7 +171,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface UIApplication (SuspensionWindowExtension)
 
-- (SuspensionMenuWindow *)xy_suspensionMenuWindow;
+- (nullable SuspensionMenuWindow *)xy_suspensionMenuWindow;
 
 @end
 

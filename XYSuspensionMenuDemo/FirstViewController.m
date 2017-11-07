@@ -22,7 +22,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-//    [self oneLevelMenuSample];
+    [self oneLevelMenuSample];
     [self sample];
     
 }
@@ -30,7 +30,7 @@
 /// 一级菜单使用
 - (void)oneLevelMenuSample {
     
-    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+    SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"partner_boobuz"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
@@ -68,7 +68,7 @@
 /// 多级菜单使用
 - (void)sample {
     
-    SuspensionMenuWindow *menuView = [[SuspensionMenuWindow alloc] initWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+    SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;

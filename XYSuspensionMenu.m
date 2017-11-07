@@ -33,7 +33,7 @@
 @implementation UIApplication (SuspensionWindowExtension)
 
 - (void)setXy_suspensionMenuWindow:(SuspensionMenuWindow *)suspensionMenuWindow {
-    objc_setAssociatedObject(self, @selector(suspensionMenuWindow), suspensionMenuWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, @selector(xy_suspensionMenuWindow), suspensionMenuWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (SuspensionMenuWindow *)xy_suspensionMenuWindow {
@@ -634,8 +634,15 @@ menuBarItems = _menuBarItems;
 
 - (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
     if (self = [super initWithFrame:frame]) {
-        [self _suspensionMenuViewSetup];
-        [self setItemSize:itemSize];
+        _itemSize = itemSize;
+        [self commonInit];
+    }
+    return self;
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self commonInit];
     }
     return self;
 }
@@ -646,13 +653,13 @@ menuBarItems = _menuBarItems;
     
 }
 
-- (instancetype)initWithCoder:(NSCoder *)coder
-{
-    self = [super initWithCoder:coder];
-    if (self) {
-        [self _suspensionMenuViewSetup];
-    }
-    return self;
+- (void)commonInit {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+    [self _suspensionMenuViewSetup];
+    [self setItemSize:_itemSize];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification
+                                               object:nil];
 }
 
 - (void)xy_removeWindow {
@@ -694,6 +701,7 @@ menuBarItems = _menuBarItems;
 
 
 - (void)setItemSize:(CGSize)itemSize {
+
     _viewFlags._menuWindowSize = self.frame.size;
     _itemSize = CGSizeMake(MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80),
                            MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80));
@@ -1157,11 +1165,6 @@ menuBarItems = _menuBarItems;
     [self.layer setMasksToBounds:YES];
     [self setClipsToBounds:YES];
     [self visualEffectView];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(orientationDidChange:)
-                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
-                                               object:nil];
     
 }
 
@@ -1773,6 +1776,17 @@ menuBarItems = _menuBarItems;
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - initialize
 ////////////////////////////////////////////////////////////////////////
+
++ (instancetype)menuWindowWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
+    SuspensionMenuWindow *sw = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+    if (!sw) {
+        sw = [[SuspensionMenuWindow alloc] initWithFrame:frame itemSize:itemSize];
+    }
+    else {
+        [sw commonInit];
+    }
+    return sw;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
     if (self = [super initWithFrame:frame itemSize:itemSize]) {
