@@ -8,6 +8,7 @@
 
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
+#import "XYLog.h"
 
 #pragma mark *** Sample ***
 
@@ -21,19 +22,19 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+    XYLog(@"111");
     /// 测试重复
-    [self oneLevelMenuSample];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-
+//    [self oneLevelMenuSample];
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self sample];
-    });
+        XYLog(@"666");
+//    });
     
 }
 
 /// 一级菜单使用
 - (void)oneLevelMenuSample {
-    
+    XYLog(@"111");
     SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
@@ -45,7 +46,7 @@
     HypotenuseAction *item = nil;
     {
         item = [HypotenuseAction actionWithType:UIButtonTypeCustom handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            XYLog(@"222");
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:@"apple-icon"] forState:UIControlStateNormal];
