@@ -75,6 +75,8 @@
     
     SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
+    [self addDoubleClickOnButton:menuView.centerButton];
+    
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
@@ -332,6 +334,25 @@ NS_INLINE UIViewController *getViewController() {
     UIViewController *vc = [UIViewController new];
     vc.view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0];
     return vc;
+}
+
+/// 给按钮添加双击事件
+- (void)addDoubleClickOnButton:(UIButton *)btn {
+    [btn addTarget:self action:@selector(btnTouchDownAction:) forControlEvents:UIControlEventTouchDown];
+    [btn addTarget:self action:@selector(btnRepeatTouchDownAction:) forControlEvents:UIControlEventTouchDownRepeat];
+}
+
+- (void)btnTouchDownAction:(UIButton *)btn {
+    [self performSelector:@selector(btnDoubleClick:) withObject:btn afterDelay:0.2];
+}
+
+- (void)btnRepeatTouchDownAction:(UIButton *)btn {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(btnDoubleClick:) object:btn];
+    [self btnDoubleClick:btn];
+}
+
+- (void)btnDoubleClick:(UIButton *)btn {
+    
 }
 
 ////////////////////////////////////////////////////////////////////////
