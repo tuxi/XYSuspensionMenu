@@ -77,33 +77,33 @@
 }
 
 
-//- (GHConsoleTextField *)textField {
-//    if (!_textField) {
-//        _textField = [[GHConsoleTextField alloc]initWithFrame:CGRectMake(k_WIDTH - 30, 120, k_WIDTH - 60, 90)];
-//        _textField.backgroundColor = [UIColor blackColor];
-//        _textField.text = @"\n\n";
-//        _textField.editable = NO;
-//        self.textField.textColor = [UIColor whiteColor];
-//        //        self.textField.font = [UIFont systemFontOfSize:15 weight:10];
-//        self.textField.selectable = NO;
-//        //添加右滑隐藏手势
-//        UISwipeGestureRecognizer *swipeGest = [[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeLogView:)];
-//        //添加双击全屏或者隐藏的手势
-//        UITapGestureRecognizer *tappGest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapTextView:)];
-//        tappGest.numberOfTapsRequired = 2;
-//        
-//        [_textField addGestureRecognizer:swipeGest];
-//        [_textField addGestureRecognizer:tappGest];
-//        [_textField addGestureRecognizer:self.panOutGesture];
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//            
-//            if (_isShowConsole) {
-//                [[UIApplication sharedApplication].keyWindow addSubview:_textField];
-//            }
-//        });
-//    }
-//    return _textField;
-//}
+- (instancetype *)textField {
+    if (!_textField) {
+        _textField = [[self alloc]initWithFrame:CGRectMake(k_WIDTH - 30, 120, k_WIDTH - 60, 90)];
+        _textField.backgroundColor = [UIColor blackColor];
+        _textField.text = @"\n\n";
+        _textField.editable = NO;
+        self.textField.textColor = [UIColor whiteColor];
+        //        self.textField.font = [UIFont systemFontOfSize:15 weight:10];
+        self.textField.selectable = NO;
+        //添加右滑隐藏手势
+        UISwipeGestureRecognizer *swipeGest = [[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeLogView:)];
+        //添加双击全屏或者隐藏的手势
+        UITapGestureRecognizer *tappGest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapTextView:)];
+        tappGest.numberOfTapsRequired = 2;
+        
+        [_textField addGestureRecognizer:swipeGest];
+        [_textField addGestureRecognizer:tappGest];
+        [_textField addGestureRecognizer:self.panOutGesture];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+            if (_isShowConsole) {
+                [[UIApplication sharedApplication].keyWindow addSubview:_textField];
+            }
+        });
+    }
+    return _textField;
+}
 
 - (UIPanGestureRecognizer *)panOutGesture{
     if (!_panOutGesture) {
