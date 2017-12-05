@@ -9,6 +9,7 @@
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
 #import "XYLog.h"
+#import "XYConsoleView.h"
 
 #pragma mark *** Sample ***
 
@@ -23,13 +24,33 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     XYLog(@"111");
-    /// 测试重复
-//    [self oneLevelMenuSample];
-//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    
+    [self sample];
+    
+    [self testLog];
+    
+}
+
+- (void)testRepeatInit {
+    /// 测试重复创建
+    [self oneLevelMenuSample];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self sample];
         XYLog(@"666");
-//    });
-    
+    });
+}
+
+- (void)testLog {
+    [[UIApplication sharedApplication] xy_showConsole];
+    if (@available(iOS 10.0, *)) {
+        NSTimer *timer = [NSTimer timerWithTimeInterval:5.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+            static NSInteger i = 0;
+            XYLog(@"%i", i++);
+        }];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    } else {
+        // Fallback on earlier versions
+    }
 }
 
 /// 一级菜单使用
@@ -352,7 +373,7 @@ NS_INLINE UIViewController *getViewController() {
 }
 
 - (void)btnDoubleClick:(UIButton *)btn {
-    
+    [[UIApplication sharedApplication] xy_showConsole];
 }
 
 ////////////////////////////////////////////////////////////////////////

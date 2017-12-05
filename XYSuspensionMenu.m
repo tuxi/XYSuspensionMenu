@@ -370,6 +370,11 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
         [self _checkTargetPosition:currentPoint];
     }
+    [self didChangeInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation];
+}
+
+- (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
+    
 }
 
 ////////////////////////////////////////////////////////////////////////
