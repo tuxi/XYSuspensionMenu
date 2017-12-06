@@ -10,7 +10,7 @@
 1. 将下面添加到你项目的` Podfile` 中:
 
 ```sh
-pod 'XYSuspensionMenu', '~>1.0.5'
+pod 'XYSuspensionMenu', '~>1.0.7'
 ```
 
 然后打开终端运行:
