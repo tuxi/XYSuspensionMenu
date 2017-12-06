@@ -1015,7 +1015,7 @@ menuBarItems = _menuBarItems;
     
     UIWindow *menuWindow = self.xy_window;
     
-    void (^closeAnimationsBlockWityIsTriggerPanGesture)(void) = ^ {
+    void (^closeAnimationsBlockWithIsTriggerPanGesture)(void) = ^ {
         [self setAlpha:0.0];
         [menuWindow setAlpha:0.0];
         
@@ -1057,7 +1057,7 @@ menuBarItems = _menuBarItems;
          usingSpringWithDamping:self.usingSpringWithDamping
           initialSpringVelocity:self.initialSpringVelocity
                         options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionAllowUserInteraction
-                     animations:closeAnimationsBlockWityIsTriggerPanGesture
+                     animations:closeAnimationsBlockWithIsTriggerPanGesture
                      completion:closeCompletionBlock];
 }
 
@@ -2001,7 +2001,6 @@ menuBarItems = _menuBarItems;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.fd_prefersNavigationBarHidden = YES;
     self.view.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.1];
 }
 
