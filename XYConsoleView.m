@@ -229,7 +229,7 @@ void xy_log(NSString *format, ...) {
     pinchGestureRecognizer.delegate = self;
     [self addGestureRecognizer:pinchGestureRecognizer];
     [self addGestureRecognizer:tapGestureRecognizer];
-    [self.dummyView.button addTarget:self action:@selector(xy_hide) forControlEvents:UIControlEventTouchUpInside];
+    [self.dummyView.button addTarget:self action:@selector(doubleTapOnSelf) forControlEvents:UIControlEventTouchUpInside];
     [self.dummyView.clearButton addTarget:self action:@selector(clearConsoleLog:) forControlEvents:UIControlEventTouchUpInside];
 }
 
@@ -269,18 +269,18 @@ void xy_log(NSString *format, ...) {
     }
 }
 
-- (void)doubleTapOnSelf:(UITapGestureRecognizer *)tapGesture {
-    
+- (void)doubleTapOnSelf {
     if (self.show == NO) {
         [self xy_showWithCompletion:^(BOOL finished) {
-            
+            [[UIApplication sharedApplication].xy_suspensionMenuWindow close];
         }];
     }
     else {
-        [self xy_hideWithCompletion:^(BOOL finished) {
-            
+        [[UIApplication sharedApplication].xy_suspensionMenuWindow openWithCompetion:^(BOOL finished) {
+            [self xy_hideWithCompletion:^(BOOL finished) {
+                [[UIApplication sharedApplication].xy_suspensionMenuWindow close];
+            }];
         }];
-        
     }
 }
 
