@@ -223,7 +223,7 @@ void xy_log(NSString *format, ...) {
     self.consoleTextView.editable = NO;
     self.consoleTextView.textColor = [UIColor blackColor];
     self.consoleTextView.selectable = NO;
-    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapOnSelf:)];
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapOnSelf)];
     tapGestureRecognizer.numberOfTapsRequired = 2;
     UIPinchGestureRecognizer *pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchView:)];
     pinchGestureRecognizer.delegate = self;
