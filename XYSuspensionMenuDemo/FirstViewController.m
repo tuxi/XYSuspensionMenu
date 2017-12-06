@@ -8,7 +8,6 @@
 
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
-#import "XYLog.h"
 #import "XYConsoleView.h"
 
 #pragma mark *** Sample ***
@@ -41,9 +40,8 @@
 }
 
 - (void)testLog {
-    [[UIApplication sharedApplication] xy_showConsole];
     if (@available(iOS 10.0, *)) {
-        NSTimer *timer = [NSTimer timerWithTimeInterval:5.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+        NSTimer *timer = [NSTimer timerWithTimeInterval:3.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
             static NSInteger i = 0;
             XYLog(@"%i", i++);
         }];
@@ -96,7 +94,6 @@
     
     SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
-    [self addDoubleClickOnButton:menuView.centerButton];
     
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
@@ -130,13 +127,14 @@
     HypotenuseAction *item = nil;
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [menuView showViewController:getViewController() animated:YES];
+            [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
+                [menuView close];
+            }];
         }];
         [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == UIButtonTypeSystem) {
-            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
-        }
+        item.hypotenuseButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+        [item.hypotenuseButton setBackgroundColor:[UIColor blackColor]];
+        [item.hypotenuseButton setTitle:@"Console" forState:UIControlStateNormal];
         i--;
     }
     
@@ -357,24 +355,6 @@ NS_INLINE UIViewController *getViewController() {
     return vc;
 }
 
-/// 给按钮添加双击事件
-- (void)addDoubleClickOnButton:(UIButton *)btn {
-    [btn addTarget:self action:@selector(btnTouchDownAction:) forControlEvents:UIControlEventTouchDown];
-    [btn addTarget:self action:@selector(btnRepeatTouchDownAction:) forControlEvents:UIControlEventTouchDownRepeat];
-}
-
-- (void)btnTouchDownAction:(UIButton *)btn {
-    [self performSelector:@selector(btnDoubleClick:) withObject:btn afterDelay:0.2];
-}
-
-- (void)btnRepeatTouchDownAction:(UIButton *)btn {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(btnDoubleClick:) object:btn];
-    [self btnDoubleClick:btn];
-}
-
-- (void)btnDoubleClick:(UIButton *)btn {
-    [[UIApplication sharedApplication] xy_showConsole];
-}
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - SuspensionMenuViewDelegate

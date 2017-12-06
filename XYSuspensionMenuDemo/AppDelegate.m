@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import "XYConsoleView.h"
-#import "XYLog.h"
 
 @interface AppDelegate ()
 
