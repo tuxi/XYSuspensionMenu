@@ -19,7 +19,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logChange:) name:XYLogDidChangeLogNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logChange:) name:XYConsoleDidChangeLogNotification object:nil];
     
     return YES;
 }
