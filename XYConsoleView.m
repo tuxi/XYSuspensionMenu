@@ -12,33 +12,34 @@
 
 NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChangeLogNotification";
 
-static NSMutableString *xy_logSting() {
+NS_INLINE NSMutableString *xy_logSting() {
     static NSMutableString *xy_logSting = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        xy_logSting = [NSMutableString new];
+        xy_logSting = NSMutableString.new;
     });
     return xy_logSting;
+}
+
+NS_INLINE NSDateFormatter *dataFormatter() {
+    static NSDateFormatter *formatter = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        formatter = NSDateFormatter.new;
+        formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+    });
+    return formatter;
 }
 
 NS_INLINE void xy_print(NSString *msg) {
     @autoreleasepool {
         NSString *tempMsg = msg.copy;
-        
-        static NSDateFormatter *formatter = nil;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            formatter = [[NSDateFormatter alloc]init];
-            formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
-        });
-        
-        tempMsg = [NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg];
-        const char *resultCString = NULL;
+        tempMsg = [NSString stringWithFormat:@"*** %@ %@ ***\n\n",[dataFormatter() stringFromDate:[NSDate new]],  msg];
+        const char *cStr = NULL;
         if ([tempMsg canBeConvertedToEncoding:NSUTF8StringEncoding]) {
-            resultCString = [tempMsg cStringUsingEncoding:NSUTF8StringEncoding];
+            cStr = [tempMsg cStringUsingEncoding:NSUTF8StringEncoding];
+            printf("%s", cStr);
         }
-        // 控制台打印，打印当前log
-        printf("%s", resultCString);
         [xy_logSting() appendString:tempMsg];
         
 #if DEBUG
@@ -87,38 +88,16 @@ void xy_log(NSString *format, ...) {
 
 @end
 
-
-@interface XYConsoleTextView ()
-
-@end
-
 @interface XYConsoleView () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) XYDummyView *dummyView;
 @property (nonatomic, assign, getter=isShow) BOOL show;
 @property (nonatomic) CGAffineTransform currentTransform;
 @property (nonatomic) CGFloat lastScale;
+@property (nonatomic, strong) UITextView *consoleTextView;
 
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;
-
-@end
-
-@implementation XYConsoleTextView
-
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-       
-    }
-    return self;
-}
-
-
-- (void)dealloc {
-    
-}
 
 @end
 
@@ -162,8 +141,6 @@ void xy_log(NSString *format, ...) {
         return NO;
     }
     [view xy_hideWithCompletion:^(BOOL finished) {
-//        [view removeFromSuperview];
-//        self.xy_consoleView = nil;
         if (completion) {
             completion(finished);
         }
@@ -220,10 +197,10 @@ void xy_log(NSString *format, ...) {
     
 }
 
-- (XYConsoleTextView *)consoleTextView {
+- (UITextView *)consoleTextView {
     
     if (!_consoleTextView) {
-        XYConsoleTextView *textView = [[XYConsoleTextView alloc] init];
+        UITextView *textView = [[UITextView alloc] init];
         textView.translatesAutoresizingMaskIntoConstraints = NO;
         _consoleTextView = textView;
     }
@@ -246,14 +223,12 @@ void xy_log(NSString *format, ...) {
     self.consoleTextView.editable = NO;
     self.consoleTextView.textColor = [UIColor blackColor];
     self.consoleTextView.selectable = NO;
-    UISwipeGestureRecognizer *swipeGest = [[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeOnSelf:)];
-    UITapGestureRecognizer *tappGest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapOnSelf:)];
-    tappGest.numberOfTapsRequired = 2;
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapOnSelf:)];
+    tapGestureRecognizer.numberOfTapsRequired = 2;
     UIPinchGestureRecognizer *pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchView:)];
     pinchGestureRecognizer.delegate = self;
     [self addGestureRecognizer:pinchGestureRecognizer];
-    [self addGestureRecognizer:swipeGest];
-    [self addGestureRecognizer:tappGest];
+    [self addGestureRecognizer:tapGestureRecognizer];
     [self.dummyView.button addTarget:self action:@selector(xy_hide) forControlEvents:UIControlEventTouchUpInside];
     [self.dummyView.clearButton addTarget:self action:@selector(clearConsoleLog:) forControlEvents:UIControlEventTouchUpInside];
 }
@@ -294,24 +269,6 @@ void xy_log(NSString *format, ...) {
     }
 }
 
-/// 向右侧轻扫隐藏
-- (void)swipeOnSelf:(UISwipeGestureRecognizer *)swipeGesture{
-    
-    if (self.isShow) {
-        if (swipeGesture.direction == UISwipeGestureRecognizerDirectionRight) {
-            [self xy_hideWithCompletion:^(BOOL finished) {
-                
-            }];
-        }
-    }
-    else {
-        [self xy_hideWithCompletion:^(BOOL finished) {
-            
-        }];
-    }
-}
-
-// 双击隐藏或显示
 - (void)doubleTapOnSelf:(UITapGestureRecognizer *)tapGesture {
     
     if (self.show == NO) {
@@ -379,11 +336,6 @@ void xy_log(NSString *format, ...) {
 
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
     if (self.isShow) {
-   
-//        CGAffineTransform tr = CGAffineTransformScale(_currentTransform,
-//                                                      _lastScale,
-//                                                      _lastScale);
-//        self.transform = tr;
         
         [self setTransform:CGAffineTransformIdentity];
         
