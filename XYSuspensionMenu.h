@@ -140,7 +140,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)showViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 - (void)open;
+- (void)openWithCompetion:(void (^ _Nullable)(BOOL finished))competion;
 - (void)close;
+- (void)closeWithCompetion:(void (^ _Nullable)(BOOL finished))competion;
 @end
 
 #pragma mark *** SuspensionMenuWindow ***

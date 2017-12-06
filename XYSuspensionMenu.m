@@ -874,9 +874,11 @@ menuBarItems = _menuBarItems;
     
 }
 
-
-
 - (void)_openWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut {
+    [self _openWithNeedCurveEaseInOut:isCurveEaseInOut competion:NULL];
+}
+
+- (void)_openWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut competion:(void (^ _Nullable)(BOOL finished))openCompetion {
     if (_viewFlags._isOpened) return;
     self.centerButton.usingSpringWithDamping = 0.8;
     self.centerButton.initialSpringVelocity = 20;
@@ -921,6 +923,9 @@ menuBarItems = _menuBarItems;
                                  for (HypotenuseAction *item in self.menuBarItems) {
                                      item.orginRect = item.hypotenuseButton.frame;
                                  }
+                             }
+                             if (openCompetion) {
+                                 openCompetion(finished);
                              }
                          }];
     };
@@ -968,12 +973,16 @@ menuBarItems = _menuBarItems;
 }
 
 - (void)open {
-    [self _openWithNeedCurveEaseInOut:YES];
+    [self openWithCompetion:NULL];
+}
+
+- (void)openWithCompetion:(void (^)(BOOL finished))competion {
+    [self _openWithNeedCurveEaseInOut:YES competion:competion];
     
 }
 
 - (void)close {
-    [self _closeWithTriggerPanGesture:NO];
+    [self _closeWithTriggerPanGesture:NO completion:NULL];
 }
 
 - (void)_openCompetion {
@@ -1053,8 +1062,8 @@ menuBarItems = _menuBarItems;
 }
 
 /// 执行close，并根据当前是否触发了拖动手势，确定是否在让SuapensionWindow执行移动边缘的操作，防止移除时乱窜
-- (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture {
-    [self _closeWithTriggerPanGesture:isTriggerPanGesture animationBlock:NULL closeCompletion:NULL];
+- (void)_closeWithTriggerPanGesture:(BOOL)isTriggerPanGesture completion:(void (^)(BOOL finished))closeCompletion {
+    [self _closeWithTriggerPanGesture:isTriggerPanGesture animationBlock:NULL closeCompletion:closeCompletion];
 }
 
 
@@ -1383,7 +1392,7 @@ menuBarItems = _menuBarItems;
 - (void)orientationDidChange:(NSNotification *)note {
     if (self.shouldCloseWhenDeviceOrientationDidChange) {
         _viewFlags._isClosed = NO;
-        [self _closeWithTriggerPanGesture:YES];
+        [self _closeWithTriggerPanGesture:YES completion:NULL];
         self.centerButton.needReversePoint = YES;
         [self.centerButton checkTargetPosition];
         self.centerButton.needReversePoint = NO;
@@ -1411,7 +1420,7 @@ menuBarItems = _menuBarItems;
         [suspensionView moveToPreviousLeanPosition];
     }
     if (pan.state == UIGestureRecognizerStateBegan) {
-        [self _closeWithTriggerPanGesture:YES];
+        [self _closeWithTriggerPanGesture:YES completion:NULL];
     }
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:centerButtonLocationChange:)]) {
         [self.delegate suspensionMenuView:self centerButtonLocationChange:pan];
@@ -1992,7 +2001,7 @@ menuBarItems = _menuBarItems;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    self.fd_prefersNavigationBarHidden = YES;
     self.view.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.1];
 }
 
