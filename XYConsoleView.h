@@ -21,14 +21,13 @@
 #import <Foundation/Foundation.h>
 
 FOUNDATION_EXPORT NSNotificationName const XYConsoleDidChangeLogNotification;
-
 FOUNDATION_EXPORT void xy_log(NSString *format, ...) NS_FORMAT_FUNCTION(1,2) NS_NO_TAIL_CALL;
 
 #endif 
 
 #import "XYSuspensionMenu.h"
 
-@class XYConsoleTextView, XYConsoleView;
+@class XYConsoleView;
 
 @interface UIApplication (XYConsole)
 
@@ -40,14 +39,7 @@ FOUNDATION_EXPORT void xy_log(NSString *format, ...) NS_FORMAT_FUNCTION(1,2) NS_
 
 @end
 
-
-@interface XYConsoleTextView : UITextView
-
-@end
-
 @interface XYConsoleView : SuspensionWindow
-
-@property (nonatomic, strong) XYConsoleTextView *consoleTextView;
 
 @property (nonatomic, copy) NSString *text;
 
