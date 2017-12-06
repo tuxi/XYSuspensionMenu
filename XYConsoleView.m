@@ -125,9 +125,9 @@ void xy_log(NSString *format, ...) {
     if (view.isShow) {
         return view;
     }
+    view.text = xy_logSting();
     [view xy_showWithCompletion:^(BOOL finished) {
-        CGRect rect = CGRectMake(0, view.consoleTextView.contentSize.height-15, view.consoleTextView.contentSize.width, 10);
-        [view.consoleTextView scrollRectToVisible:rect animated:YES];
+        [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length, 1)];
         if (completion) {
             completion(finished);
         }
@@ -203,6 +203,7 @@ void xy_log(NSString *format, ...) {
         UITextView *textView = [[UITextView alloc] init];
         textView.translatesAutoresizingMaskIntoConstraints = NO;
         _consoleTextView = textView;
+        _consoleTextView.layoutManager.allowsNonContiguousLayout = NO;
     }
     return _consoleTextView;
 }
