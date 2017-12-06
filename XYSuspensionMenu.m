@@ -261,11 +261,13 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     CGFloat touchHeight = self.frame.size.height;
     CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
     CGFloat screenHeight = [[UIScreen mainScreen] bounds].size.height;
+    // 计算当前距离上下左右的间距
     CGFloat left = MAX(self.leanEdgeInsets.left, MIN(panPoint.x, screenWidth - touchWidth - self.leanEdgeInsets.right));
     CGFloat right = screenWidth - left;
     CGFloat top = MAX(self.leanEdgeInsets.top, MIN(panPoint.y, screenHeight - touchHeight - self.leanEdgeInsets.bottom));
     CGFloat bottom = screenHeight - top;
     
+    // 获取最小的间距(最小的间距为目标移动的位置)
     CGFloat minSpace = 0;
     if (self.leanEdgeType == SuspensionViewLeanEdgeTypeHorizontal) {
         minSpace = MIN(left, right);
@@ -282,20 +284,21 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     else if (panPoint.y > (screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom)) {
         targetY = screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom;
     }
-    else{
+    else {
         targetY = panPoint.y;
     }
     
+    // 计算需要移动到中心点位置
     if (minSpace == left) {
         newTargetPoint = CGPointMake(touchWidth*0.5 + self.leanEdgeInsets.left, targetY);
     }
-    if (minSpace == right) {
+    else if (minSpace == right) {
         newTargetPoint = CGPointMake(screenWidth - touchWidth*0.5 - self.leanEdgeInsets.right, targetY);
     }
-    if (minSpace == top) {
+    else if (minSpace == top) {
         newTargetPoint = CGPointMake(left, touchHeight*0.5 + self.leanEdgeInsets.top);
     }
-    if (minSpace == bottom) {
+    else if (minSpace == bottom) {
         newTargetPoint = CGPointMake(left, screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom);
     }
     // 记录当前的center
