@@ -2001,7 +2001,6 @@ menuBarItems = _menuBarItems;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.fd_prefersNavigationBarHidden = YES;
     self.view.backgroundColor = [UIColor colorWithWhite:0.3 alpha:0.1];
 }
 
