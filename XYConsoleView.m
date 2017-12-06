@@ -10,6 +10,23 @@
 
 #import <Foundation/Foundation.h>
 
+@implementation NSTimer (XYBlocks)
+
++ (instancetype)xy_timerWithTimeInterval:(NSTimeInterval)timeInterval repeats:(BOOL)repeats block:(void (^)(void))block {
+    void (^tempBlock)() = [block copy];
+    NSTimer *timer = [self timerWithTimeInterval:timeInterval target:self selector:@selector(xy_timerBlock:) userInfo:tempBlock repeats:repeats];
+    return timer;
+}
+
++ (void)xy_timerBlock:(NSTimer *)timer {
+    if ([timer userInfo]) {
+        void (^block)() = (void (^)())[timer userInfo];
+        block();
+    }
+}
+
+@end
+
 NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChangeLogNotification";
 
 NS_INLINE NSMutableString *xy_logSting() {
@@ -31,6 +48,22 @@ NS_INLINE NSDateFormatter *dataFormatter() {
     return formatter;
 }
 
+NS_INLINE NSTimer *logTimer() {
+    static NSTimer *logTimer = nil;
+#if DEBUG
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        /// 优化日志回调，使用[NSRunLoop mainRunLoop]会比回到主线程性能好很多
+        /// 发觉在子线程中打印log，再回到主线程中显示log会很卡，开启NSTimer每秒钟执行一次显示log，性能会好很多
+        logTimer = [NSTimer xy_timerWithTimeInterval:1.0 repeats:YES block:^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting()];
+        }];
+        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSRunLoopCommonModes];
+    });
+#endif
+    return logTimer;
+}
+
 NS_INLINE void xy_print(NSString *msg) {
     @autoreleasepool {
         NSString *tempMsg = msg.copy;
@@ -43,17 +76,7 @@ NS_INLINE void xy_print(NSString *msg) {
         [xy_logSting() appendString:tempMsg];
         
 #if DEBUG
-        
-        dispatch_block_t block = ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting()];
-        };
-        
-        if ([NSThread isMainThread]) {
-            block();
-        }
-        else {
-            dispatch_async(dispatch_get_main_queue(), block);
-        }
+        logTimer();
 #endif
     }
 }
