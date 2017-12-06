@@ -29,8 +29,8 @@
 @property (nonatomic) CGAffineTransform currentTransform;
 @property (nonatomic) CGFloat lastScale;
 
-- (void)xy_show;
-- (void)xy_hide;
+- (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
+- (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;
 
 @end
 
@@ -40,7 +40,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        
+       
     }
     return self;
 }
@@ -63,7 +63,7 @@
     return view;
 }
 
-- (XYConsoleView *)xy_showConsole {
+- (XYConsoleView *)xy_showConsoleWithCompletion:(void (^)(BOOL))completion {
     XYConsoleView *view = [self xy_consoleView];
     if (!view) {
         SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
@@ -76,21 +76,39 @@
     if (view.isShow) {
         return view;
     }
-    [view xy_show];
-    CGRect rect = CGRectMake(0, view.consoleTextView.contentSize.height-15, view.consoleTextView.contentSize.width, 10);
-    [view.consoleTextView scrollRectToVisible:rect animated:YES];
+    [view xy_showWithCompletion:^(BOOL finished) {
+        CGRect rect = CGRectMake(0, view.consoleTextView.contentSize.height-15, view.consoleTextView.contentSize.width, 10);
+        [view.consoleTextView scrollRectToVisible:rect animated:YES];
+        if (completion) {
+            completion(finished);
+        }
+    }];
     return view;
 }
 
-- (BOOL)xy_hideConsole {
+- (BOOL)xy_hideConsoleWithCompletion:(void (^)(BOOL))completion {
     XYConsoleView *view = [self xy_consoleView];
     if (!view) {
         return NO;
     }
-    [view xy_hide];
-    [view removeFromSuperview];
-    self.xy_consoleView = nil;
+    [view xy_hideWithCompletion:^(BOOL finished) {
+//        [view removeFromSuperview];
+//        self.xy_consoleView = nil;
+        if (completion) {
+            completion(finished);
+        }
+    }];
+    
     return YES;
+}
+
+- (void)xy_toggleConsoleWithCompletion:(void (^)(BOOL))completion {
+    if (self.xy_consoleView.isShow) {
+        [self xy_hideConsoleWithCompletion:completion];
+    }
+    else {
+        [self xy_showConsoleWithCompletion:completion];
+    }
 }
 
 @end
@@ -151,15 +169,14 @@
 }
 
 - (void)commonInit {
+     _lastScale = 1.0;
     self.backgroundColor = [UIColor whiteColor];
     self.consoleTextView.backgroundColor = [UIColor whiteColor];
     self.consoleTextView.editable = NO;
     self.consoleTextView.textColor = [UIColor blackColor];
     self.consoleTextView.selectable = NO;
     self.consoleTextView.textAlignment = NSTextAlignmentCenter;
-    // 添加清扫隐藏手势
     UISwipeGestureRecognizer *swipeGest = [[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeOnSelf:)];
-    // 添加双击全屏或者隐藏的手势
     UITapGestureRecognizer *tappGest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapOnSelf:)];
     tappGest.numberOfTapsRequired = 2;
     UIPinchGestureRecognizer *pinchGestureRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(pinchView:)];
@@ -194,60 +211,86 @@
         
     }
     
-    // 当手指离开屏幕时,将lastscale设置为1.0
-    if ((gesture.state == UIGestureRecognizerStateEnded) || (gesture.state == UIGestureRecognizerStateCancelled)) {
+    if ((gesture.state == UIGestureRecognizerStateEnded) ||
+        (gesture.state == UIGestureRecognizerStateCancelled)) {
         
         _lastScale =_lastScale*gesture.scale;
     }
 }
 
-/// 向右侧清扫隐藏
+/// 向右侧轻扫隐藏
 - (void)swipeOnSelf:(UISwipeGestureRecognizer *)swipeGesture{
     
     if (self.isShow) {
         if (swipeGesture.direction == UISwipeGestureRecognizerDirectionRight) {
-            [self xy_hide];
+            [self xy_hideWithCompletion:^(BOOL finished) {
+                
+            }];
         }
     }
     else {
-        [self xy_hide];
+        [self xy_hideWithCompletion:^(BOOL finished) {
+            
+        }];
     }
 }
 
-// 双击操作
+// 双击隐藏或显示
 - (void)doubleTapOnSelf:(UITapGestureRecognizer *)tapGesture {
     
     if (self.show == NO) {
-        [self xy_show];
+        [self xy_showWithCompletion:^(BOOL finished) {
+            
+        }];
     }
     else {
-        [self xy_hide];
+        [self xy_hideWithCompletion:^(BOOL finished) {
+            
+        }];
         
     }
 }
 
-- (void)xy_show {
+- (void)xy_showWithCompletion:(void (^)(BOOL finished))completion {
     self.consoleTextView.scrollEnabled = YES;
-    [UIView animateWithDuration:0.2 animations:^{
+    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
         self.frame = [UIScreen mainScreen].bounds;
     } completion:^(BOOL finished) {
         self.show = YES;
+        if (completion) {
+            completion(finished);
+        }
+    }];
+}
+
+- (void)xy_show {
+    [self xy_showWithCompletion:NULL];
+}
+
+- (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion {
+    SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+    
+    UIView *targetView = (UIView *)menu.currentResponderItem.hypotenuseButton;
+    if (!targetView) {
+        targetView = menu.centerButton;
+    }
+    CGPoint targetPoint = targetView.frame.origin;
+    targetPoint = [targetView convertPoint:targetPoint toView:[UIApplication sharedApplication].delegate.window];
+    
+    self.consoleTextView.scrollEnabled = NO;
+    [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        self.frame = CGRectMake(targetPoint.x, targetPoint.y, 0, 0);
+    } completion:^(BOOL finished) {
+        self.show = NO;
+        [self setTransform:CGAffineTransformIdentity];
+        if (completion) {
+            completion(finished);
+        }
     }];
 }
 
 - (void)xy_hide {
-    SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
-    
-    CGPoint centerPoint = menu.centerButton.frame.origin;
-    centerPoint = [menu.centerButton convertPoint:centerPoint toView:[UIApplication sharedApplication].delegate.window];
-    
-    self.consoleTextView.scrollEnabled = NO;
-    [UIView animateWithDuration:0.2 animations:^{
-        self.frame = CGRectMake(centerPoint.x, centerPoint.y, 0, 0);
-    } completion:^(BOOL finished) {
-        self.show = NO;
-        [self setTransform:CGAffineTransformIdentity];
-    }];
+    [self xy_hideWithCompletion:NULL];
 }
 
 - (void)setText:(NSString *)text {
