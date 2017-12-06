@@ -6,6 +6,75 @@
 //  Copyright © 2017 xiaoyuan. All rights reserved.
 //
 
+#ifdef __OBJC__
+
+#import <Foundation/Foundation.h>
+
+NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChangeLogNotification";
+
+static NSMutableString *xy_logSting() {
+    static NSMutableString *xy_logSting = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        xy_logSting = [NSMutableString new];
+    });
+    return xy_logSting;
+}
+
+NS_INLINE void xy_print(NSString *msg) {
+    @autoreleasepool {
+        NSString *tempMsg = msg.copy;
+        
+        static NSDateFormatter *formatter = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            formatter = [[NSDateFormatter alloc]init];
+            formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+        });
+        
+        tempMsg = [NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg];
+        const char *resultCString = NULL;
+        if ([tempMsg canBeConvertedToEncoding:NSUTF8StringEncoding]) {
+            resultCString = [tempMsg cStringUsingEncoding:NSUTF8StringEncoding];
+        }
+        // 控制台打印，打印当前log
+        printf("%s", resultCString);
+        [xy_logSting() appendString:tempMsg];
+        
+#if DEBUG
+        
+        dispatch_block_t block = ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting()];
+        };
+        
+        if ([NSThread isMainThread]) {
+            block();
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), block);
+        }
+#endif
+    }
+}
+
+void xy_log(NSString *format, ...) {
+    @autoreleasepool {
+        va_list args;
+        
+        if (format) {
+            va_start(args, format);
+            
+            NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
+            
+            xy_print(message);
+        }
+        
+    }
+    
+}
+
+#endif
+
 #import "XYConsoleView.h"
 #import <objc/runtime.h>
 #import "XYSuspensionMenu.h"
@@ -14,6 +83,7 @@
 @interface XYDummyView : UIView
 
 @property (nonatomic, weak) UIButton *button;
+@property (nonatomic, weak) UIButton *clearButton;
 
 @end
 
@@ -169,13 +239,13 @@
 }
 
 - (void)commonInit {
+    self.leanEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 0);
      _lastScale = 1.0;
     self.backgroundColor = [UIColor whiteColor];
     self.consoleTextView.backgroundColor = [UIColor whiteColor];
     self.consoleTextView.editable = NO;
     self.consoleTextView.textColor = [UIColor blackColor];
     self.consoleTextView.selectable = NO;
-    self.consoleTextView.textAlignment = NSTextAlignmentCenter;
     UISwipeGestureRecognizer *swipeGest = [[UISwipeGestureRecognizer alloc]initWithTarget:self action:@selector(swipeOnSelf:)];
     UITapGestureRecognizer *tappGest = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(doubleTapOnSelf:)];
     tappGest.numberOfTapsRequired = 2;
@@ -185,6 +255,12 @@
     [self addGestureRecognizer:swipeGest];
     [self addGestureRecognizer:tappGest];
     [self.dummyView.button addTarget:self action:@selector(xy_hide) forControlEvents:UIControlEventTouchUpInside];
+    [self.dummyView.clearButton addTarget:self action:@selector(clearConsoleLog:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)clearConsoleLog:(UIButton *)btn {
+    [xy_logSting() setString:@""];
+    [self setText:@""];
 }
 
 - (void)pinchView:(UIPinchGestureRecognizer *)gesture {
@@ -342,14 +418,28 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
     UIButton *bottomButton = [UIButton buttonWithType:UIButtonTypeCustom];
     bottomButton.translatesAutoresizingMaskIntoConstraints = NO;
     bottomButton.backgroundColor = [UIColor grayColor];
+    self.backgroundColor = [UIColor clearColor];
     [bottomButton setTitle:@"轻拍或拖拽" forState:UIControlStateNormal];
     [self addSubview:bottomButton];
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeTop multiplier:1.0 constant:0]];
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeRight multiplier:1.0 constant:0]];
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0]];
-    [self addConstraint:[NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeLeft multiplier:1.0 constant:0]];
+    NSLayoutConstraint *bottomButtonTop = [NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeTop multiplier:1.0 constant:20.0];
+    NSLayoutConstraint *bottomButtonBottom = [NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
+    NSLayoutConstraint *bottomButtonLeft = [NSLayoutConstraint constraintWithItem:bottomButton attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:bottomButton.superview attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0];
+    [NSLayoutConstraint activateConstraints:@[bottomButtonTop, bottomButtonLeft, bottomButtonBottom]];
     
     self.button = bottomButton;
+    
+    UIButton *clearButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    clearButton.translatesAutoresizingMaskIntoConstraints = NO;
+    clearButton.backgroundColor = [UIColor grayColor];
+    [clearButton setTitle:@"清空" forState:UIControlStateNormal];
+    [self addSubview:clearButton];
+    NSLayoutConstraint *clearButtonTop = [NSLayoutConstraint constraintWithItem:clearButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:bottomButton attribute:NSLayoutAttributeTop multiplier:1.0 constant:0.0];
+    NSLayoutConstraint *clearButtonRight = [NSLayoutConstraint constraintWithItem:clearButton attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:0.0];
+     NSLayoutConstraint *clearButtonBottom = [NSLayoutConstraint constraintWithItem:clearButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
+     NSLayoutConstraint *clearButtonLeft = [NSLayoutConstraint constraintWithItem:clearButton attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:bottomButton attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:0];
+     NSLayoutConstraint *clearButtonWidth = [NSLayoutConstraint constraintWithItem:clearButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:80.0];
+    [NSLayoutConstraint activateConstraints:@[clearButtonTop, clearButtonRight, clearButtonBottom, clearButtonLeft, clearButtonWidth]];
+    self.clearButton = clearButton;
 }
 
 @end
