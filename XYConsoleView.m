@@ -203,6 +203,8 @@ void xy_log(NSString *format, ...) {
         UITextView *textView = [[UITextView alloc] init];
         textView.translatesAutoresizingMaskIntoConstraints = NO;
         _consoleTextView = textView;
+        // 是否非连续布局属性，如果设置为YES就会导致每次调用scrollRangeToVisible::时都会从顶部跳到最后一行
+        // 防止TextView重置滑动
         _consoleTextView.layoutManager.allowsNonContiguousLayout = NO;
     }
     return _consoleTextView;
@@ -329,6 +331,10 @@ void xy_log(NSString *format, ...) {
 
 - (void)setText:(NSString *)text {
     self.consoleTextView.text = text;
+    if (self.consoleTextView.isDecelerating || self.consoleTextView.isDragging) {
+        return;
+    }
+    [self.consoleTextView scrollRangeToVisible:NSMakeRange(text.length, 1)];
 }
 
 - (NSString *)text {
