@@ -370,6 +370,11 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
         [self _checkTargetPosition:currentPoint];
     }
+    [self didChangeInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation];
+}
+
+- (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
+    
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -597,11 +602,12 @@ static const NSUInteger moreBarButtonBaseTag = 200;
 #if ! __has_feature(objc_arc)
 @property (nonatomic, assign) UIImageView *backgroundImageView;
 @property (nonatomic, assign) UIVisualEffectView *visualEffectView;
-@property (nonatomic, assign) HypotenuseAction *currentClickHypotenuseItem;
+@property (nonatomic, assign) HypotenuseAction *currentResponderItem;
 #else
 @property (nonatomic, weak) UIImageView *backgroundImageView;
 @property (nonatomic, weak) UIVisualEffectView *visualEffectView;
-@property (nonatomic, weak) HypotenuseAction *currentClickHypotenuseItem;
+/// 当前处理事件的item
+@property (nonatomic, weak) HypotenuseAction *currentResponderItem;
 #endif
 @property (nonatomic, strong) UIWindow *xy_window;
 @property (nonatomic, strong) SuspensionView *centerButton;
@@ -762,7 +768,7 @@ menuBarItems = _menuBarItems;
     NSParameterAssert(viewController);
     viewController.hidesBottomBarWhenPushed = YES;
     UIViewController *topVc = [self topViewController];
-    NSNumber *vcKey = @([_currentClickHypotenuseItem.hypotenuseButton tag]);
+    NSNumber *vcKey = @([_currentResponderItem.hypotenuseButton tag]);
     NSMutableArray *currentClickVcAddress = [self.showViewControllerDictionary objectForKey:vcKey];
     if (!currentClickVcAddress) {
         currentClickVcAddress = [NSMutableArray array];
@@ -770,7 +776,7 @@ menuBarItems = _menuBarItems;
     }
     //////////////////// 防止控制器重复push或present的处理 ////////////////////
     // 判断当前点击的btn，是否已经保存了控制器的内存地址，如果保存了，就移除，并return
-    if (_currentClickHypotenuseItem && viewController) {
+    if (_currentResponderItem && viewController) {
         // 取出当前点击按钮保存的控制器的内存地址
         
         NSMutableArray *vcs = [topVc.navigationController.viewControllers mutableCopy];
@@ -1223,7 +1229,7 @@ menuBarItems = _menuBarItems;
     }
     
     HypotenuseAction *item = self.menuBarItems[foundMenuButtonIdx];
-    _currentClickHypotenuseItem = item;
+    _currentResponderItem = item;
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];
         return;
@@ -1256,7 +1262,7 @@ menuBarItems = _menuBarItems;
     
     
     HypotenuseAction *item = [self.currentDisplayMoreItem.moreHypotenusItems objectAtIndex:foundMoreButtonIdx];
-    _currentClickHypotenuseItem = item;
+    _currentResponderItem = item;
     
     if (item.moreHypotenusItems.count) {
         [self moreButtonClickWithHypotenuseItem:item];

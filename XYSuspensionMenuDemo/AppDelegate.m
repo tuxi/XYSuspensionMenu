@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "XYConsoleView.h"
 
 @interface AppDelegate ()
 
@@ -17,7 +18,15 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logChange:) name:XYLogDidChangeLogNotification object:nil];
+    
     return YES;
+}
+
+- (void)logChange:(NSNotification *)notification {
+    NSString *log = notification.object;
+    [UIApplication sharedApplication].xy_consoleView.text = log;
 }
 
 

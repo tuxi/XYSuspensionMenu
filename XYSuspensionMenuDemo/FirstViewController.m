@@ -8,6 +8,7 @@
 
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
+#import "XYConsoleView.h"
 
 #pragma mark *** Sample ***
 
@@ -21,19 +22,38 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    XYLog(@"111");
     
-    /// 测试重复
+    [self sample];
+    
+    [self testLog];
+    
+}
+
+- (void)testRepeatInit {
+    /// 测试重复创建
     [self oneLevelMenuSample];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-
         [self sample];
+        XYLog(@"666");
     });
-    
+}
+
+- (void)testLog {
+    if (@available(iOS 10.0, *)) {
+        NSTimer *timer = [NSTimer timerWithTimeInterval:3.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+            static NSInteger i = 0;
+            XYLog(@"%i", i++);
+        }];
+        [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    } else {
+        // Fallback on earlier versions
+    }
 }
 
 /// 一级菜单使用
 - (void)oneLevelMenuSample {
-    
+    XYLog(@"111");
     SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
@@ -45,7 +65,7 @@
     HypotenuseAction *item = nil;
     {
         item = [HypotenuseAction actionWithType:UIButtonTypeCustom handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            
+            XYLog(@"222");
         }];
         [menuView addAction:item];
         [item.hypotenuseButton setImage:[UIImage imageNamed:@"apple-icon"] forState:UIControlStateNormal];
@@ -74,6 +94,7 @@
     
     SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
+    
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
     menuView.shouldCloseWhenDeviceOrientationDidChange = YES;
@@ -106,13 +127,14 @@
     HypotenuseAction *item = nil;
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [menuView showViewController:getViewController() animated:YES];
+            [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
+                [menuView close];
+            }];
         }];
         [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == UIButtonTypeSystem) {
-            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
-        }
+        item.hypotenuseButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+        [item.hypotenuseButton setBackgroundColor:[UIColor blackColor]];
+        [item.hypotenuseButton setTitle:@"Console" forState:UIControlStateNormal];
         i--;
     }
     
@@ -332,6 +354,7 @@ NS_INLINE UIViewController *getViewController() {
     vc.view.backgroundColor = [UIColor colorWithRed:arc4random_uniform(256)/255.0 green:arc4random_uniform(256)/255.0 blue:arc4random_uniform(256)/255.0 alpha:1.0];
     return vc;
 }
+
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - SuspensionMenuViewDelegate

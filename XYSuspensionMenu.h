@@ -77,6 +77,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)moveToPreviousLeanPosition;
 - (void)checkTargetPosition;
 
+/// 界面方向发生改变，子类可重写此方法，进行布局
+- (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation;
+
 @end
 
 #pragma mark *** UIResponder (SuspensionView) ***
@@ -107,9 +110,11 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 #if ! __has_feature(objc_arc)
 @property (nonatomic, assign, nullable) id<SuspensionMenuViewDelegate> delegate;
 @property (nonatomic, assign, readonly) UIImageView *backgroundImageView;
+@property (nonatomic, assign, readonly) HypotenuseAction *currentResponderItem;
 #else
 @property (nonatomic, weak, nullable) id<SuspensionMenuViewDelegate> delegate;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
+@property (nonatomic, weak, readonly) HypotenuseAction *currentResponderItem;
 #endif
 @property (nonatomic, strong, readonly) SuspensionView *centerButton;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
@@ -120,6 +125,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign) CGFloat initialSpringVelocity;
 @property (nonatomic, assign) BOOL shouldHiddenCenterButtonWhenOpen;
 @property (nonatomic, assign) BOOL shouldCloseWhenDeviceOrientationDidChange;
+@property (nonatomic, strong, readonly) UIWindow *xy_window;
 
 - (instancetype)initWithFrame:(CGRect)frame itemSize:(CGSize)itemSize NS_DESIGNATED_INITIALIZER;
 
