@@ -6,21 +6,23 @@
 //  Copyright © 2017 xiaoyuan. All rights reserved.
 //
 
-#ifdef __OBJC__
+#import "XYConsoleView.h"
+#import <objc/runtime.h>
+#import "XYSuspensionMenu.h"
 
-#import <Foundation/Foundation.h>
+#ifdef __OBJC__
 
 @implementation NSTimer (XYBlocks)
 
 + (instancetype)xy_timerWithTimeInterval:(NSTimeInterval)timeInterval repeats:(BOOL)repeats block:(void (^)(void))block {
-    void (^tempBlock)() = [block copy];
+    void (^tempBlock)(void) = [block copy];
     NSTimer *timer = [self timerWithTimeInterval:timeInterval target:self selector:@selector(xy_timerBlock:) userInfo:tempBlock repeats:repeats];
     return timer;
 }
 
 + (void)xy_timerBlock:(NSTimer *)timer {
     if ([timer userInfo]) {
-        void (^block)() = (void (^)())[timer userInfo];
+        void (^block)(void) = (void (^)(void))[timer userInfo];
         block();
     }
 }
@@ -99,10 +101,6 @@ void xy_log(NSString *format, ...) {
 
 #endif
 
-#import "XYConsoleView.h"
-#import <objc/runtime.h>
-#import "XYSuspensionMenu.h"
-
 
 @interface XYDummyView : UIView
 
@@ -150,7 +148,7 @@ void xy_log(NSString *format, ...) {
     }
     view.text = xy_logSting();
     [view xy_showWithCompletion:^(BOOL finished) {
-        [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length, 1)];
+        [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length - 1, 1)];
         if (completion) {
             completion(finished);
         }
