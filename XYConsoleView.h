@@ -6,7 +6,9 @@
 //  Copyright © 2017 xiaoyuan. All rights reserved.
 //
 
-#ifdef __OBJC__
+#import "XYSuspensionMenu.h"
+
+#if __OBJC__
 
 #pragma clang diagnostic ignored "-Wignored-attributes"
 
@@ -17,15 +19,10 @@
     #define DLog(...)
 #endif
 
-
-#import <Foundation/Foundation.h>
-
 FOUNDATION_EXPORT NSNotificationName const XYConsoleDidChangeLogNotification;
 FOUNDATION_EXPORT void xy_log(NSString *format, ...) NS_FORMAT_FUNCTION(1,2) NS_NO_TAIL_CALL;
 
-#endif 
-
-#import "XYSuspensionMenu.h"
+#endif
 
 @class XYConsoleView;
 

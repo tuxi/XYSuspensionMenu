@@ -10,7 +10,8 @@
 #import <objc/runtime.h>
 #import "XYSuspensionMenu.h"
 
-#ifdef __OBJC__
+
+#if __OBJC__
 
 @implementation NSTimer (XYBlocks)
 
@@ -60,7 +61,7 @@ NS_INLINE NSTimer *logTimer() {
         logTimer = [NSTimer xy_timerWithTimeInterval:1.0 repeats:YES block:^{
             [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting()];
         }];
-        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSRunLoopCommonModes];
+        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSDefaultRunLoopMode];
     });
 #endif
     return logTimer;
@@ -100,7 +101,6 @@ void xy_log(NSString *format, ...) {
 }
 
 #endif
-
 
 @interface XYDummyView : UIView
 
@@ -148,7 +148,7 @@ void xy_log(NSString *format, ...) {
     }
     view.text = xy_logSting();
     [view xy_showWithCompletion:^(BOOL finished) {
-        [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length - 1, 1)];
+        [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length, 1)];
         if (completion) {
             completion(finished);
         }
@@ -351,6 +351,9 @@ void xy_log(NSString *format, ...) {
 }
 
 - (void)setText:(NSString *)text {
+    if (!self.isShow) {
+        return;
+    }
     self.consoleTextView.text = text;
     if (self.consoleTextView.isDecelerating || self.consoleTextView.isDragging) {
         return;
