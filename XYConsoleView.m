@@ -30,57 +30,47 @@
 
 @end
 
+static NSMutableString *xy_logSting = nil;
+static NSDateFormatter *formatter = nil;
+static NSTimer *logTimer = nil;
+
 NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChangeLogNotification";
 
-NS_INLINE NSMutableString *xy_logSting() {
-    static NSMutableString *xy_logSting = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+__attribute__((constructor)) static void XYConsoleInitialize(void) {
+    @autoreleasepool {
         xy_logSting = NSMutableString.new;
-    });
-    return xy_logSting;
-}
-
-NS_INLINE NSDateFormatter *dataFormatter() {
-    static NSDateFormatter *formatter = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
         formatter = NSDateFormatter.new;
         formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
-    });
-    return formatter;
-}
-
-NS_INLINE NSTimer *logTimer() {
-    static NSTimer *logTimer = nil;
 #if DEBUG
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
         /// 优化日志回调，使用[NSRunLoop mainRunLoop]会比回到主线程性能好很多
         /// 发觉在子线程中打印log，再回到主线程中显示log会很卡，开启NSTimer每秒钟执行一次显示log，性能会好很多
         logTimer = [NSTimer xy_timerWithTimeInterval:1.0 repeats:YES block:^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting()];
+            [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting];
         }];
         [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSDefaultRunLoopMode];
-    });
 #endif
-    return logTimer;
+    }
+}
+
+__attribute__((destructor)) static void XYConsoleDealloc(void) {
+    xy_logSting = nil;
+    formatter = nil;
+    if (logTimer) {
+        [logTimer invalidate];
+    }
 }
 
 NS_INLINE void xy_print(NSString *msg) {
     @autoreleasepool {
         NSString *tempMsg = msg.copy;
-        tempMsg = [NSString stringWithFormat:@"*** %@ %@ ***\n\n",[dataFormatter() stringFromDate:[NSDate new]],  msg];
+        tempMsg = [NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg];
         const char *cStr = NULL;
         if ([tempMsg canBeConvertedToEncoding:NSUTF8StringEncoding]) {
             cStr = [tempMsg cStringUsingEncoding:NSUTF8StringEncoding];
             printf("%s", cStr);
         }
-        [xy_logSting() appendString:tempMsg];
-        
-#if DEBUG
-        logTimer();
-#endif
+        [xy_logSting appendString:tempMsg];
+    
     }
 }
 
@@ -146,7 +136,7 @@ void xy_log(NSString *format, ...) {
     if (view.isShow) {
         return view;
     }
-    view.text = xy_logSting();
+    view.text = xy_logSting;
     [view xy_showWithCompletion:^(BOOL finished) {
         [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length, 1)];
         if (completion) {
@@ -258,7 +248,7 @@ void xy_log(NSString *format, ...) {
 }
 
 - (void)clearConsoleLog:(UIButton *)btn {
-    [xy_logSting() setString:@""];
+    [xy_logSting setString:@""];
     [self setText:@""];
 }
 
