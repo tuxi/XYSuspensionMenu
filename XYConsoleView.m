@@ -30,7 +30,7 @@
 
 @end
 
-static NSMutableString *xy_logSting = nil;
+static NSMutableAttributedString *xy_logSting = nil;
 static NSDateFormatter *formatter = nil;
 static NSTimer *logTimer = nil;
 
@@ -38,7 +38,7 @@ NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChang
 
 __attribute__((constructor)) static void XYConsoleInitialize(void) {
     @autoreleasepool {
-        xy_logSting = NSMutableString.new;
+        xy_logSting = NSMutableAttributedString.new;
         formatter = NSDateFormatter.new;
         formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
 #if DEBUG
@@ -62,14 +62,23 @@ __attribute__((destructor)) static void XYConsoleDealloc(void) {
 
 NS_INLINE void xy_print(NSString *msg) {
     @autoreleasepool {
-        NSString *tempMsg = msg.copy;
-        tempMsg = [NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg];
+        if (!msg) {
+            return;
+        }
+        
+        // 开始打印时，恢复之前的log颜色
+        [xy_logSting addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:NSMakeRange(0, xy_logSting.length)];
+        
+        NSMutableAttributedString *currentAttributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg]];
         const char *cStr = NULL;
-        if ([tempMsg canBeConvertedToEncoding:NSUTF8StringEncoding]) {
-            cStr = [tempMsg cStringUsingEncoding:NSUTF8StringEncoding];
+        if ([currentAttributedString.string canBeConvertedToEncoding:NSUTF8StringEncoding]) {
+            cStr = [currentAttributedString.string cStringUsingEncoding:NSUTF8StringEncoding];
             printf("%s", cStr);
         }
-        [xy_logSting appendString:tempMsg];
+        
+        // 设置当前log的颜色为红色
+        [currentAttributedString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, currentAttributedString.length)];
+        [xy_logSting appendAttributedString:currentAttributedString];
     
     }
 }
@@ -136,7 +145,7 @@ void xy_log(NSString *format, ...) {
     if (view.isShow) {
         return view;
     }
-    view.text = xy_logSting;
+    view.attributedText = xy_logSting;
     [view xy_showWithCompletion:^(BOOL finished) {
         [view.consoleTextView scrollRangeToVisible:NSMakeRange(view.consoleTextView.text.length, 1)];
         if (completion) {
@@ -248,8 +257,8 @@ void xy_log(NSString *format, ...) {
 }
 
 - (void)clearConsoleLog:(UIButton *)btn {
-    [xy_logSting setString:@""];
-    [self setText:@""];
+    [xy_logSting deleteCharactersInRange:NSMakeRange(0, xy_logSting.length)];
+    [self setAttributedText:xy_logSting];
 }
 
 - (void)pinchView:(UIPinchGestureRecognizer *)gesture {
@@ -340,19 +349,23 @@ void xy_log(NSString *format, ...) {
     [self xy_hideWithCompletion:NULL];
 }
 
-- (void)setText:(NSString *)text {
+- (void)setAttributedText:(NSAttributedString *)attributedText {
     if (!self.isShow) {
         return;
     }
-    self.consoleTextView.text = text;
+    self.consoleTextView.attributedText = attributedText;
     if (self.consoleTextView.isDecelerating || self.consoleTextView.isDragging) {
         return;
     }
-    [self.consoleTextView scrollRangeToVisible:NSMakeRange(text.length, 1)];
+    [self.consoleTextView scrollRangeToVisible:NSMakeRange(attributedText.length, 1)];
 }
 
 - (NSString *)text {
     return self.consoleTextView.text;
+}
+
+- (NSAttributedString *)attributedText {
+    return self.consoleTextView.attributedText;
 }
 
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {

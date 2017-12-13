@@ -24,9 +24,17 @@
     // Do any additional setup after loading the view.
     DLog(@"111");
     
+    // 显示多级菜单的suspensionMenu
     [self sample];
-    
+    // 打印log测试
     [self testLog];
+    
+    // 显示控制台
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
+
+        }];
+    });
     
 }
 
@@ -44,6 +52,7 @@
         NSTimer *timer = [NSTimer timerWithTimeInterval:3.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
             static NSInteger i = 0;
             DLog(@"%li", (long)i++);
+            NSLog(@"Hello NSLog");
         }];
         [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
     } else {

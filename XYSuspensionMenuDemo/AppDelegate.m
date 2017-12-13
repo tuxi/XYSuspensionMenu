@@ -25,8 +25,8 @@
 }
 
 - (void)logChange:(NSNotification *)notification {
-    NSString *log = notification.object;
-    [UIApplication sharedApplication].xy_consoleView.text = log;
+    NSAttributedString *log = notification.object;
+    [UIApplication sharedApplication].xy_consoleView.attributedText = log;
 }
 
 
