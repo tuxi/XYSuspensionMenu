@@ -47,7 +47,7 @@ __attribute__((constructor)) static void XYConsoleInitialize(void) {
         logTimer = [NSTimer xy_timerWithTimeInterval:1.0 repeats:YES block:^{
             [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting];
         }];
-        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSDefaultRunLoopMode];
+        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSRunLoopCommonModes];
 #endif
     }
 }
