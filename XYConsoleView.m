@@ -8,8 +8,6 @@
 
 #import "XYConsoleView.h"
 #import <objc/runtime.h>
-#import "XYSuspensionMenu.h"
-
 
 #if __OBJC__
 
@@ -33,6 +31,8 @@
 static NSMutableAttributedString *xy_logSting = nil;
 static NSDateFormatter *formatter = nil;
 static NSTimer *logTimer = nil;
+static dispatch_semaphore_t lockSemaphore = nil;
+static NSThread *_currentThread;
 
 NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChangeLogNotification";
 
@@ -41,13 +41,15 @@ __attribute__((constructor)) static void XYConsoleInitialize(void) {
         xy_logSting = NSMutableAttributedString.new;
         formatter = NSDateFormatter.new;
         formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
+        lockSemaphore = dispatch_semaphore_create(1);
 #if DEBUG
-        /// 优化日志回调，使用[NSRunLoop mainRunLoop]会比回到主线程性能好很多
-        /// 发觉在子线程中打印log，再回到主线程中显示log会很卡，开启NSTimer每秒钟执行一次显示log，性能会好很多
+        // 优化日志回调，使用[NSRunLoop mainRunLoop]会比回到主线程性能好很多
+        // 发觉在子线程中打印log，再回到主线程中显示log会很卡，开启NSTimer每秒钟执行一次显示log，性能会好很多
         logTimer = [NSTimer xy_timerWithTimeInterval:1.0 repeats:YES block:^{
             [[NSNotificationCenter defaultCenter] postNotificationName:XYConsoleDidChangeLogNotification object:xy_logSting];
         }];
-        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSRunLoopCommonModes];
+        // 发送log所在runLoop的mode使用NSRunLoopCommonModes，不然scrollView滚动时接收不到log
+        [[NSRunLoop mainRunLoop] addTimer:logTimer forMode:NSDefaultRunLoopMode];
 #endif
     }
 }
@@ -55,33 +57,55 @@ __attribute__((constructor)) static void XYConsoleInitialize(void) {
 __attribute__((destructor)) static void XYConsoleDealloc(void) {
     xy_logSting = nil;
     formatter = nil;
-    if (logTimer) {
+    lockSemaphore = nil;
+    if (logTimer.isValid) {
         [logTimer invalidate];
+        logTimer = nil;
     }
 }
+
+static void sync_log_block(dispatch_block_t block) {
+    if (!block) {
+        return;
+    }
+    if ([[NSThread currentThread] isEqual:_currentThread]) {
+        block();
+    }
+    else {
+        dispatch_semaphore_wait(lockSemaphore, DISPATCH_TIME_FOREVER);
+        _currentThread = [NSThread currentThread];
+        block();
+        _currentThread = nil;
+        dispatch_semaphore_signal(lockSemaphore);
+    }
+    
+}
+
 
 NS_INLINE void xy_print(NSString *msg) {
     @autoreleasepool {
         if (!msg) {
             return;
         }
-        
-        // 开始打印时，恢复之前的log颜色
-        [xy_logSting addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:NSMakeRange(0, xy_logSting.length)];
-        
-        NSMutableAttributedString *currentAttributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg]];
-        const char *cStr = NULL;
-        if ([currentAttributedString.string canBeConvertedToEncoding:NSUTF8StringEncoding]) {
-            cStr = [currentAttributedString.string cStringUsingEncoding:NSUTF8StringEncoding];
-            printf("%s", cStr);
-        }
-        
-        // 设置当前log的颜色为红色
-        [currentAttributedString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, currentAttributedString.length)];
-        [xy_logSting appendAttributedString:currentAttributedString];
-    
+        sync_log_block(^{
+            // 开始打印时，恢复之前的log颜色
+            [xy_logSting addAttribute:NSForegroundColorAttributeName value:[UIColor blackColor] range:NSMakeRange(0, xy_logSting.length)];
+            
+            NSMutableAttributedString *currentAttributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"*** %@ %@ ***\n\n",[formatter stringFromDate:[NSDate new]],  msg]];
+            const char *cStr = NULL;
+            if ([currentAttributedString.string canBeConvertedToEncoding:NSUTF8StringEncoding]) {
+                cStr = [currentAttributedString.string cStringUsingEncoding:NSUTF8StringEncoding];
+                printf("%s", cStr);
+            }
+            
+            // 设置当前log的颜色为红色
+            [currentAttributedString addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:NSMakeRange(0, currentAttributedString.length)];
+            [xy_logSting appendAttributedString:currentAttributedString];
+        });
     }
 }
+
+
 
 void xy_log(NSString *format, ...) {
     @autoreleasepool {
@@ -94,10 +118,9 @@ void xy_log(NSString *format, ...) {
             
             xy_print(message);
         }
-        
     }
-    
 }
+
 
 #endif
 
