@@ -49,15 +49,66 @@
 
 - (void)testLog {
     if (@available(iOS 10.0, *)) {
+        [[NSThread currentThread] setName:@"main"];
+        // 主线程执行
         NSTimer *timer = [NSTimer timerWithTimeInterval:3.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
             static NSInteger i = 0;
-            DLog(@"%li", (long)i++);
+            DLog(@"%li, current thread:%@", (long)i++, [NSThread currentThread].name);
             NSLog(@"Hello NSLog");
         }];
         [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
-    } else {
-        // Fallback on earlier versions
+        
+        // 子线程执行, 开启多条线程打印log 测试并发
+        for (NSInteger i = 1; i<4; i++) {
+            dispatch_async(dispatch_queue_create("testLog", DISPATCH_QUEUE_CONCURRENT), ^{
+                NSString *seleString = [NSString stringWithFormat:@"myLog%ld", i];
+                [self.class addTask:NSSelectorFromString(seleString) identifier:seleString];
+            });
+            
+        }
     }
+}
+
++ (void)addTask:(SEL)selector identifier:(NSString *)identifier { @autoreleasepool {
+        [[NSThread currentThread] setName:identifier];
+        [NSTimer scheduledTimerWithTimeInterval:2
+                                         target:self
+                                       selector:selector
+                                       userInfo:nil
+                                        repeats:YES];
+        
+        NSThread *currentThread = [NSThread currentThread];
+        NSRunLoop *currentRunLoop = [NSRunLoop currentRunLoop];
+        
+        BOOL isCancelled = [currentThread isCancelled];
+        while (!isCancelled && [currentRunLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]]) {
+            isCancelled = [currentThread isCancelled];
+        }
+        
+        NSAssert(NO, @"thread is die");
+    }}
+
++ (void)myLog1 {
+    static NSInteger i = 0;
+    // 模拟耗时
+    [NSThread sleepForTimeInterval:arc4random_uniform(8)];
+    i++;
+    DLog(@"i:%ld current thread:%@", i, [NSThread currentThread].name);
+}
+
++ (void)myLog2 {
+    static NSInteger i = 0;
+    [NSThread sleepForTimeInterval:arc4random_uniform(5)];
+    i++;
+    DLog(@"i:%ld current thread:%@", i, [NSThread currentThread].name);
+}
+
+
++ (void)myLog3 {
+    static NSInteger i = 0;
+    [NSThread sleepForTimeInterval:arc4random_uniform(3)];
+    i++;
+    DLog(@"i:%ld current thread:%@", i, [NSThread currentThread].name);
 }
 
 /// 一级菜单使用

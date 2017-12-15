@@ -24,6 +24,7 @@
     return YES;
 }
 
+
 - (void)logChange:(NSNotification *)notification {
     NSAttributedString *log = notification.object;
     [UIApplication sharedApplication].xy_consoleView.attributedText = log;
