@@ -31,8 +31,7 @@
 static NSMutableAttributedString *xy_logSting = nil;
 static NSDateFormatter *formatter = nil;
 static NSTimer *logTimer = nil;
-static dispatch_semaphore_t lockSemaphore = nil;
-static NSThread *_currentThread;
+static NSLock *lock;
 
 NSNotificationName const XYConsoleDidChangeLogNotification = @"XYConsoleDidChangeLogNotification";
 
@@ -41,7 +40,7 @@ __attribute__((constructor)) static void XYConsoleInitialize(void) {
         xy_logSting = NSMutableAttributedString.new;
         formatter = NSDateFormatter.new;
         formatter.dateFormat = @"yyyy-MM-dd HH:mm:ss.SSS";
-        lockSemaphore = dispatch_semaphore_create(1);
+        lock = [NSLock new];
 #if DEBUG
         // 优化日志回调，使用[NSRunLoop mainRunLoop]会比回到主线程性能好很多
         // 发觉在子线程中打印log，再回到主线程中显示log会很卡，开启NSTimer每秒钟执行一次显示log，性能会好很多
@@ -57,7 +56,7 @@ __attribute__((constructor)) static void XYConsoleInitialize(void) {
 __attribute__((destructor)) static void XYConsoleDealloc(void) {
     xy_logSting = nil;
     formatter = nil;
-    lockSemaphore = nil;
+    lock = nil;
     if (logTimer.isValid) {
         [logTimer invalidate];
         logTimer = nil;
@@ -68,16 +67,10 @@ static void sync_log_block(dispatch_block_t block) {
     if (!block) {
         return;
     }
-    if ([[NSThread currentThread] isEqual:_currentThread]) {
-        block();
-    }
-    else {
-        dispatch_semaphore_wait(lockSemaphore, DISPATCH_TIME_FOREVER);
-        _currentThread = [NSThread currentThread];
-        block();
-        _currentThread = nil;
-        dispatch_semaphore_signal(lockSemaphore);
-    }
+    
+    [lock lock];
+    block();
+    [lock unlock];
     
 }
 
