@@ -985,6 +985,10 @@ menuBarItems = _menuBarItems;
     [self _closeWithTriggerPanGesture:NO completion:NULL];
 }
 
+- (void)closeWithCompetion:(void (^)(BOOL))competion {
+    [self _closeWithTriggerPanGesture:NO completion:competion];
+}
+
 - (void)_openCompetion {
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidOpened:)]) {
