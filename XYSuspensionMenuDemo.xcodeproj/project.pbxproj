@@ -16,6 +16,8 @@
 		D0F0FB671FAB01C900C62588 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0F0FB661FAB01C900C62588 /* Assets.xcassets */; };
 		D0F0FB6A1FAB01C900C62588 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D0F0FB681FAB01C900C62588 /* LaunchScreen.storyboard */; };
 		D0F0FB6D1FAB01C900C62588 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D0F0FB6C1FAB01C900C62588 /* main.m */; };
+		D2773B10200AE6870078A2A3 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D2773B0F200AE6870078A2A3 /* README.md */; };
+		D2773B12200AE6980078A2A3 /* 2018-01-14 09_13_49.gif in Resources */ = {isa = PBXBuildFile; fileRef = D2773B11200AE6980078A2A3 /* 2018-01-14 09_13_49.gif */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,8 @@
 		D0F0FB691FAB01C900C62588 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D0F0FB6B1FAB01C900C62588 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D0F0FB6C1FAB01C900C62588 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		D2773B0F200AE6870078A2A3 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D2773B11200AE6980078A2A3 /* 2018-01-14 09_13_49.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2018-01-14 09_13_49.gif"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				D0CF36281FAB02F20020BB64 /* 2017-10-25 00_54_57.gif */,
+				D2773B11200AE6980078A2A3 /* 2018-01-14 09_13_49.gif */,
 				D0F0FB631FAB01C900C62588 /* Main.storyboard */,
 				D0F0FB661FAB01C900C62588 /* Assets.xcassets */,
 				D0F0FB681FAB01C900C62588 /* LaunchScreen.storyboard */,
@@ -63,6 +68,7 @@
 		D0CF363F1FAB03670020BB64 /* XYSuspensionMenu */ = {
 			isa = PBXGroup;
 			children = (
+				D2773B0F200AE6870078A2A3 /* README.md */,
 				D07ED5D01FD7889700E303B6 /* XYConsoleView.h */,
 				D07ED5D11FD7889800E303B6 /* XYConsoleView.m */,
 				D0CF363C1FAB03560020BB64 /* XYSuspensionMenu.h */,
@@ -158,8 +164,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2773B12200AE6980078A2A3 /* 2018-01-14 09_13_49.gif in Resources */,
 				D0F0FB6A1FAB01C900C62588 /* LaunchScreen.storyboard in Resources */,
 				D0F0FB671FAB01C900C62588 /* Assets.xcassets in Resources */,
+				D2773B10200AE6870078A2A3 /* README.md in Resources */,
 				D0CF36291FAB02F20020BB64 /* 2017-10-25 00_54_57.gif in Resources */,
 				D0F0FB651FAB01C900C62588 /* Main.storyboard in Resources */,
 			);
