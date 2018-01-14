@@ -3,7 +3,8 @@
 [![Version](https://img.shields.io/cocoapods/v/XYSuspensionMenu.svg?style=flat)](http://cocoapods.org/pods/XYSuspensionMenu)
 [![Platform](https://img.shields.io/cocoapods/p/XYSuspensionMenu.svg?style=flat)](http://cocoapods.org/pods/XYSuspensionMenu)
 
-<img src = "https://github.com/Ossey/XYSuspensionMenu/blob/master/XYSuspensionMenuDemo/2017-10-25%2000_54_57.gif" width = "375" height = "667" alt = "Screenshot1.png"/>
+<img src = "https://github.com/alpface/XYSuspensionMenu/blob/master/XYSuspensionMenuDemo/2017-10-25%2000_54_57.gif?raw=true" width = "375" height = "667" alt = "Screenshot1.png"/>
+<img src = "https://github.com/alpface/XYSuspensionMenu/blob/master/XYSuspensionMenuDemo/2018-01-14%2009_13_49.gif?raw=true" width = "375" height = "667" alt = "Screenshot2.png"/>
 
 # 使用方式
 
