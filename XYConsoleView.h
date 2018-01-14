@@ -3,7 +3,7 @@
 //  XYConsoleView
 //
 //  Created by xiaoyuan on 05/12/2017.
-//  Copyright © 2017 xiaoyuan. All rights reserved.
+//  Copyright © 2017 alpface. All rights reserved.
 //
 
 #import "XYSuspensionMenu.h"
