@@ -2,7 +2,7 @@
 //  SuspensionView.m
 //  SuspensionView
 //
-//  Created by alpface on 17/2/25.
+//  Created by xiaoyuan on 17/2/25.
 //  Copyright © 2017年 alpface All rights reserved.
 //
 
@@ -30,13 +30,13 @@
 @end
 
 
-@implementation UIApplication (SuspensionWindowExtension)
+@implementation UIApplication (XYSuspensionMenuExtension)
 
-- (void)setXy_suspensionMenuWindow:(SuspensionMenuWindow *)suspensionMenuWindow {
-    objc_setAssociatedObject(self, @selector(xy_suspensionMenuWindow), suspensionMenuWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setXy_suspensionMenu:(XYSuspensionMenu *)suspensionMenu {
+    objc_setAssociatedObject(self, @selector(xy_suspensionMenu), suspensionMenu, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (SuspensionMenuWindow *)xy_suspensionMenuWindow {
+- (XYSuspensionMenu *)xy_suspensionMenu {
     return objc_getAssociatedObject(self, _cmd);
 }
 
@@ -512,9 +512,9 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 - (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
 
 #if ! __has_feature(objc_arc)
-@property (nonatomic, assign) SuspensionMenuWindow *menuView;
+@property (nonatomic, assign) XYSuspensionMenu *menuView;
 #else
-@property (nonatomic, weak) SuspensionMenuWindow *menuView;
+@property (nonatomic, weak) XYSuspensionMenu *menuView;
 #endif
 
 @end
@@ -1793,16 +1793,16 @@ menuBarItems = _menuBarItems;
 @end
 
 
-@implementation SuspensionMenuWindow
+@implementation XYSuspensionMenu
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - initialize
 ////////////////////////////////////////////////////////////////////////
 
 + (instancetype)menuWindowWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
-    SuspensionMenuWindow *sw = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+    XYSuspensionMenu *sw = [UIApplication sharedApplication].xy_suspensionMenu;
     if (!sw) {
-        sw = [[SuspensionMenuWindow alloc] initWithFrame:frame itemSize:itemSize];
+        sw = [[XYSuspensionMenu alloc] initWithFrame:frame itemSize:itemSize];
     }
     else {
         [sw close];
@@ -1879,7 +1879,7 @@ menuBarItems = _menuBarItems;
 
 - (void)showWithCompetion:(void (^)(void))competion {
     [super showWithCompetion:competion];
-    [UIApplication sharedApplication].xy_suspensionMenuWindow = self;
+    [UIApplication sharedApplication].xy_suspensionMenu = self;
 }
 
 
@@ -1996,7 +1996,7 @@ menuBarItems = _menuBarItems;
 
 @implementation SuspensionMenuController
 
-- (instancetype)initWithMenuView:(SuspensionMenuWindow *)menuView {
+- (instancetype)initWithMenuView:(XYSuspensionMenu *)menuView {
     if (self = [super initWithNibName:nil bundle:nil]) {
         _menuView = menuView;
     }

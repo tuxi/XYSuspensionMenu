@@ -2,8 +2,8 @@
 //  FirstViewController.m
 //  SuspensionView
 //
-//  Created by alpface on 2017/5/21.
-//  Copyright © 2017年 com.test.demo. All rights reserved.
+//  Created by xiaoyuan on 2017/5/21.
+//  Copyright © 2017年 alpface. All rights reserved.
 //
 
 #import "FirstViewController.h"
@@ -114,7 +114,7 @@
 /// 一级菜单使用
 - (void)oneLevelMenuSample {
     DLog(@"111");
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+    XYSuspensionMenu *menuView = [XYSuspensionMenu menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
@@ -152,7 +152,7 @@
 /// 多级菜单使用
 - (void)sample {
     
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+    XYSuspensionMenu *menuView = [XYSuspensionMenu menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     
     menuView.shouldOpenWhenViewWillAppear = NO;

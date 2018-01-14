@@ -3,7 +3,7 @@
 //  XYConsoleView
 //
 //  Created by xiaoyuan on 05/12/2017.
-//  Copyright © 2017 xiaoyuan. All rights reserved.
+//  Copyright © 2017 alpface. All rights reserved.
 //
 
 #import "XYConsoleView.h"
@@ -151,7 +151,7 @@ void xy_log(NSString *format, ...) {
 - (XYConsoleView *)xy_showConsoleWithCompletion:(void (^)(BOOL))completion {
     XYConsoleView *view = [self xy_consoleView];
     if (!view) {
-        SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+        XYSuspensionMenu *menu = [UIApplication sharedApplication].xy_suspensionMenu;
         CGPoint centerBtnPoint = menu.centerButton.frame.origin;
         centerBtnPoint = [menu.centerButton convertPoint:centerBtnPoint toView:[UIApplication sharedApplication].delegate.window];
         view = [[XYConsoleView alloc] initWithFrame:CGRectMake(centerBtnPoint.x, centerBtnPoint.y, 0, 0)];
@@ -311,13 +311,13 @@ void xy_log(NSString *format, ...) {
 - (void)doubleTapOnSelf {
     if (self.show == NO) {
         [self xy_showWithCompletion:^(BOOL finished) {
-            [[UIApplication sharedApplication].xy_suspensionMenuWindow close];
+            [[UIApplication sharedApplication].xy_suspensionMenu close];
         }];
     }
     else {
-        [[UIApplication sharedApplication].xy_suspensionMenuWindow openWithCompetion:^(BOOL finished) {
+        [[UIApplication sharedApplication].xy_suspensionMenu openWithCompetion:^(BOOL finished) {
             [self xy_hideWithCompletion:^(BOOL finished) {
-                [[UIApplication sharedApplication].xy_suspensionMenuWindow close];
+                [[UIApplication sharedApplication].xy_suspensionMenu close];
             }];
         }];
     }
@@ -340,7 +340,7 @@ void xy_log(NSString *format, ...) {
 }
 
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion {
-    SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+    XYSuspensionMenu *menu = [UIApplication sharedApplication].xy_suspensionMenu;
     
     UIView *targetView = (UIView *)menu.currentResponderItem.hypotenuseButton;
     if (!targetView) {

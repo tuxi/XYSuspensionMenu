@@ -2,7 +2,7 @@
 //  SuspensionView.h
 //  SuspensionView
 //
-//  Created by alpface on 17/2/25.
+//  Created by xiaoyuan on 17/2/25.
 //  Copyright © 2017年 alpface All rights reserved.
 //
 
@@ -145,9 +145,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)closeWithCompetion:(void (^ _Nullable)(BOOL finished))competion;
 @end
 
-#pragma mark *** SuspensionMenuWindow ***
+#pragma mark *** XYSuspensionMenu ***
 
-@interface SuspensionMenuWindow : SuspensionMenuView
+@interface XYSuspensionMenu : SuspensionMenuView
 
 @property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
 
@@ -177,9 +177,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
-@interface UIApplication (SuspensionWindowExtension)
+@interface UIApplication (XYSuspensionMenuExtension)
 
-- (nullable SuspensionMenuWindow *)xy_suspensionMenuWindow;
+- (nullable XYSuspensionMenu *)xy_suspensionMenu;
 
 @end
 

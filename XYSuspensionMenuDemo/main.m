@@ -3,7 +3,7 @@
 //  XYSuspensionMenuDemo
 //
 //  Created by xiaoyuan on 02/11/2017.
-//  Copyright © 2017 xiaoyuan. All rights reserved.
+//  Copyright © 2017 alpface. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
