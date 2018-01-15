@@ -135,8 +135,6 @@
         _dummyView = [[XYDummyView alloc] initWithFrame:CGRectZero];
         _dummyView.translatesAutoresizingMaskIntoConstraints = NO;
         _dummyView.button.backgroundColor = [UIColor colorWithRed:38/255.0 green:21/255.0 blue:53/255.0 alpha:1.0];
-        _dummyView.layer.masksToBounds = YES;
-        _dummyView.layer.cornerRadius = 2.0;
     }
     return _dummyView;
 }
