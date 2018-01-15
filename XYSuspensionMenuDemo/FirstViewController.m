@@ -10,6 +10,8 @@
 #import "XYSuspensionMenu.h"
 #import "XYConsoleView.h"
 #import "XYSuspensionWebView.h"
+#import "XYSuspensionQuestionAnswerMatchView.h"
+#import "XYHTTPRequest.h"
 
 #pragma mark *** Sample ***
 
@@ -33,25 +35,67 @@
     // 显示控制台
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
-
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self testWebView];
+            });
         }];
     });
     
+    
+}
+
+- (void)testWebView {
     /// 显示webView
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
-            [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
-                NSString *wd = @"天气如何";
-                NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-                wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
-                
-                //    NSString *urlString = @"https://m.baidu.com/s?from=1000539d&word=baidu";
-                //    NSString *wd = [@"北京" stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-                NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
-                [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
-            }];
+    [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
+        [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
+            NSString *wd = @"天气如何";
+            NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
+            wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+            
+            NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
+            [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
         }];
-    });
+    }];
+}
+
+- (void)testQuestionAnswerView {
+    
+//    // 创建Request请求
+//    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+//    // 配置Request请求
+//    // 设置请求方法
+//    [request setHTTPMethod:@"GET"];
+//    // 设置请求超时 默认超时时间60s
+//    [request setTimeoutInterval:10.0];
+//    // 设置头部参数
+//    [request addValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
+//    //或者下面这种方式 添加所有请求头信息
+//    request.allHTTPHeaderFields=@{@"Content-Encoding":@"gzip"};
+//    //设置缓存策略
+//    [request setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
+//    // 采用苹果提供的共享session
+//    NSURLSession *sharedSession = [NSURLSession sharedSession];
+//    可以通过NSURLSessionConfiguration方式配置不同的NSURLSession
+//    // 构造NSURLSessionConfiguration
+//    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+//    // 构造NSURLSession，网络会话；
+//    NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
+    
+    
+    
+    [[UIApplication sharedApplication] xy_toggleSuspensionQuestionAnswerMatchViewWithCompletion:^(BOOL finished) {
+        NSString *wd = @"天气如何";
+        NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
+        wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+        
+        NSString *urlString = [NSString stringWithFormat:@"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&rsv_pq=ca4a433e000002ee&rsv_t=5b8d1ARgkmQBgZ4l3tgNF8kz68PiUjGqjSoXDjn90uVO4LAIRpYqHXBhVJ0&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=4&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=2390", wd];
+        NSDictionary *headers = @{@"Content-Type": @"text/html;charset=utf-8"};
+        [XYHTTPRequest rquestWithURLString:urlString parameters:nil headers:headers method:XYHTTPRequestMethodGET completion:^(NSData *resultData, NSError *error) {
+        
+            NSString * newStr = [[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding];
+            [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:newStr];
+        }];
+    }];
 }
 
 - (void)testRepeatInit {
@@ -251,16 +295,23 @@
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [menuView showViewController:getViewController() animated:YES];
+            [self testWebView];
+            [menuView close];
         }];
         [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == UIButtonTypeSystem) {
-            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
-        }
+        [item.hypotenuseButton setTitle:@"Test WebView" forState:UIControlStateNormal];
         i--;
     }
     
+    {
+        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
+            [self testQuestionAnswerView];
+            [menuView close];
+        }];
+        [menuView addAction:item];
+        [item.hypotenuseButton setTitle:@"Question view" forState:UIControlStateNormal];
+        i--;
+    }
     {
         item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:NULL];
         [menuView addAction:item];
@@ -319,18 +370,7 @@
         }
         i--;
     }
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [menuView showViewController:getViewController() animated:YES];
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setImage:[UIImage imageNamed:images[i]] forState:UIControlStateNormal];
-        if ([types[i] integerValue] == UIButtonTypeSystem) {
-            [item.hypotenuseButton setTitle:@"Apple" forState:UIControlStateNormal];
-        }
-        i--;
-    }
+
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
