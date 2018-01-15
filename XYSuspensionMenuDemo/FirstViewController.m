@@ -9,6 +9,7 @@
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
 #import "XYConsoleView.h"
+#import "XYSuspensionWebView.h"
 
 #pragma mark *** Sample ***
 
@@ -36,6 +37,21 @@
         }];
     });
     
+    /// 显示webView
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
+            [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
+                NSString *wd = @"天气如何";
+                NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
+                wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+                
+                //    NSString *urlString = @"https://m.baidu.com/s?from=1000539d&word=baidu";
+                //    NSString *wd = [@"北京" stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
+                [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
+            }];
+        }];
+    });
 }
 
 - (void)testRepeatInit {

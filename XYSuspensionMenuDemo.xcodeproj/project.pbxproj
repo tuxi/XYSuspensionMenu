@@ -18,6 +18,9 @@
 		D0F0FB6D1FAB01C900C62588 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D0F0FB6C1FAB01C900C62588 /* main.m */; };
 		D2773B10200AE6870078A2A3 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D2773B0F200AE6870078A2A3 /* README.md */; };
 		D2773B12200AE6980078A2A3 /* 2018-01-14 09_13_49.gif in Resources */ = {isa = PBXBuildFile; fileRef = D2773B11200AE6980078A2A3 /* 2018-01-14 09_13_49.gif */; };
+		D2773B20200B03310078A2A3 /* XYSuspensionWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = D2773B1C200B03310078A2A3 /* XYSuspensionWebView.m */; };
+		D2773B21200B03310078A2A3 /* UIWebView+XYBlocks.m in Sources */ = {isa = PBXBuildFile; fileRef = D2773B1F200B03310078A2A3 /* UIWebView+XYBlocks.m */; };
+		D2773B24200B037B0078A2A3 /* XYDummyView.m in Sources */ = {isa = PBXBuildFile; fileRef = D2773B23200B037B0078A2A3 /* XYDummyView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +41,12 @@
 		D0F0FB6C1FAB01C900C62588 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		D2773B0F200AE6870078A2A3 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D2773B11200AE6980078A2A3 /* 2018-01-14 09_13_49.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "2018-01-14 09_13_49.gif"; sourceTree = "<group>"; };
+		D2773B1C200B03310078A2A3 /* XYSuspensionWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XYSuspensionWebView.m; sourceTree = "<group>"; };
+		D2773B1D200B03310078A2A3 /* UIWebView+XYBlocks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIWebView+XYBlocks.h"; sourceTree = "<group>"; };
+		D2773B1E200B03310078A2A3 /* XYSuspensionWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XYSuspensionWebView.h; sourceTree = "<group>"; };
+		D2773B1F200B03310078A2A3 /* UIWebView+XYBlocks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIWebView+XYBlocks.m"; sourceTree = "<group>"; };
+		D2773B22200B037B0078A2A3 /* XYDummyView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = XYDummyView.h; sourceTree = "<group>"; };
+		D2773B23200B037B0078A2A3 /* XYDummyView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = XYDummyView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +82,12 @@
 				D07ED5D11FD7889800E303B6 /* XYConsoleView.m */,
 				D0CF363C1FAB03560020BB64 /* XYSuspensionMenu.h */,
 				D0CF363D1FAB03560020BB64 /* XYSuspensionMenu.m */,
+				D2773B1D200B03310078A2A3 /* UIWebView+XYBlocks.h */,
+				D2773B1F200B03310078A2A3 /* UIWebView+XYBlocks.m */,
+				D2773B1E200B03310078A2A3 /* XYSuspensionWebView.h */,
+				D2773B1C200B03310078A2A3 /* XYSuspensionWebView.m */,
+				D2773B22200B037B0078A2A3 /* XYDummyView.h */,
+				D2773B23200B037B0078A2A3 /* XYDummyView.m */,
 			);
 			name = XYSuspensionMenu;
 			sourceTree = "<group>";
@@ -180,10 +195,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2773B24200B037B0078A2A3 /* XYDummyView.m in Sources */,
 				D0F0FB6D1FAB01C900C62588 /* main.m in Sources */,
+				D2773B20200B03310078A2A3 /* XYSuspensionWebView.m in Sources */,
 				D07ED5D21FD7889800E303B6 /* XYConsoleView.m in Sources */,
 				D0F0FB5F1FAB01C900C62588 /* AppDelegate.m in Sources */,
 				D0CF363E1FAB03560020BB64 /* XYSuspensionMenu.m in Sources */,
+				D2773B21200B03310078A2A3 /* UIWebView+XYBlocks.m in Sources */,
 				D0CF36271FAB02E90020BB64 /* FirstViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
