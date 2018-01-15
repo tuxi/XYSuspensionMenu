@@ -93,10 +93,31 @@
         [XYHTTPRequest rquestWithURLString:urlString parameters:nil headers:headers method:XYHTTPRequestMethodGET completion:^(NSData *resultData, NSError *error) {
         
             NSString * newStr = [[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding];
+            newStr = [self getZZwithString:newStr];
             [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:newStr];
         }];
     }];
 }
+
+//去掉 HTML 字符串中的标签
+//- (NSString *)getZZwithString:(NSString *)string{
+//    NSRegularExpression *regularExpretion=[NSRegularExpression regularExpressionWithPattern:@"<[^>]*>|\n"
+//                                                                                    options:0
+//                                                                                      error:nil];
+//    string=[regularExpretion stringByReplacingMatchesInString:string options:NSMatchingReportProgress range:NSMakeRange(0, string.length) withTemplate:@""];
+//    return string;
+//}
+
+//正则去除网络标签
+- (NSString *)getZZwithString:(NSString *)string{
+    NSRegularExpression *regularExpretion=[NSRegularExpression regularExpressionWithPattern:@"<[^>]*>|\n|&nbsp"
+                                                                                    options:0
+                                                                                      error:nil];
+    string=[regularExpretion stringByReplacingMatchesInString:string options:NSMatchingReportProgress range:NSMakeRange(0, string.length) withTemplate:@""];
+    return string;
+}
+
+
 
 - (void)testRepeatInit {
     /// 测试重复创建
