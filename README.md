@@ -4,7 +4,7 @@
 [![Platform](https://img.shields.io/cocoapods/p/XYSuspensionMenu.svg?style=flat)](http://cocoapods.org/pods/XYSuspensionMenu)
 
 <img src = "https://github.com/alpface/XYSuspensionMenu/blob/master/XYSuspensionMenuDemo/2017-10-25%2000_54_57.gif?raw=true" width = "375" height = "667" alt = "Screenshot1.png"/>
-<img src = "2018-01-16%2001_56_10.gif?raw=true" width = "375" height = "667" alt = "Screenshot2.png"/>
+<img src = "https://github.com/alpface/XYSuspensionMenu/blob/master/XYSuspensionMenuDemo/2018-01-16%2001_56_10.gif?raw=true" width = "375" height = "667" alt = "Screenshot2.png"/>
 
 # 使用方式
 
