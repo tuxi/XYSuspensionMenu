@@ -16,7 +16,9 @@
 #else
 @property (nonatomic, weak) UIButton *button;
 @property (nonatomic, weak) UIButton *clearButton;
+
 #endif
 
-
+- (NSLayoutConstraint *)getButtonTopConstraint;
+- (void)hideCleanButton;
 @end
