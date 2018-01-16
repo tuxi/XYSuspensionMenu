@@ -272,7 +272,14 @@
     
     {
         item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [self testWebView];
+            [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
+                NSString *wd = @"天气如何";
+                NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
+                wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+                
+                NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
+                [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
+            }];
             [menuView close];
         }];
         [menuView addAction:item];
