@@ -221,7 +221,7 @@
     if ([urlString isEqualToString:_urlString] || !urlString.length) {
         return;
     }
-    
+    _urlString = urlString;
     self.request.URL = [NSURL URLWithString:urlString];
     
     [self.webView loadRequest:self.request
