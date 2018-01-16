@@ -12,7 +12,7 @@
 #import "XYDummyView.h"
 
 #define XYWebViewheight [UIScreen mainScreen].bounds.size.height*0.45
-static CGFloat const adjustmentValue = 1.0;
+static CGFloat const adjustmentValue = 3.0;
 
 @interface XYSuspensionWebViewController : UIViewController
 
@@ -26,6 +26,9 @@ static CGFloat const adjustmentValue = 1.0;
 @property (nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic, strong) UIButton *adjustmentHeightButton1;
 @property (nonatomic, strong) UIButton *adjustmentHeightButton2;
+#ifdef __IPHONE_10_0
+@property (nonatomic, strong) UIImpactFeedbackGenerator *feedbackGenerator;
+#endif
 
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;
@@ -213,6 +216,9 @@ static CGFloat const adjustmentValue = 1.0;
     NSAttributedString *tit = [[NSAttributedString alloc] initWithString:@"【轻拍顶部关闭】或【按住拖拽移动】" attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor], NSFontAttributeName: [UIFont systemFontOfSize:13.0]}];
     [self.dummyView.button setAttributedTitle:tit forState:UIControlStateNormal];
     [self.dummyView hideCleanButton];
+    if (@available(iOS 10.0, *)) {
+        _feedbackGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
+    }
 }
 
 - (void)adjustmentHeightAction:(UIButton *)btn {
@@ -230,6 +236,16 @@ static CGFloat const adjustmentValue = 1.0;
         rect.origin.y-=adjustmentValue;
         self.frame = rect;
     }
+    
+    void (^tapticBlock)() = ^{
+        // 到达边缘时触发taptic反馈
+#ifdef __IPHONE_10_0
+        [_feedbackGenerator impactOccurred];
+#endif
+        
+    };
+    
+    tapticBlock();
 }
 
 - (void)doubleTapOnSelf {
@@ -341,6 +357,7 @@ static CGFloat const adjustmentValue = 1.0;
 shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return ![gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]];
 }
+
 @end
 
 
