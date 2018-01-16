@@ -13,6 +13,10 @@
 
 #define XYWebViewheight [UIScreen mainScreen].bounds.size.height*0.45
 
+@interface XYSuspensionWebViewController : UIViewController
+
+@end
+
 @interface XYSuspensionWebView () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) XYDummyView *dummyView;
@@ -92,6 +96,10 @@
         [self commonInit];
     }
     return self;
+}
+
++ (Class)suspensionControllerClass {
+    return [XYSuspensionWebViewController class];
 }
 
 - (void)setupViews {
@@ -263,3 +271,12 @@ shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherG
 
 
 
+@implementation XYSuspensionWebViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+}
+
+
+@end

@@ -560,7 +560,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     //    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
     //#endif
     
-    UIViewController *vc = [UIViewController new];
+    UIViewController *vc = [self.class.suspensionControllerClass new];
     suspensionWindow.rootViewController = vc;
     
     [suspensionWindow.layer setMasksToBounds:YES];
@@ -577,6 +577,10 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     suspensionWindow.suspensionView = self;
     
     suspensionWindow.hidden = NO;
+}
+
++ (Class)suspensionControllerClass {
+    return [UIViewController class];
 }
 
 @end
