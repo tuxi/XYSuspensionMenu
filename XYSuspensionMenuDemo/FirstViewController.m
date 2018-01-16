@@ -98,7 +98,7 @@
         // 子线程执行, 开启多条线程打印log 测试并发
         for (NSInteger i = 1; i<4; i++) {
             dispatch_async(dispatch_queue_create("testLog", DISPATCH_QUEUE_CONCURRENT), ^{
-                NSString *seleString = [NSString stringWithFormat:@"myLog%ld", i];
+                NSString *seleString = [NSString stringWithFormat:@"myLog%ld", (long)i];
                 [self.class addTask:NSSelectorFromString(seleString) identifier:seleString];
             });
             
