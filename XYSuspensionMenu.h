@@ -102,6 +102,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 + (instancetype)showWithFrame:(CGRect)frame;
 
++ (Class)suspensionControllerClass;
+
 @end
 
 #pragma mark *** SuspensionMenuView ***
