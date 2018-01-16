@@ -44,36 +44,78 @@
     
 }
 
+static NSString * const wd = @"中国哪位诗人的作品最多";
+
+
 - (void)testWebView {
     /// 显示webView
     [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
         [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
-            NSString *wd = @"天气如何";
             NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-            wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+            NSString *wdr = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
             
-            NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
+            NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wdr];
             [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
         }];
     }];
 }
 
+
+
 - (void)testQuestionAnswerView {
 
     [[UIApplication sharedApplication] xy_toggleSuspensionQuestionAnswerMatchViewWithCompletion:^(BOOL finished) {
-        NSString *wd = @"天气如何";
+        
         NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-        wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+        NSString *wdr = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
 
-        NSString *urlString = [NSString stringWithFormat:@"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&rsv_pq=ca4a433e000002ee&rsv_t=5b8d1ARgkmQBgZ4l3tgNF8kz68PiUjGqjSoXDjn90uVO4LAIRpYqHXBhVJ0&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=4&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=2390", wd];
+        NSString *urlString = [NSString stringWithFormat:@"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&rsv_pq=ca4a433e000002ee&rsv_t=5b8d1ARgkmQBgZ4l3tgNF8kz68PiUjGqjSoXDjn90uVO4LAIRpYqHXBhVJ0&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=4&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=2390", wdr];
         NSDictionary *headers = @{@"Content-Type": @"text/html;charset=utf-8"};
         [XYHTTPRequest rquestWithURLString:urlString parameters:nil headers:headers method:XYHTTPRequestMethodGET completion:^(NSData *resultData, NSError *error) {
         
             NSString * newStr = [[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding];
             [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:newStr];
+            
+            NSArray *options = @[@"李白", @"杜甫", @"白居易", @"乾隆"];
+            NSString *searchText = wd;
+            NSMutableString *searchWithWildcards = [@"*" mutableCopy];
+            [searchText enumerateSubstringsInRange:NSMakeRange(0, [searchText length])
+                                           options:NSStringEnumerationByComposedCharacterSequences
+                                        usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+                                            [searchWithWildcards appendString:substring];
+                                            [searchWithWildcards appendString:@"*"];
+                                        }];
+            
+            //    if (searchWithWildcards.length > 3)
+            //        for (int i = 2; i < searchText.length * 2; i += 2)
+            //            [searchWithWildcards insertString:@"*" atIndex:i];
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", searchWithWildcards];
+            NSArray *filteredArray = [options filteredArrayUsingPredicate:predicate];
+            //封装的模糊匹配
+        
+        
         }];
     }];
 }
+
+//array里边是对象的话需要略作修改
++ (NSArray*)filterFuzzySearchFromArray:(NSArray*)sourceArray withWildcards:(NSString*)wildcards
+{
+    NSMutableString *searchWithWildcards = [@"*" mutableCopy];
+    [wildcards enumerateSubstringsInRange:NSMakeRange(0, [wildcards length])
+                                  options:NSStringEnumerationByComposedCharacterSequences
+                               usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+                                   [searchWithWildcards appendString:substring];
+                                   [searchWithWildcards appendString:@"*"];
+                               }];
+    
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", searchWithWildcards];
+    NSArray *filteredArray = [sourceArray filteredArrayUsingPredicate:predicate];
+    return filteredArray;
+}
+
 
 - (void)testRepeatInit {
     /// 测试重复创建
