@@ -12,7 +12,7 @@
 #import "XYDummyView.h"
 
 
-static CGFloat const adjustmentValue = 3.0;
+static CGFloat const adjustmentValue = 5.0;
 static NSString * const XYSuspensionWebViewHeightkey = @"XYSuspensionWebViewHeight";
 
 @interface XYSuspensionWebViewController : UIViewController
@@ -27,9 +27,7 @@ static NSString * const XYSuspensionWebViewHeightkey = @"XYSuspensionWebViewHeig
 @property (nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic, strong) UIButton *adjustmentHeightButton1;
 @property (nonatomic, strong) UIButton *adjustmentHeightButton2;
-#ifdef __IPHONE_10_0
 @property (nonatomic, strong)  id feedbackGenerator;
-#endif
 
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;

@@ -10,13 +10,17 @@
 #import <objc/runtime.h>
 #import "XYDummyView.h"
 
-#define XYWebViewheight [UIScreen mainScreen].bounds.size.height*0.45
+static CGFloat const adjustmentValue = 5.0;
+static NSString * const XYSuspensionQuestionAnswerMatchViewHeightkey = @"XYSuspensionQuestionAnswerMatchViewHeightkey";
 
 @interface XYSuspensionQuestionAnswerMatchView () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) XYDummyView *dummyView;
 @property (nonatomic, assign, getter=isShow) BOOL show;
 @property (nonatomic, strong) UITextView *consoleTextView;
+@property (nonatomic, strong) UIButton *adjustmentHeightButton1;
+@property (nonatomic, strong) UIButton *adjustmentHeightButton2;
+@property (nonatomic, strong)  id feedbackGenerator;
 
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;
@@ -99,8 +103,11 @@
 - (void)setupViews {
     [self addSubview:self.consoleTextView];
     [self addSubview:self.dummyView];
+    [self.dummyView addSubview:self.adjustmentHeightButton1];
+    [self.dummyView addSubview:self.adjustmentHeightButton2];
     [self addViewsConstraint];
     [self addDummyViewConstraint];
+    [self addAdjustmentHeightButtonConstraint];
 }
 
 - (void)addViewsConstraint {
@@ -121,6 +128,19 @@
     [self.dummyView getButtonTopConstraint].constant = 0;
     
 }
+- (void)addAdjustmentHeightButtonConstraint {
+    NSLayoutConstraint *buttonTop = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton1 attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.dummyView.button  attribute:NSLayoutAttributeTop multiplier:1.0 constant:.0];
+    NSLayoutConstraint *buttomBottom = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton1 attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.dummyView.button attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
+    NSLayoutConstraint *buttonLeft = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton1 attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.dummyView.button attribute:NSLayoutAttributeLeading multiplier:1.0 constant:0];
+    NSLayoutConstraint *buttonWidth = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton1 attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:80.0];
+    [NSLayoutConstraint activateConstraints:@[buttonTop, buttonLeft, buttonWidth, buttomBottom]];
+    
+    NSLayoutConstraint *button1Top = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton2 attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.dummyView.button  attribute:NSLayoutAttributeTop multiplier:1.0 constant:.0];
+    NSLayoutConstraint *buttom1Bottom = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton2 attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.dummyView.button  attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0];
+    NSLayoutConstraint *button1Right = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton2 attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self.dummyView.button  attribute:NSLayoutAttributeTrailing multiplier:1.0 constant:0];
+    NSLayoutConstraint *button1Width = [NSLayoutConstraint constraintWithItem:self.adjustmentHeightButton2 attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:self.adjustmentHeightButton1 attribute:NSLayoutAttributeWidth multiplier:1.0 constant:0.0];
+    [NSLayoutConstraint activateConstraints:@[button1Top, buttom1Bottom, button1Right, button1Width]];
+}
 
 - (UITextView *)consoleTextView {
     
@@ -140,10 +160,49 @@
     if (!_dummyView) {
         _dummyView = [[XYDummyView alloc] initWithFrame:CGRectZero];
         _dummyView.translatesAutoresizingMaskIntoConstraints = NO;
-        _dummyView.button.backgroundColor = [UIColor colorWithRed:38/255.0 green:21/255.0 blue:53/255.0 alpha:1.0];
+        _dummyView.button.backgroundColor = [UIColor colorWithRed:38/255.0 green:238/255.0 blue:38/255.0 alpha:1.0];
     }
     return _dummyView;
 }
+
+- (UIButton *)adjustmentHeightButton1 {
+    if (!_adjustmentHeightButton1) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        button.translatesAutoresizingMaskIntoConstraints = NO;
+        button.backgroundColor = [UIColor clearColor];
+        _adjustmentHeightButton1 = button;
+        button.accessibilityIdentifier = NSStringFromSelector(_cmd);
+        [button addTarget:self action:@selector(adjustmentHeightAction:) forControlEvents:UIControlEventTouchUpInside];
+        [button setTitle:@"-" forState:UIControlStateNormal];
+        button.contentEdgeInsets = UIEdgeInsetsMake(0, 20, 0, 0);
+        if (@available(iOS 11.0, *)) {
+            button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeading;
+        } else {
+            button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+        }
+    }
+    return _adjustmentHeightButton1;
+}
+
+- (UIButton *)adjustmentHeightButton2 {
+    if (!_adjustmentHeightButton2) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+        button.translatesAutoresizingMaskIntoConstraints = NO;
+        button.backgroundColor = [UIColor clearColor];
+        _adjustmentHeightButton2 = button;
+        button.accessibilityIdentifier = NSStringFromSelector(_cmd);
+        [button addTarget:self action:@selector(adjustmentHeightAction:) forControlEvents:UIControlEventTouchUpInside];
+        [button setTitle:@"+" forState:UIControlStateNormal];
+        button.contentEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 20);
+        if (@available(iOS 11.0, *)) {
+            button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentTrailing;
+        } else {
+            button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+        }
+    }
+    return _adjustmentHeightButton2;
+}
+
 
 - (void)commonInit {
     self.leanEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 0);
@@ -153,9 +212,45 @@
     self.consoleTextView.textColor = [UIColor blackColor];
     self.consoleTextView.selectable = NO;
     [self.dummyView.button addTarget:self action:@selector(doubleTapOnSelf) forControlEvents:UIControlEventTouchUpInside];
-    NSAttributedString *tit = [[NSAttributedString alloc] initWithString:@"【轻拍顶部区域两次】或【按住拖拽】" attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor], NSFontAttributeName: [UIFont systemFontOfSize:13.0]}];
+    NSAttributedString *tit = [[NSAttributedString alloc] initWithString:@"【轻拍顶部】或【按住拖拽】" attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor], NSFontAttributeName: [UIFont systemFontOfSize:13.0]}];
     [self.dummyView.button setAttributedTitle:tit forState:UIControlStateNormal];
     [self.dummyView hideCleanButton];
+    if (@available(iOS 10.0, *)) {
+        _feedbackGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy];
+    }
+}
+
+- (void)adjustmentHeightAction:(UIButton *)btn {
+    // 减少高度
+    if ([btn.accessibilityIdentifier isEqualToString:@"adjustmentHeightButton1"]) {
+        CGRect rect = self.frame;
+        rect.size.height-=adjustmentValue;
+        rect.origin.y+=adjustmentValue;
+        self.frame = rect;
+    }
+    // 增加高度
+    else if ([btn.accessibilityIdentifier isEqualToString:@"adjustmentHeightButton2"]) {
+        CGRect rect = self.frame;
+        rect.size.height+=adjustmentValue;
+        rect.origin.y-=adjustmentValue;
+        self.frame = rect;
+    }
+    
+    [self setWebViewheight:self.frame.size.height];
+    
+    [self impactOccurred];
+}
+
+- (void)impactOccurred {
+    void (^tapticBlock)(void) = ^{
+        // 到达边缘时触发taptic反馈
+        if (@available(iOS 10.0, *)) {
+            [(UIImpactFeedbackGenerator *)_feedbackGenerator impactOccurred];
+        }
+        
+    };
+    
+    tapticBlock();
 }
 
 - (void)setAttributedText:(NSAttributedString *)attributedText {
@@ -197,7 +292,7 @@
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion {
     self.consoleTextView.scrollEnabled = YES;
     [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        CGFloat h = XYWebViewheight;
+        CGFloat h = [self getWebViewHeight];
         self.frame = CGRectMake(0, [UIScreen mainScreen].bounds.size.height-h, [UIScreen mainScreen].bounds.size.width, h);
     } completion:^(BOOL finished) {
         self.show = YES;
@@ -232,7 +327,18 @@
     }];
 }
 
+- (CGFloat)getWebViewHeight {
+    NSNumber *heightNum = [[NSUserDefaults standardUserDefaults] objectForKey:XYSuspensionQuestionAnswerMatchViewHeightkey];
+    if (!heightNum) {
+        return [UIScreen mainScreen].bounds.size.height*0.45;
+    }
+    return MAX(0.0, heightNum.floatValue);
+}
 
+- (void)setWebViewheight:(CGFloat)height {
+    [[NSUserDefaults standardUserDefaults] setObject:@(height) forKey:XYSuspensionQuestionAnswerMatchViewHeightkey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
 
 - (void)xy_hide {
     [self xy_hideWithCompletion:NULL];
@@ -242,8 +348,8 @@
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
     if (self.isShow) {
         CGRect rect = self.frame;
-        rect.origin.y = [UIScreen mainScreen].bounds.size.height - XYWebViewheight;
-        rect.size = CGSizeMake([UIScreen mainScreen].bounds.size.width, XYWebViewheight);
+        rect.origin.y = [UIScreen mainScreen].bounds.size.height - [self getWebViewHeight];
+        rect.size = CGSizeMake([UIScreen mainScreen].bounds.size.width, [self getWebViewHeight]);
         self.frame = rect;
         
     }
