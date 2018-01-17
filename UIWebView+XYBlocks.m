@@ -22,6 +22,26 @@
 
 @implementation UIWebView (XYBlocks)
 
++ (void)load{
+    //  "v@:"
+    Class class = NSClassFromString(@"WebActionDisablingCALayerDelegate");
+    class_addMethod(class, NSSelectorFromString(@"setBeingRemoved"), (IMP)setBeingRemoved, "v@:");
+    class_addMethod(class, NSSelectorFromString(@"willBeRemoved"), (IMP)willBeRemoved, "v@:");
+    
+    class_addMethod(class, @selector(removeFromSuperview), (IMP)willBeRemoved, "v@:");
+}
+
+id setBeingRemoved(id self, SEL selector, ...)
+{
+    return nil;
+}
+
+id willBeRemoved(id self, SEL selector, ...)
+{
+    return nil;
+}
+
+
 #pragma mark - UIWebView+Blocks
 
 + (UIWebView *)loadRequest:(NSURLRequest *)request

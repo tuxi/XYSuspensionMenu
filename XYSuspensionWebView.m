@@ -11,14 +11,15 @@
 #import "UIWebView+XYBlocks.h"
 #import "XYDummyView.h"
 
-#define XYWebViewheight [UIScreen mainScreen].bounds.size.height*0.45
-static CGFloat const adjustmentValue = 1.0;
+
+static CGFloat const adjustmentValue = 5.0;
+static NSString * const XYSuspensionWebViewHeightkey = @"XYSuspensionWebViewHeight";
 
 @interface XYSuspensionWebViewController : UIViewController
 
 @end
 
-@interface XYSuspensionWebView () <UIGestureRecognizerDelegate>
+@interface XYSuspensionWebView () <UIGestureRecognizerDelegate, SuspensionViewDelegate>
 
 @property (nonatomic, strong) XYDummyView *dummyView;
 @property (nonatomic, assign, getter=isShow) BOOL show;
@@ -26,6 +27,7 @@ static CGFloat const adjustmentValue = 1.0;
 @property (nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic, strong) UIButton *adjustmentHeightButton1;
 @property (nonatomic, strong) UIButton *adjustmentHeightButton2;
+@property (nonatomic, strong)  id feedbackGenerator;
 
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;
@@ -213,6 +215,10 @@ static CGFloat const adjustmentValue = 1.0;
     NSAttributedString *tit = [[NSAttributedString alloc] initWithString:@"【轻拍顶部关闭】或【按住拖拽移动】" attributes:@{NSForegroundColorAttributeName: [UIColor whiteColor], NSFontAttributeName: [UIFont systemFontOfSize:13.0]}];
     [self.dummyView.button setAttributedTitle:tit forState:UIControlStateNormal];
     [self.dummyView hideCleanButton];
+    if (@available(iOS 10.0, *)) {
+        _feedbackGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy];
+    }
+    self.delegate = self;
 }
 
 - (void)adjustmentHeightAction:(UIButton *)btn {
@@ -230,6 +236,26 @@ static CGFloat const adjustmentValue = 1.0;
         rect.origin.y-=adjustmentValue;
         self.frame = rect;
     }
+    
+    [self setWebViewheight:self.frame.size.height];
+   
+    [self impactOccurred];
+}
+
+- (void)impactOccurred {
+    void (^tapticBlock)(void) = ^{
+        // 到达边缘时触发taptic反馈
+        if (@available(iOS 10.0, *)) {
+            [(UIImpactFeedbackGenerator *)_feedbackGenerator impactOccurred];
+        }
+        
+    };
+    
+    tapticBlock();
+}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [super touchesBegan:touches withEvent:event];
 }
 
 - (void)doubleTapOnSelf {
@@ -249,7 +275,7 @@ static CGFloat const adjustmentValue = 1.0;
 
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion {
     [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
-        CGFloat h = XYWebViewheight;
+        CGFloat h = [self getWebViewHeight];
         self.frame = CGRectMake(0, [UIScreen mainScreen].bounds.size.height-h, [UIScreen mainScreen].bounds.size.width, h);
     } completion:^(BOOL finished) {
         self.show = YES;
@@ -286,6 +312,19 @@ static CGFloat const adjustmentValue = 1.0;
 
 - (void)xy_hide {
     [self xy_hideWithCompletion:NULL];
+}
+
+- (CGFloat)getWebViewHeight {
+    NSNumber *heightNum = [[NSUserDefaults standardUserDefaults] objectForKey:XYSuspensionWebViewHeightkey];
+    if (!heightNum) {
+        return [UIScreen mainScreen].bounds.size.height*0.45;
+    }
+    return MAX(0.0, heightNum.floatValue);
+}
+
+- (void)setWebViewheight:(CGFloat)height {
+    [[NSUserDefaults standardUserDefaults] setObject:@(height) forKey:XYSuspensionWebViewHeightkey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (NSMutableURLRequest *)request {
@@ -328,8 +367,8 @@ static CGFloat const adjustmentValue = 1.0;
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
     if (self.isShow) {
         CGRect rect = self.frame;
-        rect.origin.y = [UIScreen mainScreen].bounds.size.height - XYWebViewheight;
-        rect.size = CGSizeMake([UIScreen mainScreen].bounds.size.width, XYWebViewheight);
+        rect.origin.y = [UIScreen mainScreen].bounds.size.height - [self getWebViewHeight];
+        rect.size = CGSizeMake([UIScreen mainScreen].bounds.size.width, [self getWebViewHeight]);
         self.frame = rect;
         
     }
@@ -341,6 +380,14 @@ static CGFloat const adjustmentValue = 1.0;
 shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return ![gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]];
 }
+
+////////////////////////////////////////////////////////////////////////
+#pragma mark - SuspensionViewDelegate
+////////////////////////////////////////////////////////////////////////
+- (void)suspensionView:(SuspensionView *)suspensionView didAutoLeanToTargetPosition:(CGPoint)position {
+     [self impactOccurred];
+}
+
 @end
 
 
