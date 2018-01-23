@@ -15,13 +15,49 @@
 
 #pragma mark *** Sample ***
 
+@interface NSString (CountString)
+- (NSInteger)countOccurencesOfString:(NSString *)searchString;
+@end
+
+@implementation NSString (CountString)
+- (NSInteger)countOccurencesOfString:(NSString*)searchString {
+    NSInteger strCount = [self length] - [[self stringByReplacingOccurrencesOfString:searchString withString:@""] length];
+    return strCount / [searchString length];
+}
+
+- (void)searchWithWDArray:(NSArray<NSString *> *)wdArray countBlock:(void (^)(NSString *coutStr))block {
+    if (!self.length || !wdArray.count) {
+        block(nil);
+        return;
+    }
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        
+        NSMutableString *sm = @"".mutableCopy;
+        [wdArray enumerateObjectsUsingBlock:^(NSString *  _Nonnull wd, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (!wd.length) {
+                return;
+            }
+            NSUInteger count = [self countOccurencesOfString:wd];
+            [sm appendFormat:@"%@: 出现%ld次数\n", wd, count];
+        }];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (block) {
+                block(sm);
+            }
+        });
+    });
+    
+}
+@end
+
 @interface FirstViewController () <SuspensionMenuViewDelegate>
 
 @end
 
 @implementation FirstViewController
 
-
+static NSString * const WDKEY = @"lg1+lg2=多少";
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -48,9 +84,8 @@
     /// 显示webView
     [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
         [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
-            NSString *wd = @"天气如何";
-            NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-            wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+            NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:WDKEY] invertedSet];
+            NSString *wd = [WDKEY stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
             
             NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
             [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
@@ -61,20 +96,36 @@
 - (void)testQuestionAnswerView {
 
     [[UIApplication sharedApplication] xy_toggleSuspensionQuestionAnswerMatchViewWithCompletion:^(BOOL finished) {
-        NSString *wd = @"天气如何";
-        NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-        wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
+        NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:WDKEY] invertedSet];
+        NSString *wd = [WDKEY stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
 
         NSString *urlString = [NSString stringWithFormat:@"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&rsv_pq=ca4a433e000002ee&rsv_t=5b8d1ARgkmQBgZ4l3tgNF8kz68PiUjGqjSoXDjn90uVO4LAIRpYqHXBhVJ0&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=4&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=2390", wd];
         NSDictionary *headers = @{@"Content-Type": @"text/html;charset=utf-8"};
         [XYHTTPRequest rquestWithURLString:urlString parameters:nil headers:headers method:XYHTTPRequestMethodGET completion:^(NSData *resultData, NSError *error) {
         
             NSString * newStr = [[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding];
-            [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:newStr];
+//            NSArray *array = @[@"1", @"2", @"10"];
+//            [newStr searchWithWDArray:array countBlock:^(NSString *coutStr) {
+//                [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:coutStr];
+//            }];
+            NSArray *array = @[newStr];
+            NSString *searchText = @"0.3";
+            NSMutableString *searchWithWildcards = [@"*" mutableCopy];
+            [searchText enumerateSubstringsInRange:NSMakeRange(0, [searchText length])
+                                           options:NSStringEnumerationByComposedCharacterSequences
+                                        usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+                                            [searchWithWildcards appendString:substring];
+                                            [searchWithWildcards appendString:@"*"];
+                                        }];
+
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", searchWithWildcards];
+            NSArray *filteredArray = [array filteredArrayUsingPredicate:predicate];
+            DLog(@"%@", filteredArray);
+            
         }];
     }];
 }
-
 - (void)testRepeatInit {
     /// 测试重复创建
     [self oneLevelMenuSample];
