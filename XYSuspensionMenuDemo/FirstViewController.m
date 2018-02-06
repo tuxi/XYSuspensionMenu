@@ -66,55 +66,96 @@ static NSString * const wd = @"中国哪位诗人的作品最多";
 
     [[UIApplication sharedApplication] xy_toggleSuspensionQuestionAnswerMatchViewWithCompletion:^(BOOL finished) {
         
-        NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-        NSString *wdr = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
-
-        NSString *urlString = [NSString stringWithFormat:@"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&rsv_pq=ca4a433e000002ee&rsv_t=5b8d1ARgkmQBgZ4l3tgNF8kz68PiUjGqjSoXDjn90uVO4LAIRpYqHXBhVJ0&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=4&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=2390", wdr];
-        NSDictionary *headers = @{@"Content-Type": @"text/html;charset=utf-8"};
-        [XYHTTPRequest rquestWithURLString:urlString parameters:nil headers:headers method:XYHTTPRequestMethodGET completion:^(NSData *resultData, NSError *error) {
-        
-            NSString * newStr = [[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding];
-            [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:newStr];
-            
-            NSArray *options = @[@"李白", @"杜甫", @"白居易", @"乾隆"];
-            NSString *searchText = wd;
-            NSMutableString *searchWithWildcards = [@"*" mutableCopy];
-            [searchText enumerateSubstringsInRange:NSMakeRange(0, [searchText length])
-                                           options:NSStringEnumerationByComposedCharacterSequences
-                                        usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
-                                            [searchWithWildcards appendString:substring];
-                                            [searchWithWildcards appendString:@"*"];
-                                        }];
-            
-            //    if (searchWithWildcards.length > 3)
-            //        for (int i = 2; i < searchText.length * 2; i += 2)
-            //            [searchWithWildcards insertString:@"*" atIndex:i];
-            
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", searchWithWildcards];
-            NSArray *filteredArray = [options filteredArrayUsingPredicate:predicate];
-            //封装的模糊匹配
-        
-        
+        [self.class request:@"孟姜女是哪个朝代的人" ansOps:@[@"唐朝", @"宋代", @"秦朝"] completion:^(NSDictionary *responseDict, NSError *error) {
+           
+            if (!error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    int bestIndex = [responseDict[@"best_answer_index"] intValue];
+                    if (bestIndex == -1) {
+                        [[UIApplication sharedApplication].xy_suspensionQuestionAnsweView setAttributedText:[[NSAttributedString alloc] initWithString:@"未返回结果"]];
+                    }
+                    NSString *bestAnswer = [NSString stringWithFormat:@"建议答案：\n第%d个\n%@", bestIndex+1, responseDict[@"best_answer"]];
+                    NSLog(@"%@", bestAnswer);
+                    [[UIApplication sharedApplication].xy_suspensionQuestionAnsweView setAttributedText:[[NSAttributedString alloc] initWithString:bestAnswer]];
+                });
+            }
         }];
     }];
 }
 
-//array里边是对象的话需要略作修改
-+ (NSArray*)filterFuzzySearchFromArray:(NSArray*)sourceArray withWildcards:(NSString*)wildcards
-{
-    NSMutableString *searchWithWildcards = [@"*" mutableCopy];
-    [wildcards enumerateSubstringsInRange:NSMakeRange(0, [wildcards length])
-                                  options:NSStringEnumerationByComposedCharacterSequences
-                               usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
-                                   [searchWithWildcards appendString:substring];
-                                   [searchWithWildcards appendString:@"*"];
-                               }];
++ (NSURLSessionDataTask *)request:(NSString *)quesText
+                           ansOps:(NSArray <NSString *> *)ansOps
+                       completion:(void (^)(NSDictionary *responseDict, NSError *error))completion {
+    NSURLSessionDataTask * (^ searchOnAlpface)(NSString *qeustion, NSArray<NSString *> *quesOps, void (^ completion)(NSDictionary *responseDict, NSError *error)) = ^NSURLSessionDataTask *(NSString *qeustion, NSArray<NSString *> *quesOps, void (^ completion)(id responseDict, NSError *error)) {
+        if (qeustion.length == 0) {
+            return nil;
+        }
+        NSURLSession *session=[NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        
+        NSString *urlString=@"http://www.alpface.com/question/answer/";
+        /**
+         NSString *urlString=@"http://10.211.55.3:8000/question/answer/";
+         测试数据
+         NSString *qeustion = @"孟姜女是哪个朝代的人";
+         NSArray<NSString *> *quesOps = @[@"宋代", @"唐朝", @"秦朝"];
+         */
+        
+        NSMutableURLRequest *request=[NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+        [request setTimeoutInterval:20];
+        request.HTTPMethod=@"POST";
+        [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+        [request setValue:@"csrftoken=MKIxe7TiEwjVdITrEHfgd9qqeFjKEkqvHMPmNfSuJDIYfMJVBBsMOHJqq5S7rWcS" forHTTPHeaderField:@"Cookie"];
+        [request setValue:@"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" forHTTPHeaderField:@"Accept"];
+        [request setValue:@"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36" forHTTPHeaderField:@"User-Agent"];
+        
+        
+        NSMutableDictionary *paramer = @{@"csrfmiddlewaretoken":@"w2N7qYoxz8fHoWRmzUjNrFkyzkB7jCRor4UWZ6nJEfEKq0HQwOwj2dDyLKau6eDL",@"question_text": qeustion}.mutableCopy;
+        [quesOps enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [paramer setObject:obj forKey:[NSString stringWithFormat:@"answeroptions%ld", idx+1]];
+        }];
+        NSMutableString *paramerStr = @"".mutableCopy;
+        [paramer enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            [paramerStr appendFormat:@"&%@=%@", key, obj];
+        }];
+        
+        request.HTTPBody=[paramerStr dataUsingEncoding:NSUTF8StringEncoding];
+        
+        NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+            if (error) {
+                if (completion) {
+                    completion(nil, error);
+                }
+            }
+            else {
+                NSDictionary *responseDict = @{};
+                if (data) {
+                    NSError *er = nil;
+                    responseDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&er];
+                    if (er) {
+                        responseDict = @{};
+                    }
+                    if (completion) {
+                        completion(responseDict, er);
+                    }
+                }
+                else {
+                    if (completion) {
+                        completion(responseDict, nil);
+                    }
+                }
+                
+            }
+            
+        }];
+        
+        [task resume];
+        return task;
+    };
     
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", searchWithWildcards];
-    NSArray *filteredArray = [sourceArray filteredArrayUsingPredicate:predicate];
-    return filteredArray;
+    return searchOnAlpface(quesText, ansOps, completion);
 }
+
 
 
 - (void)testRepeatInit {
