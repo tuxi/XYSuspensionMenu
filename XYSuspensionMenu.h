@@ -24,8 +24,11 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @optional
 - (void)suspensionViewClickedButton:(SuspensionView *)suspensionView;
+/// 拖动suspensionView时回调
 - (void)suspensionView:(SuspensionView *)suspensionView locationChange:(UIPanGestureRecognizer *)pan;
+/// 根据此方法返回的坐标设置suspensionView的最终的center
 - (CGPoint)leanToNewTragetPosionForSuspensionView:(SuspensionView *)suspensionView;
+/// 手指拖动suspensionView结束后，它最终根据上下左右的距离计算其接近那个边距比较近，最终停靠在最近的边缘
 - (void)suspensionView:(SuspensionView *)suspensionView didAutoLeanToTargetPosition:(CGPoint)position;
 - (void)suspensionView:(SuspensionView *)suspensionView willAutoLeanToTargetPosition:(CGPoint)position;
 
@@ -53,13 +56,8 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @interface SuspensionView : UIButton <XYSuspensionWindowProtocol>
 
-#if ! __has_feature(objc_arc)
-@property (nonatomic, assign, nullable) id<SuspensionViewDelegate> delegate;
-@property (nonatomic, assign, readonly) UIPanGestureRecognizer *panGestureRecognizer;
-#else
 @property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
 @property (nonatomic, weak, nullable) id<SuspensionViewDelegate> delegate;
-#endif
 
 @property (nonatomic, assign) SuspensionViewLeanEdgeType leanEdgeType;
 @property (nonatomic, assign) UIEdgeInsets leanEdgeInsets;
@@ -72,6 +70,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, assign, getter=isAutoLeanEdge) BOOL autoLeanEdge;
 @property (nonatomic, copy, nullable) void (^clickCallBack)(void);
 @property (nonatomic, assign) BOOL shouldLeanToPreviousPositionWhenAppStart;
+@property (nonatomic, assign, getter=isAllowMoe) BOOL allowMove;
 
 - (void)moveToDisplayCenter;
 - (void)moveToPreviousLeanPosition;
@@ -102,22 +101,14 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 + (instancetype)showWithFrame:(CGRect)frame;
 
-+ (Class)suspensionControllerClass;
-
 @end
 
 #pragma mark *** SuspensionMenuView ***
 
 @interface SuspensionMenuView : UIView <XYSuspensionWindowProtocol>
-#if ! __has_feature(objc_arc)
-@property (nonatomic, assign, nullable) id<SuspensionMenuViewDelegate> delegate;
-@property (nonatomic, assign, readonly) UIImageView *backgroundImageView;
-@property (nonatomic, assign, readonly) HypotenuseAction *currentResponderItem;
-#else
 @property (nonatomic, weak, nullable) id<SuspensionMenuViewDelegate> delegate;
 @property (nonatomic, weak, readonly) UIImageView *backgroundImageView;
 @property (nonatomic, weak, readonly) HypotenuseAction *currentResponderItem;
-#endif
 @property (nonatomic, strong, readonly) SuspensionView *centerButton;
 @property (nonatomic, copy) void (^ _Nullable menuBarClickBlock)(NSInteger index);
 @property (nonatomic, copy) void (^ _Nullable moreButtonClickBlock)(NSInteger index);
@@ -147,9 +138,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 - (void)closeWithCompetion:(void (^ _Nullable)(BOOL finished))competion;
 @end
 
-#pragma mark *** XYSuspensionMenu ***
+#pragma mark *** SuspensionMenuWindow ***
 
-@interface XYSuspensionMenu : SuspensionMenuView
+@interface SuspensionMenuWindow : SuspensionMenuView
 
 @property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
 
@@ -179,9 +170,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
-@interface UIApplication (XYSuspensionMenuExtension)
+@interface UIApplication (SuspensionWindowExtension)
 
-- (nullable XYSuspensionMenu *)xy_suspensionMenu;
+- (nullable SuspensionMenuWindow *)xy_suspensionMenuWindow;
 
 @end
 

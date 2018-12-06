@@ -9,6 +9,7 @@
 #import "XYSuspensionMenu.h"
 #import <objc/runtime.h>
 
+
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 #pragma clang diagnostic ignored "-Wnonnull"
 
@@ -30,24 +31,20 @@
 @end
 
 
-@implementation UIApplication (XYSuspensionMenuExtension)
+@implementation UIApplication (SuspensionWindowExtension)
 
-- (void)setXy_suspensionMenu:(XYSuspensionMenu *)suspensionMenu {
-    objc_setAssociatedObject(self, @selector(xy_suspensionMenu), suspensionMenu, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setXy_suspensionMenuWindow:(SuspensionMenuWindow *)suspensionMenuWindow {
+    objc_setAssociatedObject(self, @selector(xy_suspensionMenuWindow), suspensionMenuWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (XYSuspensionMenu *)xy_suspensionMenu {
+- (SuspensionMenuWindow *)xy_suspensionMenuWindow {
     return objc_getAssociatedObject(self, _cmd);
 }
 
 @end
 
 @interface HypotenuseAction ()
-#if ! __has_feature(objc_arc)
-@property (nonatomic, assign, nullable) SuspensionMenuView *suspensionMenuView;
-#else
 @property (nonatomic, weak, nullable) SuspensionMenuView *suspensionMenuView;
-#endif
 @property (nullable, nonatomic, copy) void (^ actionHandler)(HypotenuseAction *action, SuspensionMenuView *menuView);
 @end
 
@@ -59,11 +56,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 @interface SuspensionView ()
 
 @property (nonatomic, assign) CGPoint previousCenter;
-#if ! __has_feature(objc_arc)
-@property (nonatomic, assign) UIPanGestureRecognizer *panGestureRecognizer;
-#else
 @property (nonatomic, weak) UIPanGestureRecognizer *panGestureRecognizer;
-#endif
 @property (nonatomic, assign) BOOL isMoving;
 @property (nonatomic, strong) UIWindow *xy_window;
 /// 当屏幕旋转时反转坐标
@@ -72,7 +65,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 @end
 
 @implementation SuspensionView
-
 @synthesize previousCenter = _previousCenter;
 
 ////////////////////////////////////////////////////////////////////////
@@ -166,7 +158,10 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     self.delegate = nil;
 }
 
-
+- (void)setAllowMove:(BOOL)allowMove {
+    _allowMove = allowMove;
+    _panGestureRecognizer.enabled = allowMove;
+}
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - Position
 ////////////////////////////////////////////////////////////////////////
@@ -249,7 +244,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     
 }
 
-/// 根据传入的位置检查处理最终依靠到边缘的位置
+/// 根据传入的位置检查处理最终依靠到边缘的位置 此坐标为center
 - (CGPoint)_checkTargetPosition:(CGPoint)panPoint {
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(leanToNewTragetPosionForSuspensionView:)]) {
@@ -261,46 +256,89 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     CGFloat touchHeight = self.frame.size.height;
     CGFloat screenWidth = [[UIScreen mainScreen] bounds].size.width;
     CGFloat screenHeight = [[UIScreen mainScreen] bounds].size.height;
-    // 计算当前距离上下左右的间距
-    CGFloat left = MAX(self.leanEdgeInsets.left, MIN(panPoint.x, screenWidth - touchWidth - self.leanEdgeInsets.right));
-    CGFloat right = screenWidth - left;
-    CGFloat top = MAX(self.leanEdgeInsets.top, MIN(panPoint.y, screenHeight - touchHeight - self.leanEdgeInsets.bottom));
-    CGFloat bottom = screenHeight - top;
     
-    // 获取最小的间距(最小的间距为目标移动的位置)
-    CGFloat minSpace = 0;
-    if (self.leanEdgeType == SuspensionViewLeanEdgeTypeHorizontal) {
-        minSpace = MIN(left, right);
+    CGFloat leftEdge = self.leanEdgeInsets.left;
+    CGFloat rightEdge = self.leanEdgeInsets.right;
+    CGFloat topEdge = self.leanEdgeInsets.top;
+    CGFloat bottomEdge = self.leanEdgeInsets.bottom;
+    if (@available(iOS 11.0, *)) {
+        leftEdge += UIApplication.sharedApplication.delegate.window.safeAreaInsets.left;
+        rightEdge += UIApplication.sharedApplication.delegate.window.safeAreaInsets.right;
+        topEdge += UIApplication.sharedApplication.delegate.window.safeAreaInsets.top;
+        bottomEdge += UIApplication.sharedApplication.delegate.window.safeAreaInsets.bottom;
     }
-    else if (self.leanEdgeType == SuspensionViewLeanEdgeTypeEachSide) {
-        minSpace = MIN(MIN(MIN(top, left), bottom), right);
-    }
+    // 判断panPoint这个坐标更接近于上下左右哪个部分
+    CGFloat nearLeft = fabs(panPoint.x - 0 - leftEdge);
+    CGFloat nearRight = fabs(panPoint.x - screenWidth - rightEdge);
+    CGFloat nearTop = fabs(panPoint.y - 0 - topEdge);
+    CGFloat nearBottom = fabs(panPoint.y - screenHeight - bottomEdge);
+    
     CGPoint newTargetPoint = CGPointZero;
-    CGFloat targetY = 0;
+    CGFloat targetY = panPoint.y;
+    CGFloat targetX = 0;
+    if (self.leanEdgeType == SuspensionViewLeanEdgeTypeHorizontal) {
+        if (panPoint.y < topEdge + touchHeight*0.5) {
+            targetY = topEdge + touchHeight*0.5;
+        }
+        else if (panPoint.y > (screenHeight - touchHeight*0.5 - bottomEdge)) {
+            targetY = screenHeight - touchHeight*0.5 - bottomEdge;
+        }
+        
+        // 计算需要移动到中心点位置
+        if (nearLeft < nearRight) { // 接近左侧 靠左
+            targetX = touchWidth*0.5 + leftEdge;
+        }
+        else { // 接近右侧，靠右
+            targetX = screenWidth - touchWidth*0.5 - rightEdge;
+        }
+        
+        // 当底部或顶部接近30的时候，就让其靠顶或靠底停留，否则还按照原坐标center y
+        CGFloat minSpace =  MIN(nearTop, nearBottom);
+        if (minSpace <= 30) {
+            if (nearTop < nearBottom) { // 接近顶部 靠上
+                targetY = topEdge + screenHeight*0.5;
+            }
+            else { // 接近底部 靠底部
+                targetY = screenHeight - touchHeight*0.5 - bottomEdge;
+            }
+        }
+    }
+    else if (self.leanEdgeType == SuspensionViewLeanEdgeTypeEachSide)
+    {
+        CGFloat minHorizontal = MIN(nearLeft, nearRight);
+        CGFloat minVertical = MIN(nearTop, nearBottom);
+        // 判断上下左右哪个位置最小
+        BOOL isHorizontal, isVertical;
+        if (minVertical < minHorizontal) {
+            // 按照垂直停靠，只需要计算y坐标，x坐标不变
+            isVertical = YES;
+        }
+        else {
+            // 按照横向停靠，只需要计算x坐标，y坐标不变
+            isHorizontal = YES;
+        }
+        if (isVertical) {
+            if (nearTop < nearBottom) { // 靠近顶部
+                targetY = topEdge+touchHeight*0.5;
+            }
+            else { // 靠近底部
+                targetY = screenHeight - touchHeight*0.5 - bottomEdge;
+            }
+            targetX = MIN(MAX(leftEdge, panPoint.x), screenWidth - touchWidth*0.5 - rightEdge);
+        }
+        else {
+            if (nearLeft < nearRight) { // 靠近左侧
+                targetX = leftEdge+touchWidth*0.5;
+            }
+            else { // 靠近右侧
+                targetX = screenWidth - touchWidth*0.5 - rightEdge;
+            }
+            targetY = MIN(MAX(topEdge, panPoint.y), screenHeight - touchHeight*0.5 - bottomEdge);
+        }
+    }
     
-    if (panPoint.y < self.leanEdgeInsets.top + touchHeight*0.5 + self.leanEdgeInsets.top) {
-        targetY = self.leanEdgeInsets.top + touchHeight*0.5 + self.leanEdgeInsets.top;
-    }
-    else if (panPoint.y > (screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom)) {
-        targetY = screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom;
-    }
-    else {
-        targetY = panPoint.y;
-    }
+    newTargetPoint = (struct CGPoint){targetX, targetY};
     
-    // 计算需要移动到中心点位置
-    if (minSpace == left) {
-        newTargetPoint = CGPointMake(touchWidth*0.5 + self.leanEdgeInsets.left, targetY);
-    }
-    else if (minSpace == right) {
-        newTargetPoint = CGPointMake(screenWidth - touchWidth*0.5 - self.leanEdgeInsets.right, targetY);
-    }
-    else if (minSpace == top) {
-        newTargetPoint = CGPointMake(left, touchHeight*0.5 + self.leanEdgeInsets.top);
-    }
-    else if (minSpace == bottom) {
-        newTargetPoint = CGPointMake(left, screenHeight - touchHeight*0.5 - self.leanEdgeInsets.bottom);
-    }
     // 记录当前的center
     self.previousCenter = newTargetPoint;
     
@@ -371,7 +409,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     if (self.isAutoLeanEdge) {
         /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
-        [self _checkTargetPosition:currentPoint];
+        currentPoint = [self _checkTargetPosition:currentPoint];
     }
     [self didChangeInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation];
 }
@@ -407,9 +445,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     NSLog(@"%s", __func__);
-#if ! __has_feature(objc_arc)
-    [super dealloc];
-#endif
 }
 
 - (void)setPreviousCenter:(CGPoint)previousCenter {
@@ -511,11 +546,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
 
-#if ! __has_feature(objc_arc)
-@property (nonatomic, assign) XYSuspensionMenu *menuView;
-#else
-@property (nonatomic, weak) XYSuspensionMenu *menuView;
-#endif
+@property (nonatomic, weak) SuspensionMenuWindow *menuView;
 
 @end
 
@@ -560,7 +591,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     //    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
     //#endif
     
-    UIViewController *vc = [self.class.suspensionControllerClass new];
+    UIViewController *vc = [UIViewController new];
     suspensionWindow.rootViewController = vc;
     
     [suspensionWindow.layer setMasksToBounds:YES];
@@ -577,10 +608,6 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     suspensionWindow.suspensionView = self;
     
     suspensionWindow.hidden = NO;
-}
-
-+ (Class)suspensionControllerClass {
-    return [UIViewController class];
 }
 
 @end
@@ -606,16 +633,10 @@ static const NSUInteger moreBarButtonBaseTag = 200;
     
 }
 
-#if ! __has_feature(objc_arc)
-@property (nonatomic, assign) UIImageView *backgroundImageView;
-@property (nonatomic, assign) UIVisualEffectView *visualEffectView;
-@property (nonatomic, assign) HypotenuseAction *currentResponderItem;
-#else
 @property (nonatomic, weak) UIImageView *backgroundImageView;
 @property (nonatomic, weak) UIVisualEffectView *visualEffectView;
 /// 当前处理事件的item
 @property (nonatomic, weak) HypotenuseAction *currentResponderItem;
-#endif
 @property (nonatomic, strong) UIWindow *xy_window;
 @property (nonatomic, strong) SuspensionView *centerButton;
 @property (nonatomic, assign) CGSize itemSize;
@@ -714,7 +735,7 @@ menuBarItems = _menuBarItems;
 
 
 - (void)setItemSize:(CGSize)itemSize {
-
+    
     _viewFlags._menuWindowSize = self.frame.size;
     _itemSize = CGSizeMake(MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80),
                            MIN(MAX(MIN(itemSize.width, itemSize.height), 50.0), 80));
@@ -987,10 +1008,6 @@ menuBarItems = _menuBarItems;
 
 - (void)close {
     [self _closeWithTriggerPanGesture:NO completion:NULL];
-}
-
-- (void)closeWithCompetion:(void (^)(BOOL))competion {
-    [self _closeWithTriggerPanGesture:NO completion:competion];
 }
 
 - (void)_openCompetion {
@@ -1740,9 +1757,6 @@ menuBarItems = _menuBarItems;
     _closeCompletion = nil;
     _showViewControllerDictionary = nil;
     _currentDisplayMoreItem = nil;
-#if ! __has_feature(objc_arc)
-    [super dealloc];
-#endif
 }
 
 - (UIViewController *)topViewController {
@@ -1797,16 +1811,16 @@ menuBarItems = _menuBarItems;
 @end
 
 
-@implementation XYSuspensionMenu
+@implementation SuspensionMenuWindow
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - initialize
 ////////////////////////////////////////////////////////////////////////
 
 + (instancetype)menuWindowWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
-    XYSuspensionMenu *sw = [UIApplication sharedApplication].xy_suspensionMenu;
+    SuspensionMenuWindow *sw = [UIApplication sharedApplication].xy_suspensionMenuWindow;
     if (!sw) {
-        sw = [[XYSuspensionMenu alloc] initWithFrame:frame itemSize:itemSize];
+        sw = [[SuspensionMenuWindow alloc] initWithFrame:frame itemSize:itemSize];
     }
     else {
         [sw close];
@@ -1883,7 +1897,7 @@ menuBarItems = _menuBarItems;
 
 - (void)showWithCompetion:(void (^)(void))competion {
     [super showWithCompetion:competion];
-    [UIApplication sharedApplication].xy_suspensionMenu = self;
+    [UIApplication sharedApplication].xy_suspensionMenuWindow = self;
 }
 
 
@@ -1935,9 +1949,6 @@ menuBarItems = _menuBarItems;
     _moreHypotenusItems = nil;
     _hypotenuseButton = nil;
     _actionHandler = nil;
-#if ! __has_feature(objc_arc)
-    [super dealloc];
-#endif
 }
 
 @end
@@ -2000,7 +2011,7 @@ menuBarItems = _menuBarItems;
 
 @implementation SuspensionMenuController
 
-- (instancetype)initWithMenuView:(XYSuspensionMenu *)menuView {
+- (instancetype)initWithMenuView:(SuspensionMenuWindow *)menuView {
     if (self = [super initWithNibName:nil bundle:nil]) {
         _menuView = menuView;
     }
@@ -2031,6 +2042,16 @@ menuBarItems = _menuBarItems;
     }
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
+
+- (BOOL)shouldAutorotate {
+    return YES;
+}
+
+// 支持的方向 非只需要支持竖屏
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
 
 @end
 

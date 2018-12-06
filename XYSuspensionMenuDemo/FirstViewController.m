@@ -9,9 +9,6 @@
 #import "FirstViewController.h"
 #import "XYSuspensionMenu.h"
 #import "XYConsoleView.h"
-#import "XYSuspensionWebView.h"
-#import "XYSuspensionQuestionAnswerMatchView.h"
-#import "XYHTTPRequest.h"
 
 #pragma mark *** Sample ***
 
@@ -67,65 +64,7 @@ static NSString * const WDKEY = @"lg1+lg2=多少";
     [self sample];
     // 打印log测试
     [self testLog];
-    
-    // 显示控制台
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self testWebView];
-            });
-        }];
-    });
-    
-    
-}
 
-- (void)testWebView {
-    /// 显示webView
-    [[UIApplication sharedApplication] xy_toggleConsoleWithCompletion:^(BOOL finished) {
-        [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
-            NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:WDKEY] invertedSet];
-            NSString *wd = [WDKEY stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
-            
-            NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
-            [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
-        }];
-    }];
-}
-
-- (void)testQuestionAnswerView {
-
-    [[UIApplication sharedApplication] xy_toggleSuspensionQuestionAnswerMatchViewWithCompletion:^(BOOL finished) {
-        NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:WDKEY] invertedSet];
-        NSString *wd = [WDKEY stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
-
-        NSString *urlString = [NSString stringWithFormat:@"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&rsv_pq=ca4a433e000002ee&rsv_t=5b8d1ARgkmQBgZ4l3tgNF8kz68PiUjGqjSoXDjn90uVO4LAIRpYqHXBhVJ0&rqlang=cn&rsv_enter=1&rsv_sug3=5&rsv_sug1=4&rsv_sug7=100&rsv_sug2=0&inputT=2390&rsv_sug4=2390", wd];
-        NSDictionary *headers = @{@"Content-Type": @"text/html;charset=utf-8"};
-        [XYHTTPRequest rquestWithURLString:urlString parameters:nil headers:headers method:XYHTTPRequestMethodGET completion:^(NSData *resultData, NSError *error) {
-        
-            NSString * newStr = [[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding];
-            newStr = [self getZZwithString:newStr];
-            [UIApplication sharedApplication].xy_suspensionQuestionAnsweView.attributedText = [[NSAttributedString alloc] initWithString:newStr];
-        }];
-    }];
-}
-
-//去掉 HTML 字符串中的标签
-//- (NSString *)getZZwithString:(NSString *)string{
-//    NSRegularExpression *regularExpretion=[NSRegularExpression regularExpressionWithPattern:@"<[^>]*>|\n"
-//                                                                                    options:0
-//                                                                                      error:nil];
-//    string=[regularExpretion stringByReplacingMatchesInString:string options:NSMatchingReportProgress range:NSMakeRange(0, string.length) withTemplate:@""];
-//    return string;
-//}
-
-//正则去除网络标签
-- (NSString *)getZZwithString:(NSString *)string{
-    NSRegularExpression *regularExpretion=[NSRegularExpression regularExpressionWithPattern:@"<[^>]*>|\n|&nbsp"
-                                                                                    options:0
-                                                                                      error:nil];
-    string=[regularExpretion stringByReplacingMatchesInString:string options:NSMatchingReportProgress range:NSMakeRange(0, string.length) withTemplate:@""];
-    return string;
 }
 
 
@@ -205,7 +144,7 @@ static NSString * const WDKEY = @"lg1+lg2=多少";
 /// 一级菜单使用
 - (void)oneLevelMenuSample {
     DLog(@"111");
-    XYSuspensionMenu *menuView = [XYSuspensionMenu menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+    SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 280, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
@@ -243,7 +182,7 @@ static NSString * const WDKEY = @"lg1+lg2=多少";
 /// 多级菜单使用
 - (void)sample {
     
-    XYSuspensionMenu *menuView = [XYSuspensionMenu menuWindowWithFrame:CGRectMake(0, 0, 300, 300) itemSize:CGSizeMake(50, 50)];
+   SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 280, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     
     menuView.shouldOpenWhenViewWillAppear = NO;
@@ -322,34 +261,7 @@ static NSString * const WDKEY = @"lg1+lg2=多少";
         }
         i--;
     }
-    
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [[UIApplication sharedApplication] xy_toggleWebViewWithCompletion:^(BOOL finished) {
-                NSString *wd = @"天气如何";
-                NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:wd] invertedSet];
-                wd = [wd stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
-                
-                NSString *urlString = [NSString stringWithFormat:@"https://m.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%@&inputT=1696&rsv_sug4=1697", wd];
-                [UIApplication sharedApplication].xy_suspensionWebView.urlString = urlString;
-            }];
-            [menuView close];
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setTitle:@"Test WebView" forState:UIControlStateNormal];
-        i--;
-    }
-    
-    {
-        item = [HypotenuseAction actionWithType:[types[i] integerValue] handler:^(HypotenuseAction * _Nonnull action, SuspensionMenuView * _Nonnull menuView) {
-            [self testQuestionAnswerView];
-            [menuView close];
-        }];
-        [menuView addAction:item];
-        [item.hypotenuseButton setTitle:@"Question view" forState:UIControlStateNormal];
-        i--;
-    }
+
     {
         item = [HypotenuseAction actionWithType:UIButtonTypeSystem handler:NULL];
         [menuView addAction:item];
