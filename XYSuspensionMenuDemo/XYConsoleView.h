@@ -43,7 +43,7 @@ FOUNDATION_EXPORT void xy_log(NSString *format, ...) NS_FORMAT_FUNCTION(1,2) NS_
 
 @end
 
-@interface XYConsoleView : SuspensionWindow
+@interface XYConsoleView : SuspensionView
 
 @property (nonatomic, copy) NSAttributedString *attributedText;
 

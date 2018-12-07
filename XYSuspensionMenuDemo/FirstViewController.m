@@ -144,7 +144,7 @@ static NSString * const WDKEY = @"lg1+lg2=多少";
 /// 一级菜单使用
 - (void)oneLevelMenuSample {
     DLog(@"111");
-    SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 280, 300) itemSize:CGSizeMake(50, 50)];
+    XYSuspensionMenu *menuView = [XYSuspensionMenu menuWindowWithFrame:CGRectMake(0, 0, 280, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     menuView.shouldOpenWhenViewWillAppear = NO;
     menuView.shouldHiddenCenterButtonWhenOpen = YES;
@@ -182,7 +182,7 @@ static NSString * const WDKEY = @"lg1+lg2=多少";
 /// 多级菜单使用
 - (void)sample {
     
-   SuspensionMenuWindow *menuView = [SuspensionMenuWindow menuWindowWithFrame:CGRectMake(0, 0, 280, 300) itemSize:CGSizeMake(50, 50)];
+   XYSuspensionMenu *menuView = [XYSuspensionMenu menuWindowWithFrame:CGRectMake(0, 0, 280, 300) itemSize:CGSizeMake(50, 50)];
     [menuView.centerButton setImage:[UIImage imageNamed:@"aws-icon"] forState:UIControlStateNormal];
     
     menuView.shouldOpenWhenViewWillAppear = NO;

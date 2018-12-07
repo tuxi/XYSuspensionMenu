@@ -71,6 +71,9 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @property (nonatomic, copy, nullable) void (^clickCallBack)(void);
 @property (nonatomic, assign) BOOL shouldLeanToPreviousPositionWhenAppStart;
 @property (nonatomic, assign, getter=isAllowMoe) BOOL allowMove;
+@property (nonatomic, assign, readonly) CGPoint previousCenter;
+/// 当屏幕旋转时反转坐标
+@property (nonatomic, assign) BOOL needReversePoint;
 
 - (void)moveToDisplayCenter;
 - (void)moveToPreviousLeanPosition;
@@ -81,27 +84,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
-#pragma mark *** UIResponder (SuspensionView) ***
-
-@interface UIResponder (SuspensionView)
-@property (nonatomic, nonnull) SuspensionView *suspensionView;
-- (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame;
-- (void)dismissSuspensionView:(void (^)(void))block;
-- (void)setHiddenSuspension:(BOOL)flag;
-- (BOOL)isHiddenSuspension;
-- (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state;
-- (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state;
-- (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state;
-- (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius;
-@end
-
-#pragma mark *** SuspensionWindow ***
-
-@interface SuspensionWindow : SuspensionView
-
-+ (instancetype)showWithFrame:(CGRect)frame;
-
-@end
 
 #pragma mark *** SuspensionMenuView ***
 
@@ -140,7 +122,7 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 #pragma mark *** SuspensionMenuWindow ***
 
-@interface SuspensionMenuWindow : SuspensionMenuView
+@interface XYSuspensionMenu : SuspensionMenuView
 
 @property (nonatomic, assign) BOOL shouldOpenWhenViewWillAppear;
 
@@ -170,11 +152,13 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @end
 
-@interface UIApplication (SuspensionWindowExtension)
+@interface UIApplication (XYSuspensionMenuExtension)
 
-- (nullable SuspensionMenuWindow *)xy_suspensionMenuWindow;
-
+- (nullable XYSuspensionMenu *)xy_suspensionMenu;
+- (nullable UIWindow *)xy_suspensionCenterWindow;
 @end
 
 NS_ASSUME_NONNULL_END
+
+
 

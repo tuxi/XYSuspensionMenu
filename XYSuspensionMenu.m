@@ -24,6 +24,9 @@
 
 @end
 
+@interface _MenuBarCenterButton : SuspensionView
++ (instancetype)showWithFrame:(CGRect)frame;
+@end
 
 @interface HypotenuseAction ()
 @property (nonatomic, strong) MenuBarHypotenuseButton *hypotenuseButton;
@@ -33,12 +36,20 @@
 
 @implementation UIApplication (SuspensionWindowExtension)
 
-- (void)setXy_suspensionMenuWindow:(SuspensionMenuWindow *)suspensionMenuWindow {
-    objc_setAssociatedObject(self, @selector(xy_suspensionMenuWindow), suspensionMenuWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+- (void)setXy_suspensionMenu:(XYSuspensionMenu *)suspensionMenu {
+    objc_setAssociatedObject(self, @selector(xy_suspensionMenu), suspensionMenu, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (SuspensionMenuWindow *)xy_suspensionMenuWindow {
+- (XYSuspensionMenu *)xy_suspensionMenu {
     return objc_getAssociatedObject(self, _cmd);
+}
+
+- (UIWindow *)xy_suspensionCenterWindow {
+    return objc_getAssociatedObject(self, _cmd);
+}
+- (void)setXy_suspensionCenterWindow:(UIWindow *)xy_suspensionCenterWindow {
+    objc_setAssociatedObject(self, @selector(xy_suspensionCenterWindow), xy_suspensionCenterWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
@@ -50,17 +61,21 @@
 
 #pragma mark *** SuspensionView ***
 
-static NSString * const PreviousCenterXKey = @"previousCenterX";
-static NSString * const PreviousCenterYKey = @"previousCenterY";
+static NSString * const PreviousCenterXKey(Class cls)
+{
+    return [@"previousCenterX" stringByAppendingString:NSStringFromClass(cls)];
+};
+static NSString * const PreviousCenterYKey(Class cls)
+{
+    return  [@"previousCenterY" stringByAppendingString:NSStringFromClass(cls)];
+};
 
 @interface SuspensionView ()
 
 @property (nonatomic, assign) CGPoint previousCenter;
 @property (nonatomic, weak) UIPanGestureRecognizer *panGestureRecognizer;
 @property (nonatomic, assign) BOOL isMoving;
-@property (nonatomic, strong) UIWindow *xy_window;
-/// 当屏幕旋转时反转坐标
-@property (nonatomic, assign) BOOL needReversePoint;
+@property (nonatomic, weak) UIWindow *xy_window;
 
 @end
 
@@ -97,8 +112,8 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
     self.usingSpringWithDamping = 0.8; // 范围的为0.0f到1.0f，数值越小「弹簧」的振动效果越明显
     self.initialSpringVelocity = 3.0; // 表示初始的速度，数值越大一开始移动越快
     self.shouldLeanToPreviousPositionWhenAppStart = YES;
-    CGFloat centerX = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterXKey];
-    CGFloat centerY = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterYKey];
+    CGFloat centerX = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterXKey(self.class)];
+    CGFloat centerY = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterYKey(self.class)];
     if (centerX > 0 || centerY > 0) {
         self.previousCenter = CGPointMake(centerX, centerY);
     } else {
@@ -406,12 +421,16 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 }
 
 - (void)orientationDidChange:(NSNotification *)note {
-    if (self.isAutoLeanEdge) {
-        /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
-        CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
-        currentPoint = [self _checkTargetPosition:currentPoint];
-    }
-    [self didChangeInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // 不立即执行，将其延迟到runloop的下一个周期执行，防止坐标错误
+        if (self.isAutoLeanEdge) {
+            /// 屏幕旋转时检测下最终依靠的位置，防止出现屏幕旋转记录的previousCenter未更新坐标时，导致按钮不见了
+            CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
+            currentPoint = [self _checkTargetPosition:currentPoint];
+        }
+        [self didChangeInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation];
+    });
+    
 }
 
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
@@ -449,96 +468,13 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (void)setPreviousCenter:(CGPoint)previousCenter {
     _previousCenter = previousCenter;
-    [[NSUserDefaults standardUserDefaults] setDouble:previousCenter.x forKey:PreviousCenterXKey];
-    [[NSUserDefaults standardUserDefaults] setDouble:previousCenter.y forKey:PreviousCenterYKey];
+    [[NSUserDefaults standardUserDefaults] setDouble:previousCenter.x forKey:PreviousCenterXKey(self.class)];
+    [[NSUserDefaults standardUserDefaults] setDouble:previousCenter.y forKey:PreviousCenterYKey(self.class)];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 @end
 
-#pragma mark *** UIResponder (SuspensionView) ***
-
-@implementation UIResponder (SuspensionView)
-
-- (SuspensionView *)showSuspensionViewWithFrame:(CGRect)frame {
-    
-    UIView *view = [self getSelfView];
-    if (!view) {
-        return nil;
-    }
-    if (!self.suspensionView && !self.suspensionView.superview) {
-        SuspensionView *suspensionView = [[SuspensionView alloc] initWithFrame:frame];
-        self.suspensionView = suspensionView;
-        self.suspensionView.clipsToBounds = YES;
-        [view addSubview:suspensionView];
-    }
-    else if (self.suspensionView && !self.suspensionView.superview) {
-        [view addSubview:self.suspensionView];
-    }
-    
-    [view bringSubviewToFront:self.suspensionView];
-    return self.suspensionView;
-}
-
-- (UIView *)getSelfView {
-    BOOL result = [self isKindOfClass:[UIViewController class]] || [self isKindOfClass:[UIView class]];
-    if (!result) {
-        NSAssert(result, @"Error: The current class should be UIViewController or UIView or their subclass");
-        return nil;
-    }
-    UIView *view = nil;
-    if ([self isKindOfClass:[UIViewController class]]) {
-        UIViewController *vc = (UIViewController *)self;
-        view = vc.view;
-    } else if ([self isKindOfClass:[UIView class]]) {
-        view = (UIView *)self;
-    }
-    return view;
-}
-
-
-- (void)dismissSuspensionView:(void (^)(void))block {
-    
-    [self.suspensionView removeFromSuperview];
-    self.suspensionView = nil;
-    if (block) {
-        block();
-    }
-}
-
-- (void)setHiddenSuspension:(BOOL)flag {
-    self.suspensionView.hidden = flag;
-}
-- (BOOL)isHiddenSuspension {
-    return self.suspensionView.isHidden;
-}
-- (void)setSuspensionTitle:(NSString *)title forState:(UIControlState)state {
-    [self.suspensionView setTitle:title forState:UIControlStateNormal];
-}
-- (void)setSuspensionImage:(UIImage *)image forState:(UIControlState)state {
-    [self.suspensionView setImage:image forState:UIControlStateNormal];
-}
-- (void)setSuspensionImageWithImageNamed:(NSString *)name forState:(UIControlState)state {
-    [self setSuspensionImage:[UIImage imageNamed:name] forState:state];
-}
-
-- (void)setSuspensionBackgroundColor:(UIColor *)color cornerRadius:(CGFloat)cornerRadius {
-    [self.suspensionView setBackgroundColor:color];
-    if (cornerRadius) {
-        self.suspensionView.layer.cornerRadius = cornerRadius;
-        self.suspensionView.layer.masksToBounds = YES;
-    }
-}
-
-- (SuspensionView *)suspensionView {
-    return objc_getAssociatedObject(self, @selector(suspensionView));
-}
-
-- (void)setSuspensionView:(SuspensionView *)suspensionView {
-    objc_setAssociatedObject(self, @selector(suspensionView), suspensionView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-@end
 
 #pragma mark *** SuspensionMenuController ***
 
@@ -546,69 +482,7 @@ static NSString * const PreviousCenterYKey = @"previousCenterY";
 
 - (instancetype)initWithMenuView:(SuspensionMenuView *)menuView ;
 
-@property (nonatomic, weak) SuspensionMenuWindow *menuView;
-
-@end
-
-#pragma mark *** SuspensionWindow ***
-
-@implementation SuspensionWindow
-
-////////////////////////////////////////////////////////////////////////
-#pragma mark - Public methods
-////////////////////////////////////////////////////////////////////////
-
-
-+ (instancetype)showWithFrame:(CGRect)frame {
-    
-    SuspensionWindow *s = [[self alloc] initWithFrame:frame];
-    s.leanEdgeType = SuspensionViewLeanEdgeTypeEachSide;
-    [s __moveToSuperview];
-    
-    return s;
-}
-
-- (void)removeFromSuperview {
-    self.clickCallBack = nil;
-    self.leanFinishCallBack = nil;
-    [self xy_removeWindow];
-    [super removeFromSuperview];
-}
-
-
-////////////////////////////////////////////////////////////////////////
-#pragma mark - Private methods
-////////////////////////////////////////////////////////////////////////
-
-
-- (void)__moveToSuperview {
-    
-    UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
-    
-    //#ifdef DEBUG
-    suspensionWindow.windowLevel = CGFLOAT_MAX+10;
-    //#else
-    //    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
-    //#endif
-    
-    UIViewController *vc = [UIViewController new];
-    suspensionWindow.rootViewController = vc;
-    
-    [suspensionWindow.layer setMasksToBounds:YES];
-    
-    self.xy_window = suspensionWindow;
-    self.frame = CGRectMake(0,
-                            0,
-                            self.frame.size.width,
-                            self.frame.size.height);
-    self.clipsToBounds = YES;
-    
-    [vc.view addSubview:self];
-    
-    suspensionWindow.suspensionView = self;
-    
-    suspensionWindow.hidden = NO;
-}
+@property (nonatomic, weak) XYSuspensionMenu *menuView;
 
 @end
 
@@ -1009,7 +883,9 @@ menuBarItems = _menuBarItems;
 - (void)close {
     [self _closeWithTriggerPanGesture:NO completion:NULL];
 }
-
+- (void)closeWithCompetion:(void (^)(BOOL))competion {
+    [self _closeWithTriggerPanGesture:NO completion:competion];
+}
 - (void)_openCompetion {
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuViewDidOpened:)]) {
@@ -1132,7 +1008,7 @@ menuBarItems = _menuBarItems;
         
         CGRect centerRec = [self convertRect:centerButtonFrame toView:[UIApplication sharedApplication].delegate.window];
         
-        SuspensionView *centerButton = (SuspensionWindow *)[NSClassFromString(@"_MenuBarCenterButton") showWithFrame:centerRec];
+        SuspensionView *centerButton = [NSClassFromString(@"_MenuBarCenterButton") showWithFrame:centerRec];
         centerButton.autoLeanEdge = YES;
         centerButton.delegate = self;
         
@@ -1811,16 +1687,16 @@ menuBarItems = _menuBarItems;
 @end
 
 
-@implementation SuspensionMenuWindow
+@implementation XYSuspensionMenu
 
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - initialize
 ////////////////////////////////////////////////////////////////////////
 
 + (instancetype)menuWindowWithFrame:(CGRect)frame itemSize:(CGSize)itemSize {
-    SuspensionMenuWindow *sw = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+    XYSuspensionMenu *sw = [UIApplication sharedApplication].xy_suspensionMenu;
     if (!sw) {
-        sw = [[SuspensionMenuWindow alloc] initWithFrame:frame itemSize:itemSize];
+        sw = [[XYSuspensionMenu alloc] initWithFrame:frame itemSize:itemSize];
     }
     else {
         [sw close];
@@ -1866,14 +1742,7 @@ menuBarItems = _menuBarItems;
     }
     
     UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:menuWindowBounds];
-    //#ifdef DEBUG
-    suspensionWindow.windowLevel = CGFLOAT_MAX;
-    //    suspensionWindow.windowLevel = CGFLOAT_MAX+10;
-    // iOS9前自定义的window设置下面，不会被键盘遮罩，iOS10不行了
-    //    NSArray<UIWindow *> *widnows = [UIApplication sharedApplication].windows;
-    //#else
-    //    suspensionWindow.windowLevel = UIWindowLevelAlert * 2;
-    //#endif
+    suspensionWindow.windowLevel = UIWindowLevelAlert;
     
     UIViewController *vc = [[SuspensionMenuController alloc] initWithMenuView:self];
     
@@ -1897,7 +1766,7 @@ menuBarItems = _menuBarItems;
 
 - (void)showWithCompetion:(void (^)(void))competion {
     [super showWithCompetion:competion];
-    [UIApplication sharedApplication].xy_suspensionMenuWindow = self;
+    [UIApplication sharedApplication].xy_suspensionMenu = self;
 }
 
 
@@ -1979,9 +1848,63 @@ menuBarItems = _menuBarItems;
 }
 @end
 
-@interface _MenuBarCenterButton : SuspensionWindow
-@end
 @implementation _MenuBarCenterButton
+
+////////////////////////////////////////////////////////////////////////
+#pragma mark - Public methods
+////////////////////////////////////////////////////////////////////////
++ (instancetype)showWithFrame:(CGRect)frame {
+    
+    _MenuBarCenterButton *s = [[self alloc] initWithFrame:frame];
+    s.leanEdgeType = SuspensionViewLeanEdgeTypeEachSide;
+    [s __moveToSuperview];
+    
+    return s;
+}
+
+- (void)removeFromSuperview {
+    self.clickCallBack = nil;
+    self.leanFinishCallBack = nil;
+    [self xy_removeWindow];
+    [super removeFromSuperview];
+}
+
+
+////////////////////////////////////////////////////////////////////////
+#pragma mark - Private methods
+////////////////////////////////////////////////////////////////////////
+
+
+- (void)__moveToSuperview {
+    
+    UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:self.frame];
+    
+    //#ifdef DEBUG
+    suspensionWindow.windowLevel = CGFLOAT_MAX+10;
+    //#else
+    //    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
+    //#endif
+    
+    UIViewController *vc = [UIViewController new];
+    suspensionWindow.rootViewController = vc;
+    
+    [suspensionWindow.layer setMasksToBounds:YES];
+    
+    self.xy_window = suspensionWindow;
+    [UIApplication sharedApplication].xy_suspensionCenterWindow = suspensionWindow;
+    self.frame = CGRectMake(0,
+                            0,
+                            self.frame.size.width,
+                            self.frame.size.height);
+    self.clipsToBounds = YES;
+    
+    [vc.view addSubview:self];
+    
+    suspensionWindow.suspensionView = self;
+    
+    suspensionWindow.hidden = NO;
+}
+
 @end
 
 @interface _MenuViewBackgroundImageView : UIImageView
@@ -2008,10 +1931,9 @@ menuBarItems = _menuBarItems;
 }
 @end
 
-
 @implementation SuspensionMenuController
 
-- (instancetype)initWithMenuView:(SuspensionMenuWindow *)menuView {
+- (instancetype)initWithMenuView:(XYSuspensionMenu *)menuView {
     if (self = [super initWithNibName:nil bundle:nil]) {
         _menuView = menuView;
     }
@@ -2054,5 +1976,4 @@ menuBarItems = _menuBarItems;
 
 
 @end
-
 

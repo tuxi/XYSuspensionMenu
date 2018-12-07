@@ -131,14 +131,21 @@ void xy_log(NSString *format, ...) {
 @property (nonatomic) CGAffineTransform currentTransform;
 @property (nonatomic) CGFloat lastScale;
 @property (nonatomic, strong) UITextView *consoleTextView;
-
+@property (nonatomic, weak) UIWindow *xy_window;
 - (void)xy_showWithCompletion:(void (^)(BOOL finished))completion;
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion;;
 
 @end
 
 @implementation UIApplication (XYConsole)
+- (void)setXy_consoleViewWindow:(UIWindow *)xy_consoleViewWindow {
+    objc_setAssociatedObject(self, @selector(xy_consoleViewWindow), xy_consoleViewWindow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 
+- (UIWindow *)xy_consoleViewWindow {
+    UIWindow *view = objc_getAssociatedObject(self, _cmd);
+    return view;
+}
 - (void)setXy_consoleView:(XYConsoleView *)xy_consoleView {
     objc_setAssociatedObject(self, @selector(xy_consoleView), xy_consoleView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
@@ -151,10 +158,36 @@ void xy_log(NSString *format, ...) {
 - (XYConsoleView *)xy_showConsoleWithCompletion:(void (^)(BOOL))completion {
     XYConsoleView *view = [self xy_consoleView];
     if (!view) {
-        SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+        XYSuspensionMenu *menu = [UIApplication sharedApplication].xy_suspensionMenu;
         CGPoint centerBtnPoint = menu.centerButton.frame.origin;
         centerBtnPoint = [menu.centerButton convertPoint:centerBtnPoint toView:[UIApplication sharedApplication].delegate.window];
         view = [[XYConsoleView alloc] initWithFrame:CGRectMake(centerBtnPoint.x, centerBtnPoint.y, 0, 0)];
+        view.leanEdgeType = SuspensionViewLeanEdgeTypeEachSide;
+        UIWindow *suspensionWindow = [[UIWindow alloc] initWithFrame:view.frame];
+        
+        //#ifdef DEBUG
+        suspensionWindow.windowLevel = CGFLOAT_MAX+10;
+        //#else
+        //    suspensionWindow.windowLevel = UIWindowLevelAlert * 3;
+        //#endif
+        
+        UIViewController *vc = [UIViewController new];
+        suspensionWindow.rootViewController = vc;
+        
+        [suspensionWindow.layer setMasksToBounds:YES];
+        [self setXy_consoleViewWindow:suspensionWindow];
+        view.xy_window = suspensionWindow;
+        view.frame = CGRectMake(0,
+                                0,
+                                view.frame.size.width,
+                                view.frame.size.height);
+        view.clipsToBounds = YES;
+        
+        [vc.view addSubview:view];
+        
+        suspensionWindow.suspensionView = view;
+        
+        suspensionWindow.hidden = NO;
         self.xy_consoleView = view;
     }
     [self.delegate.window addSubview:view];
@@ -170,6 +203,7 @@ void xy_log(NSString *format, ...) {
     }];
     return view;
 }
+
 
 - (BOOL)xy_hideConsoleWithCompletion:(void (^)(BOOL))completion {
     XYConsoleView *view = [self xy_consoleView];
@@ -197,6 +231,15 @@ void xy_log(NSString *format, ...) {
 @end
 
 @implementation XYConsoleView
+
+
+- (void)removeFromSuperview {
+    self.clickCallBack = nil;
+    self.leanFinishCallBack = nil;
+    [self xy_removeWindow];
+    [super removeFromSuperview];
+}
+
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -311,13 +354,13 @@ void xy_log(NSString *format, ...) {
 - (void)doubleTapOnSelf {
     if (self.show == NO) {
         [self xy_showWithCompletion:^(BOOL finished) {
-            [[UIApplication sharedApplication].xy_suspensionMenuWindow close];
+            [[UIApplication sharedApplication].xy_suspensionMenu close];
         }];
     }
     else {
-        [[UIApplication sharedApplication].xy_suspensionMenuWindow openWithCompetion:^(BOOL finished) {
+        [[UIApplication sharedApplication].xy_suspensionMenu openWithCompetion:^(BOOL finished) {
             [self xy_hideWithCompletion:^(BOOL finished) {
-                [[UIApplication sharedApplication].xy_suspensionMenuWindow close];
+                [[UIApplication sharedApplication].xy_suspensionMenu close];
             }];
         }];
     }
@@ -340,7 +383,7 @@ void xy_log(NSString *format, ...) {
 }
 
 - (void)xy_hideWithCompletion:(void (^)(BOOL finished))completion {
-    SuspensionMenuWindow *menu = [UIApplication sharedApplication].xy_suspensionMenuWindow;
+    XYSuspensionMenu *menu = [UIApplication sharedApplication].xy_suspensionMenu;
     
     UIView *targetView = (UIView *)menu.currentResponderItem.hypotenuseButton;
     if (!targetView) {
