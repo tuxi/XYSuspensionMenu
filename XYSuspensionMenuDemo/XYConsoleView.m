@@ -234,8 +234,6 @@ void xy_log(NSString *format, ...) {
 
 
 - (void)removeFromSuperview {
-    self.clickCallBack = nil;
-    self.leanFinishCallBack = nil;
     [self xy_removeWindow];
     [super removeFromSuperview];
 }

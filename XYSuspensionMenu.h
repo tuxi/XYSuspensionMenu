@@ -23,7 +23,6 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 @protocol SuspensionViewDelegate <NSObject>
 
 @optional
-- (void)suspensionViewClickedButton:(SuspensionView *)suspensionView;
 /// 拖动suspensionView时回调
 - (void)suspensionView:(SuspensionView *)suspensionView locationChange:(UIPanGestureRecognizer *)pan;
 /// 根据此方法返回的坐标设置suspensionView的最终的center
@@ -58,26 +57,22 @@ typedef NS_ENUM(NSUInteger, SuspensionViewLeanEdgeType) {
 
 @property (nonatomic, weak, readonly) UIPanGestureRecognizer *panGestureRecognizer;
 @property (nonatomic, weak, nullable) id<SuspensionViewDelegate> delegate;
-
 @property (nonatomic, assign) SuspensionViewLeanEdgeType leanEdgeType;
 @property (nonatomic, assign) UIEdgeInsets leanEdgeInsets;
-@property (nonatomic, assign) BOOL invalidHidden;
 @property (nonatomic, assign, readonly) BOOL isMoving;
-@property (nonatomic, assign) CGFloat usingSpringWithDamping;
-@property (nonatomic, assign) CGFloat initialSpringVelocity;
-@property (nonatomic, copy, nullable) void (^locationChange)(CGPoint currentPoint);
-@property (nonatomic, copy, nullable) void (^ leanFinishCallBack)(CGPoint centerPoint);
 @property (nonatomic, assign, getter=isAutoLeanEdge) BOOL autoLeanEdge;
-@property (nonatomic, copy, nullable) void (^clickCallBack)(void);
 @property (nonatomic, assign) BOOL shouldLeanToPreviousPositionWhenAppStart;
 @property (nonatomic, assign, getter=isAllowMoe) BOOL allowMove;
 @property (nonatomic, assign, readonly) CGPoint previousCenter;
 /// 当屏幕旋转时反转坐标
 @property (nonatomic, assign) BOOL needReversePoint;
-
+/// 移动移动到屏幕中心位置
 - (void)moveToDisplayCenter;
+/// 移动到上一次停靠的位置
 - (void)moveToPreviousLeanPosition;
 - (void)checkTargetPosition;
+/// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
+- (void)autoLeanToTargetPosition:(CGPoint)point animated:(BOOL)animated;
 
 /// 界面方向发生改变，子类可重写此方法，进行布局
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation;

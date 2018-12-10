@@ -70,8 +70,13 @@ static NSString * const PreviousCenterYKey(Class cls)
     return  [@"previousCenterY" stringByAppendingString:NSStringFromClass(cls)];
 };
 
-@interface SuspensionView ()
-
+@interface SuspensionView () {
+@public;
+    struct {
+        CGFloat usingSpringWithDamping;
+        CGFloat initialSpringVelocity;
+    } _animationOptions;
+}
 @property (nonatomic, assign) CGPoint previousCenter;
 @property (nonatomic, weak) UIPanGestureRecognizer *panGestureRecognizer;
 @property (nonatomic, assign) BOOL isMoving;
@@ -107,10 +112,9 @@ static NSString * const PreviousCenterYKey(Class cls)
     
     self.autoLeanEdge = YES;
     self.leanEdgeInsets = UIEdgeInsetsMake(20, 0, 0, 0);
-    self.invalidHidden = NO;
     self.isMoving = NO;
-    self.usingSpringWithDamping = 0.8; // 范围的为0.0f到1.0f，数值越小「弹簧」的振动效果越明显
-    self.initialSpringVelocity = 3.0; // 表示初始的速度，数值越大一开始移动越快
+    _animationOptions.usingSpringWithDamping = 0.8; // 范围的为0.0f到1.0f，数值越小「弹簧」的振动效果越明显
+    _animationOptions.initialSpringVelocity = 3.0; // 表示初始的速度，数值越大一开始移动越快
     self.shouldLeanToPreviousPositionWhenAppStart = YES;
     CGFloat centerX = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterXKey(self.class)];
     CGFloat centerY = [[NSUserDefaults standardUserDefaults] doubleForKey:PreviousCenterYKey(self.class)];
@@ -144,7 +148,7 @@ static NSString * const PreviousCenterYKey(Class cls)
     [self addGestureRecognizer:pan];
     _panGestureRecognizer = pan;
     
-    [self addTarget:self action:@selector(btnClick:) forControlEvents:UIControlEventTouchUpInside];
+    //    [self addTarget:self action:@selector(btnClick:) forControlEvents:UIControlEventTouchUpInside];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 }
@@ -153,23 +157,9 @@ static NSString * const PreviousCenterYKey(Class cls)
 #pragma mark - Public
 ////////////////////////////////////////////////////////////////////////
 
-
-- (void)leanFinishCallBack:(void (^)(CGPoint centerPoint))callback {
-    self.leanFinishCallBack = callback;
-}
-
-- (void)setHidden:(BOOL)hidden {
-    if (self.invalidHidden) {
-        return;
-    }
-    [super setHidden:hidden];
-}
-
 - (void)removeFromSuperview {
     [super removeFromSuperview];
     
-    self.clickCallBack = nil;
-    self.leanFinishCallBack = nil;
     self.delegate = nil;
 }
 
@@ -220,16 +210,11 @@ static NSString * const PreviousCenterYKey(Class cls)
         CGPoint finalPoint = CGPointMake(panViewCenter.x + (velocity.x * slideFactor),  panViewCenter.y + (velocity.y * slideFactor));
         CGPoint newTargetPoint = [self _checkTargetPosition:finalPoint];
         // 滑行到终点
-        [self autoLeanToTargetPosition:newTargetPoint slideFactor:slideFactor*2];
+        [self autoLeanToTargetPosition:newTargetPoint slideFactor:slideFactor*2 animated:YES];
     }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:locationChange:)]) {
         [self.delegate suspensionView:self locationChange:p];
-        return;
-    }
-    
-    if (self.locationChange) {
-        self.locationChange(translatedCenter);
     }
 }
 
@@ -250,11 +235,11 @@ static NSString * const PreviousCenterYKey(Class cls)
     
     if (self.shouldLeanToPreviousPositionWhenAppStart && !self.needReversePoint) {
         CGPoint newTargetPoint = [self _checkTargetPosition:self.previousCenter];
-        [self autoLeanToTargetPosition:newTargetPoint];
+        [self autoLeanToTargetPosition:newTargetPoint animated:YES];
     } else {
         CGPoint currentPoint = [self convertPoint:self.center toView:[UIApplication sharedApplication].delegate.window];
         CGPoint newTargetPoint = [self _checkTargetPosition:CGPointMake(currentPoint.y, currentPoint.x)];
-        [self autoLeanToTargetPosition:newTargetPoint];
+        [self autoLeanToTargetPosition:newTargetPoint animated:YES];
     }
     
 }
@@ -323,7 +308,7 @@ static NSString * const PreviousCenterYKey(Class cls)
         CGFloat minHorizontal = MIN(nearLeft, nearRight);
         CGFloat minVertical = MIN(nearTop, nearBottom);
         // 判断上下左右哪个位置最小
-        BOOL isHorizontal, isVertical;
+        BOOL isHorizontal = false, isVertical = false;
         if (minVertical < minHorizontal) {
             // 按照垂直停靠，只需要计算y坐标，x坐标不变
             isVertical = YES;
@@ -363,49 +348,55 @@ static NSString * const PreviousCenterYKey(Class cls)
 
 - (void)moveToPreviousLeanPosition {
     
-    [self autoLeanToTargetPosition:self.previousCenter];
+    [self autoLeanToTargetPosition:self.previousCenter animated:YES];
 }
 
 /// 移动移动到屏幕中心位置
 - (void)moveToDisplayCenter {
     
-    [self autoLeanToTargetPosition:[UIApplication sharedApplication].delegate.window.center];
+    [self autoLeanToTargetPosition:[UIApplication sharedApplication].delegate.window.center animated:YES];
 }
 
 
 /// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
-- (void)autoLeanToTargetPosition:(CGPoint)point {
-    [self autoLeanToTargetPosition:point slideFactor:0.0];
+- (void)autoLeanToTargetPosition:(CGPoint)point animated:(BOOL)animated {
+    [self autoLeanToTargetPosition:point slideFactor:0.0 animated:animated];
 }
 
 
 /// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
-- (void)autoLeanToTargetPosition:(CGPoint)point slideFactor:(CGFloat)slideFactor {
+- (void)autoLeanToTargetPosition:(CGPoint)point slideFactor:(CGFloat)slideFactor animated:(BOOL)animated {
     point = [self _checkTargetPosition:point];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:willAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
     }
-    [UIView animateWithDuration:0.3
-                          delay:0.05
-         usingSpringWithDamping:self.usingSpringWithDamping
-          initialSpringVelocity:self.initialSpringVelocity
-                        options:UIViewAnimationOptionCurveEaseIn |
-     UIViewAnimationOptionAllowUserInteraction
-                     animations:^{
-                         UIWindow *w = self.xy_window;
-                         if (w) {
-                             w.center = point;
-                         } else {
-                             self.center = point;
-                         }
-                         
-                     } completion:^(BOOL finished) {
-                         if (finished) {
+    UIView *targetView = self.xy_window;
+    if (targetView == nil) {
+        targetView = self;
+    }
+    if (animated) {
+        [UIView animateWithDuration:0.3
+                              delay:0.05
+             usingSpringWithDamping:_animationOptions.usingSpringWithDamping
+              initialSpringVelocity:_animationOptions.initialSpringVelocity
+                            options:UIViewAnimationOptionCurveEaseIn |
+         UIViewAnimationOptionAllowUserInteraction
+                         animations:^{
+                             targetView.center = point;
                              
-                             [self autoLeanToTargetPositionCompletion:point];
-                             _isMoving = NO;
-                         }
-                     }];
+                         } completion:^(BOOL finished) {
+                             if (finished) {
+                                 
+                                 [self autoLeanToTargetPositionCompletion:point];
+                                 _isMoving = NO;
+                             }
+                         }];
+    }
+    else {
+        targetView.center = point;
+        [self autoLeanToTargetPositionCompletion:point];
+        _isMoving = NO;
+    }
 }
 
 
@@ -413,10 +404,6 @@ static NSString * const PreviousCenterYKey(Class cls)
 - (void)autoLeanToTargetPositionCompletion:(CGPoint)currentPosition {
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:didAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self didAutoLeanToTargetPosition:currentPosition];
-        return;
-    }
-    if (self.leanFinishCallBack) {
-        self.leanFinishCallBack(currentPosition);
     }
 }
 
@@ -435,22 +422,6 @@ static NSString * const PreviousCenterYKey(Class cls)
 
 - (void)didChangeInterfaceOrientation:(UIInterfaceOrientation)orientation {
     
-}
-
-////////////////////////////////////////////////////////////////////////
-#pragma mark - Actions
-////////////////////////////////////////////////////////////////////////
-
-- (void)btnClick:(id)sender {
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionViewClickedButton:)]) {
-        [self.delegate suspensionViewClickedButton:self];
-        return;
-    }
-    
-    if (self.clickCallBack) {
-        self.clickCallBack();
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -779,8 +750,8 @@ menuBarItems = _menuBarItems;
 
 - (void)_openWithNeedCurveEaseInOut:(BOOL)isCurveEaseInOut competion:(void (^ _Nullable)(BOOL finished))openCompetion {
     if (_viewFlags._isOpened) return;
-    self.centerButton.usingSpringWithDamping = 0.8;
-    self.centerButton.initialSpringVelocity = 20;
+    self.centerButton->_animationOptions.usingSpringWithDamping = 0.8;
+    self.centerButton->_animationOptions.initialSpringVelocity = 20;
     if (_viewFlags._isFiristOpened) {
         [self updateMenuBarButtonLayoutWithTriangleHypotenuse:_viewFlags._maxTriangleHypotenuse hypotenuseItems:self.menuBarItems];
     }
@@ -902,8 +873,8 @@ menuBarItems = _menuBarItems;
     if (_viewFlags._isClosed)
         return;
     
-    self.centerButton.usingSpringWithDamping = 0.5;
-    self.centerButton.initialSpringVelocity = 10;
+    self.centerButton->_animationOptions.usingSpringWithDamping = 0.5;
+    self.centerButton->_animationOptions.initialSpringVelocity = 10;
     
     if (self.shouldHiddenCenterButtonWhenOpen) {
         // 显示centerWindow
@@ -1011,7 +982,7 @@ menuBarItems = _menuBarItems;
         SuspensionView *centerButton = [NSClassFromString(@"_MenuBarCenterButton") showWithFrame:centerRec];
         centerButton.autoLeanEdge = YES;
         centerButton.delegate = self;
-        
+        [centerButton addTarget:self action:@selector(centerBarButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         _centerButton = centerButton;
         
     }
@@ -1120,6 +1091,9 @@ menuBarItems = _menuBarItems;
 // 中心 button 点击事件
 - (void)centerBarButtonClick:(id)senter {
     _viewFlags._isClosed ? [self open] : [self close];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedCenterButton:)]) {
+        [self.delegate suspensionMenuView:self clickedCenterButton:senter];
+    }
 }
 
 // 斜边的 button 点击事件 button tag 如下图:
@@ -1305,13 +1279,6 @@ menuBarItems = _menuBarItems;
 ////////////////////////////////////////////////////////////////////////
 #pragma mark - SuspensionViewDelegate
 ////////////////////////////////////////////////////////////////////////
-
-- (void)suspensionViewClickedButton:(SuspensionView *)suspensionView {
-    [self centerBarButtonClick:suspensionView];
-    if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionMenuView:clickedCenterButton:)]) {
-        [self.delegate suspensionMenuView:self clickedCenterButton:suspensionView];
-    }
-}
 
 - (void)suspensionView:(SuspensionView *)suspensionView locationChange:(UIPanGestureRecognizer *)pan {
     CGPoint panPoint = [pan locationInView:[UIApplication sharedApplication].delegate.window];
@@ -1863,8 +1830,6 @@ menuBarItems = _menuBarItems;
 }
 
 - (void)removeFromSuperview {
-    self.clickCallBack = nil;
-    self.leanFinishCallBack = nil;
     [self xy_removeWindow];
     [super removeFromSuperview];
 }
@@ -1960,7 +1925,7 @@ menuBarItems = _menuBarItems;
     // 拿到在self.view上但同时在menuView上的点
     touchPoint = [self.menuView.layer convertPoint:touchPoint fromLayer:self.view.layer];
     if (![self.menuView.layer containsPoint:touchPoint]) {
-        [self.menuView centerBarButtonClick:nil];
+        [self.menuView centerBarButtonClick:self.menuView.centerButton];
     }
     [self.nextResponder touchesEnded:touches withEvent:event];
 }
@@ -1976,4 +1941,3 @@ menuBarItems = _menuBarItems;
 
 
 @end
-
