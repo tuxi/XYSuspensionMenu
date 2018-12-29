@@ -208,16 +208,15 @@ static NSString * const PreviousCenterYKey(Class cls)
         // 基于速度和速度因素计算一个终点
         float slideFactor = 0.1 * slideMult;
         CGPoint finalPoint = CGPointMake(panViewCenter.x + (velocity.x * slideFactor),  panViewCenter.y + (velocity.y * slideFactor));
-        CGPoint newTargetPoint = [self _checkTargetPosition:finalPoint];
+        
         // 滑行到终点
-        [self autoLeanToTargetPosition:newTargetPoint slideFactor:slideFactor*2 animated:YES];
+        [self autoLeanToTargetPosition:finalPoint animated:YES];
     }
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:locationChange:)]) {
         [self.delegate suspensionView:self locationChange:p];
     }
 }
-
 
 /// 手指移动时，移动视图
 - (void)movingWithPoint:(CGPoint)point {
@@ -296,7 +295,7 @@ static NSString * const PreviousCenterYKey(Class cls)
         CGFloat minSpace =  MIN(nearTop, nearBottom);
         if (minSpace <= 30) {
             if (nearTop < nearBottom) { // 接近顶部 靠上
-                targetY = topEdge + screenHeight*0.5;
+                targetY = topEdge + touchWidth*0.5;
             }
             else { // 接近底部 靠底部
                 targetY = screenHeight - touchHeight*0.5 - bottomEdge;
@@ -360,12 +359,6 @@ static NSString * const PreviousCenterYKey(Class cls)
 
 /// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
 - (void)autoLeanToTargetPosition:(CGPoint)point animated:(BOOL)animated {
-    [self autoLeanToTargetPosition:point slideFactor:0.0 animated:animated];
-}
-
-
-/// 自动移动到边缘，此方法在手指松开后会自动移动到目标位置
-- (void)autoLeanToTargetPosition:(CGPoint)point slideFactor:(CGFloat)slideFactor animated:(BOOL)animated {
     point = [self _checkTargetPosition:point];
     if (self.delegate && [self.delegate respondsToSelector:@selector(suspensionView:willAutoLeanToTargetPosition:)]) {
         [self.delegate suspensionView:self willAutoLeanToTargetPosition:point];
@@ -398,7 +391,6 @@ static NSString * const PreviousCenterYKey(Class cls)
         _isMoving = NO;
     }
 }
-
 
 
 - (void)autoLeanToTargetPositionCompletion:(CGPoint)currentPosition {
